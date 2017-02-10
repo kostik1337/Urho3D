@@ -70,6 +70,7 @@ struct Particle2D
     float emitRotation_;
     /// Emit rotation delta.
     float emitRotationDelta_;
+
 };
 
 /// 2D particle emitter component.
@@ -116,6 +117,18 @@ public:
     void SetSpriteAttr(const ResourceRef& value);
     /// Return sprite attribute.
     ResourceRef GetSpriteAttr() const;
+    
+    /// Set whether should be emitting. If the state was changed, also resets the emission period timer.
+    void SetEmitting(bool enable);
+    /// Return whether is currently emitting.
+    bool IsEmitting() const { return emitting_; }
+    
+    void SetAutoRemoveMode(AutoRemoveMode mode);
+
+    void SetSendFinishedEvent(bool sendFinishedEvent);
+    
+    /// Return automatic removal mode on particle effect completion.
+    AutoRemoveMode GetAutoRemoveMode() const { return autoRemove_; }
 
 private:
     /// Handle scene being assigned.
@@ -149,12 +162,18 @@ private:
     float emissionTime_;
     /// Emit particle time
     float emitParticleTime_;
+    /// Currently emitting flag.
+    bool emitting_;
     /// Particles.
     Vector<Particle2D> particles_;
     /// Bounding box min point.
     Vector3 boundingBoxMinPoint_;
     /// Bounding box max point.
     Vector3 boundingBoxMaxPoint_;
+    /// Ready to send effect finish event flag.
+    bool sendFinishedEvent_;
+    /// Automatic removal mode.
+    AutoRemoveMode autoRemove_;
 };
 
 }

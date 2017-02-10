@@ -67,6 +67,7 @@ private:
     void SubscribeToEvents();
     /// Handle mouse move event.
     void HandleMouseMove(StringHash eventType, VariantMap& eventData);
+    void HandleMouseButtonDown(StringHash eventType, VariantMap& eventData);
 
     /// Particle scene node.
     SharedPtr<Node> particleNode_;

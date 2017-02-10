@@ -100,3 +100,10 @@ configure*
 *.bak
 Thumbs.db
 .directory
+
+.gitignore
+install/
+build/
+Source/Samples/59_Ocean
+Source/Samples/61_UITest
+Source/Samples/62_GeomReplicator
