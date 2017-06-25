@@ -83,6 +83,7 @@ Urho3D development, contributions and bugfixes by:
 - Manuel Freiberger
 - Chris Friesen
 - Alex Fuller
+- Konstantin Guschin
 - Henrik Heino
 - Mika Heinonen
 - Victor Holt
@@ -207,7 +208,7 @@ Urho3D uses the following third-party libraries:
 - Box2D 2.3.2 WIP (http://box2d.org)
 - Bullet 2.86.1 (http://www.bulletphysics.org)
 - Civetweb 1.7 (https://github.com/civetweb/civetweb)
-- FreeType 2.7.1 (https://www.freetype.org)
+- FreeType 2.8 (https://www.freetype.org)
 - GLEW 1.13.0 (http://glew.sourceforge.net)
 - jo_jpeg 1.52 (http://www.jonolick.com/uploads/7/9/2/1/7921194/jo_jpeg.cpp)
 - kNet (https://github.com/juj/kNet)
@@ -1086,6 +1087,7 @@ From 1.6 to master:
   If you ship a prewarmed (read-only) cache with your application you can set the directory yourself from the engine startup parameter "ShaderCacheDir" or call Graphics::SetShaderCacheDir() on initialization.
   Use the directory "Shaders/HLSL/Cache" to get the old behavior.
 - Signatures of UIElement virtual functions OnResize() and OnPositionSet() have changed.
+- The Font class and related classes take font size as a float instead of int to allow fractional point sizes. Glyphs themselves may also have fractional positions, so floats are now used internally in text rendering.
 - UIElement::LoadChildXML() now returns the created element on success, instead of a boolean.
 - Rendertargets have gained the ability to have automatically regenerated mipmaps. Screen buffers received from the Renderer subsystem have mipmaps off, but for manually created rendertargets the default is mipmaps on, like for ordinary textures. Use SetNumLevels(1) to disable.
 - The shader function GetWorldTangent() now returns a 4-component vector.
