@@ -36,16 +36,20 @@ function Start()
     CreateCheckbox("White background", "HandleWhiteBackground")
         :SetChecked(false)
 
-    -- Add a checkbox for the global ForceAutoHint setting. This affects character spacing.
-    CreateCheckbox("UI::SetForceAutoHint", "HandleForceAutoHint")
-        :SetChecked(ui:GetForceAutoHint())
-
     -- Add a checkbox to toggle SRGB output conversion (if available).
     -- This will give more correct text output for FreeType fonts, as the FreeType rasterizer
     -- outputs linear coverage values rather than SRGB values. However, this feature isn't
     -- available on all platforms.
     CreateCheckbox("Graphics::SetSRGB", "HandleSRGB")
         :SetChecked(graphics:GetSRGB())
+
+    -- Add a checkbox for the global ForceAutoHint setting. This affects character spacing.
+    CreateCheckbox("UI::SetForceAutoHint", "HandleForceAutoHint")
+        :SetChecked(ui:GetForceAutoHint())
+
+    -- Add a checkbox for the global SubpixelGlyphPositions setting. This affects character spacing.
+    CreateCheckbox("UI::SetSubpixelGlyphPositions", "HandleSubpixelGlyphPositions")
+        :SetChecked(ui:GetSubpixelGlyphPositions())
 
     -- Add a drop-down menu to control the font hinting level.
     local items = {
@@ -68,7 +72,7 @@ function CreateText()
 
     local font = cache:GetResource("Font", "Fonts/BlueHighway.ttf")
 
-    for size = 1, 24 do
+    for size = 1, 18, 0.5 do
         local text = Text:new()
         text.text = "The quick brown fox jumps over the lazy dog (" .. size .. "pt)"
         text:SetFont(font, size)
@@ -159,6 +163,13 @@ function HandleSRGB(eventType, eventData)
     else
         log:Write(LOG_WARNING, "graphics:GetSRGBWriteSupport returned false")
     end
+end
+
+function HandleSubpixelGlyphPositions(eventType, eventData)
+    local box = eventData["Element"]:GetPtr("CheckBox")
+    local checked = box:IsChecked()
+
+    ui:SetSubpixelGlyphPositions(checked)
 end
 
 function HandleFontHintLevel(eventType, eventData)

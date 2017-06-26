@@ -2369,7 +2369,7 @@ namespace Urho3D
 - %Variables : VariantMap
 - %Tags : StringVector
 - %Font : ResourceRef
-- %Font %Size : int
+- %Font %Size : float
 - %Text : String
 - %Text %Alignment : int
 - %Row %Spacing : float
@@ -2387,7 +2387,7 @@ namespace Urho3D
 - %Is %Enabled : bool
 - %Font : ResourceRef
 - %Material : ResourceRef
-- %Font %Size : int
+- %Font %Size : float
 - %Text : String
 - %Text %Alignment : int
 - %Row %Spacing : float
@@ -7353,7 +7353,7 @@ Properties:
 
 Methods:
 
-- IntVector2 GetTotalGlyphOffset(int) const
+- IntVector2 GetTotalGlyphOffset(float) const
 - bool HasSubscribedToEvent(Object@, const String&)
 - bool HasSubscribedToEvent(const String&)
 - bool Load(File@)
@@ -9646,12 +9646,14 @@ Methods:
 
 Properties:
 
+- Node@[] allChildrenByName // readonly
 - bool animationEnabled
 - Variant[] attributeDefaults // readonly
 - AttributeInfo[] attributeInfos // readonly
 - Variant[] attributes
 - String category // readonly
 - Node@[] children // readonly
+- Node@[] childrenByName // readonly
 - Component@[] components // readonly
 - Vector3 direction
 - bool enabled
@@ -11456,6 +11458,7 @@ Methods:
 
 Properties:
 
+- Node@[] allChildrenByName // readonly
 - bool animationEnabled
 - LoadMode asyncLoadMode // readonly
 - bool asyncLoading // readonly
@@ -11467,6 +11470,7 @@ Properties:
 - String category // readonly
 - uint checksum // readonly
 - Node@[] children // readonly
+- Node@[] childrenByName // readonly
 - Component@[] components // readonly
 - DebugRenderer@ debugRenderer // readonly
 - Vector3 direction
@@ -13697,7 +13701,7 @@ Methods:
 - void SetFixedHeight(int)
 - void SetFixedSize(int, int)
 - void SetFixedWidth(int)
-- bool SetFont(Font@, int)
+- bool SetFont(Font@, float)
 - bool SetFont(const String&, int)
 - void SetInterceptNetworkUpdate(const String&, bool)
 - void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ))
@@ -13726,8 +13730,8 @@ Properties:
 - bool bringToBack
 - bool bringToFront
 - String category // readonly
-- IntVector2[] charPositions // readonly
-- IntVector2[] charSizes // readonly
+- Vector2[] charPositions // readonly
+- Vector2[] charSizes // readonly
 - IntVector2 childOffset // readonly
 - UIElement@[] children // readonly
 - IntRect clipBorder
@@ -13756,7 +13760,7 @@ Properties:
 - bool focus
 - FocusMode focusMode
 - Font@ font // readonly
-- int fontSize
+- float fontSize
 - int height
 - HorizontalAlignment horizontalAlignment
 - Color hoverColor
@@ -13793,9 +13797,9 @@ Properties:
 - int priority
 - int refs // readonly
 - UIElement@ root // readonly
-- int rowHeight // readonly
+- float rowHeight // readonly
 - float rowSpacing
-- int[] rowWidths // readonly
+- float[] rowWidths // readonly
 - IntVector2 screenPosition // readonly
 - bool selected
 - Color selectionColor
@@ -13861,8 +13865,8 @@ Methods:
 - void SetAttributeAnimationSpeed(const String&, float)
 - void SetAttributeAnimationTime(const String&, float)
 - void SetAttributeAnimationWrapMode(const String&, WrapMode)
-- bool SetFont(Font@, int)
-- bool SetFont(const String&, int)
+- bool SetFont(Font@, float)
+- bool SetFont(const String&, float)
 - void SetInterceptNetworkUpdate(const String&, bool)
 
 Properties:
@@ -13874,8 +13878,8 @@ Properties:
 - BoundingBox boundingBox // readonly
 - bool castShadows
 - String category // readonly
-- IntVector2[] charPositions // readonly
-- IntVector2[] charSizes // readonly
+- Vector2[] charPositions // readonly
+- Vector2[] charSizes // readonly
 - Color color // writeonly
 - Color[] colors
 - float drawDistance
@@ -13889,7 +13893,7 @@ Properties:
 - FaceCameraMode faceCameraMode
 - bool fixedScreenSize
 - Font@ font // readonly
-- int fontSize
+- float fontSize
 - int height // readonly
 - HorizontalAlignment horizontalAlignment
 - uint id // readonly
@@ -13907,9 +13911,9 @@ Properties:
 - bool occluder
 - float opacity
 - int refs // readonly
-- int rowHeight // readonly
+- float rowHeight // readonly
 - float rowSpacing
-- int[] rowWidths // readonly
+- float[] rowWidths // readonly
 - float shadowDistance
 - uint shadowMask
 - bool temporary
@@ -14714,6 +14718,7 @@ Properties:
 - int refs // readonly
 - UIElement@ root // readonly
 - float scale
+- bool subpixelGlyphPositions
 - StringHash type // readonly
 - String typeName // readonly
 - bool useMutableGlyphs

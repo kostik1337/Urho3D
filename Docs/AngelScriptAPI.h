@@ -5236,7 +5236,7 @@ public:
 Font();
 Font(const String&in);
 // Methods:
-IntVector2 GetTotalGlyphOffset(int) const;
+IntVector2 GetTotalGlyphOffset(float) const;
 bool HasSubscribedToEvent(Object, const String&);
 bool HasSubscribedToEvent(const String&);
 bool Load(File);
@@ -7935,6 +7935,8 @@ Vector2 WorldToLocal2D(const Vector2&) const;
 void Yaw(float, TransformSpace = TS_LOCAL);
 
 // Properties:
+/* readonly */
+Array<Node> allChildrenByName;
 bool animationEnabled;
 /* readonly */
 Array<Variant> attributeDefaults;
@@ -7945,6 +7947,8 @@ Array<Variant> attributes;
 String category;
 /* readonly */
 Array<Node> children;
+/* readonly */
+Array<Node> childrenByName;
 /* readonly */
 Array<Component> components;
 Vector3 direction;
@@ -10019,6 +10023,8 @@ Vector2 WorldToLocal2D(const Vector2&) const;
 void Yaw(float, TransformSpace = TS_LOCAL);
 
 // Properties:
+/* readonly */
+Array<Node> allChildrenByName;
 bool animationEnabled;
 /* readonly */
 LoadMode asyncLoadMode;
@@ -10038,6 +10044,8 @@ String category;
 uint checksum;
 /* readonly */
 Array<Node> children;
+/* readonly */
+Array<Node> childrenByName;
 /* readonly */
 Array<Component> components;
 /* readonly */
@@ -12646,7 +12654,7 @@ void SetEnabledRecursive(bool);
 void SetFixedHeight(int);
 void SetFixedSize(int, int);
 void SetFixedWidth(int);
-bool SetFont(Font, int);
+bool SetFont(Font, float);
 bool SetFont(const String&, int);
 void SetInterceptNetworkUpdate(const String&, bool);
 void SetLayout(LayoutMode, int = 0, const IntRect& = IntRect ( 0 , 0 , 0 , 0 ));
@@ -12678,9 +12686,9 @@ bool bringToFront;
 /* readonly */
 String category;
 /* readonly */
-Array<IntVector2> charPositions;
+Array<Vector2> charPositions;
 /* readonly */
-Array<IntVector2> charSizes;
+Array<Vector2> charSizes;
 /* readonly */
 IntVector2 childOffset;
 /* readonly */
@@ -12722,7 +12730,7 @@ bool focus;
 FocusMode focusMode;
 /* readonly */
 Font font;
-int fontSize;
+float fontSize;
 int height;
 HorizontalAlignment horizontalAlignment;
 Color hoverColor;
@@ -12769,10 +12777,10 @@ int refs;
 /* readonly */
 UIElement root;
 /* readonly */
-int rowHeight;
+float rowHeight;
 float rowSpacing;
 /* readonly */
-Array<int> rowWidths;
+Array<float> rowWidths;
 /* readonly */
 IntVector2 screenPosition;
 bool selected;
@@ -12846,8 +12854,8 @@ void SetAttributeAnimation(const String&, ValueAnimation, WrapMode = WM_LOOP, fl
 void SetAttributeAnimationSpeed(const String&, float);
 void SetAttributeAnimationTime(const String&, float);
 void SetAttributeAnimationWrapMode(const String&, WrapMode);
-bool SetFont(Font, int);
-bool SetFont(const String&, int);
+bool SetFont(Font, float);
+bool SetFont(const String&, float);
 void SetInterceptNetworkUpdate(const String&, bool);
 
 // Properties:
@@ -12863,9 +12871,9 @@ bool castShadows;
 /* readonly */
 String category;
 /* readonly */
-Array<IntVector2> charPositions;
+Array<Vector2> charPositions;
 /* readonly */
-Array<IntVector2> charSizes;
+Array<Vector2> charSizes;
 /* writeonly */
 Color color;
 Array<Color> colors;
@@ -12882,7 +12890,7 @@ FaceCameraMode faceCameraMode;
 bool fixedScreenSize;
 /* readonly */
 Font font;
-int fontSize;
+float fontSize;
 /* readonly */
 int height;
 HorizontalAlignment horizontalAlignment;
@@ -12909,10 +12917,10 @@ float opacity;
 /* readonly */
 int refs;
 /* readonly */
-int rowHeight;
+float rowHeight;
 float rowSpacing;
 /* readonly */
-Array<int> rowWidths;
+Array<float> rowWidths;
 float shadowDistance;
 uint shadowMask;
 bool temporary;
@@ -13921,6 +13929,7 @@ int refs;
 /* readonly */
 UIElement root;
 float scale;
+bool subpixelGlyphPositions;
 /* readonly */
 StringHash type;
 /* readonly */
