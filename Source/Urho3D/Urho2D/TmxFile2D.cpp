@@ -534,24 +534,10 @@ bool TmxFile2D::LoadTileSet(const XMLElement& element)
     else
         tileSetElem = element;
 
-    XMLElement imageElem = tileSetElem.GetChild("image");
-    String textureFilePath = GetParentPath(GetName()) + imageElem.GetAttribute("source");
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
-    SharedPtr<Texture2D> texture(cache->GetResource<Texture2D>(textureFilePath));
-    if (!texture)
-    {
-        URHO3D_LOGERROR("Could not load texture " + textureFilePath);
-        return false;
-    }
-
-    tileSetTextures_.Push(texture);
-
     int tileWidth = tileSetElem.GetInt("tilewidth");
     int tileHeight = tileSetElem.GetInt("tileheight");
     int spacing = tileSetElem.GetInt("spacing");
     int margin = tileSetElem.GetInt("margin");
-    int imageWidth = imageElem.GetInt("width");
-    int imageHeight = imageElem.GetInt("height");
 
     // Set hot spot at left bottom
     Vector2 hotSpot(0.0f, 0.0f);
@@ -562,27 +548,71 @@ bool TmxFile2D::LoadTileSet(const XMLElement& element)
         hotSpot.y_ += offsetElem.GetFloat("y") / (float)tileHeight;
     }
 
-    int gid = firstgid;
-    for (int y = margin; y + tileHeight <= imageHeight - margin; y += tileHeight + spacing)
+    ResourceCache* cache = GetSubsystem<ResourceCache>();
     {
-        for (int x = margin; x + tileWidth <= imageWidth - margin; x += tileWidth + spacing)
-        {
-            SharedPtr<Sprite2D> sprite(new Sprite2D(context_));
-            sprite->SetTexture(texture);
-            sprite->SetRectangle(IntRect(x, y, x + tileWidth, y + tileHeight));
-            sprite->SetHotSpot(hotSpot);
+        XMLElement imageElem = tileSetElem.GetChild("image");
+        // Tileset based on single tileset image
+        if (imageElem.NotNull()) {
+            String textureFilePath = GetParentPath(GetName()) + imageElem.GetAttribute("source");
+            SharedPtr<Texture2D> texture(cache->GetResource<Texture2D>(textureFilePath));
+            if (!texture)
+            {
+                URHO3D_LOGERROR("Could not load texture " + textureFilePath);
+                return false;
+            }
 
-            gidToSpriteMapping_[gid++] = sprite;
+            tileSetTextures_.Push(texture);
+
+            int imageWidth = imageElem.GetInt("width");
+            int imageHeight = imageElem.GetInt("height");
+
+            int gid = firstgid;
+            for (int y = margin; y + tileHeight <= imageHeight - margin; y += tileHeight + spacing)
+            {
+                for (int x = margin; x + tileWidth <= imageWidth - margin; x += tileWidth + spacing)
+                {
+                    SharedPtr<Sprite2D> sprite(new Sprite2D(context_));
+                    sprite->SetTexture(texture);
+                    sprite->SetRectangle(IntRect(x, y, x + tileWidth, y + tileHeight));
+                    sprite->SetHotSpot(hotSpot);
+
+                    gidToSpriteMapping_[gid++] = sprite;
+                }
+            }
         }
     }
 
     for (XMLElement tileElem = tileSetElem.GetChild("tile"); tileElem; tileElem = tileElem.GetNext("tile"))
     {
+        int gid = firstgid + tileElem.GetInt("id");
+        // Tileset based on collection of images
+        XMLElement imageElem = tileElem.GetChild("image");
+        if (imageElem.NotNull()) {
+            String textureFilePath = GetParentPath(GetName()) + imageElem.GetAttribute("source");
+            URHO3D_LOGERRORF("textureFilePath = %s", textureFilePath.CString());
+            SharedPtr<Texture2D> texture(cache->GetResource<Texture2D>(textureFilePath));
+            if (texture) {
+                tileSetTextures_.Push(texture);
+                int imageWidth = imageElem.GetInt("width");
+                int imageHeight = imageElem.GetInt("height");
+
+                SharedPtr<Sprite2D> sprite(new Sprite2D(context_));
+                sprite->SetTexture(texture);
+                sprite->SetRectangle(IntRect(0, 0, imageWidth, imageHeight));
+                sprite->SetHotSpot(hotSpot);
+
+                gidToSpriteMapping_[gid] = sprite;
+            }
+        }
+        if (gidToSpriteMapping_.Find(gid) == gidToSpriteMapping_.End()) {
+            URHO3D_LOGERRORF("No texture found for tile with gid %d", gid);
+            return false;
+        }
         if (tileElem.HasChild("properties"))
         {
             SharedPtr<PropertySet2D> propertySet(new PropertySet2D());
             propertySet->Load(tileElem.GetChild("properties"));
-            gidToPropertySetMapping_[firstgid + tileElem.GetInt("id")] = propertySet;
+            gidToPropertySetMapping_[gid] = propertySet;
         }
     }
 
