@@ -490,6 +490,14 @@ PropertySet2D* TmxFile2D::GetTilePropertySet(int gid) const
     return i->second_;
 }
 
+TmxObjectGroup2D* TmxFile2D::GetColliderObjectGroup(int gid) const
+{
+    HashMap<int, SharedPtr<TmxObjectGroup2D> >::ConstIterator i = gidToColliderObjectGroupMapping_.Find(gid);
+    if (i == gidToColliderObjectGroupMapping_.End())
+        return 0;
+    return i->second_;
+}
+
 const TmxLayer2D* TmxFile2D::GetLayer(unsigned index) const
 {
     if (index >= layers_.Size())
@@ -562,6 +570,8 @@ bool TmxFile2D::LoadTileSet(const XMLElement& element)
     }
 
     bool isSingleTileSet = false;
+    int imageWidth;
+    int imageHeight;
     ResourceCache* cache = GetSubsystem<ResourceCache>();
     {
         XMLElement imageElem = tileSetElem.GetChild("image");
@@ -578,8 +588,8 @@ bool TmxFile2D::LoadTileSet(const XMLElement& element)
 
             tileSetTextures_.Push(texture);
 
-            int imageWidth = imageElem.GetInt("width");
-            int imageHeight = imageElem.GetInt("height");
+            imageWidth = imageElem.GetInt("width");
+            imageHeight = imageElem.GetInt("height");
 
             int gid = firstgid;
             for (int y = margin; y + tileHeight <= imageHeight - margin; y += tileHeight + spacing)
@@ -611,8 +621,8 @@ bool TmxFile2D::LoadTileSet(const XMLElement& element)
                     URHO3D_LOGERROR("Could not load image " + textureFilePath);
                     return false;
                 }
-                int imageWidth = imageElem.GetInt("width");
-                int imageHeight = imageElem.GetInt("height");
+                imageWidth = imageElem.GetInt("width");
+                imageHeight = imageElem.GetInt("height");
                 TileImageInfo info = {image, gid, imageWidth, imageHeight, 0, 0};
                 tileImageInfos.Push(info);
             }
@@ -622,6 +632,15 @@ bool TmxFile2D::LoadTileSet(const XMLElement& element)
             SharedPtr<PropertySet2D> propertySet(new PropertySet2D());
             propertySet->Load(tileElem.GetChild("properties"));
             gidToPropertySetMapping_[gid] = propertySet;
+        }
+        if (tileElem.HasChild("objectgroup"))
+        {
+            TmxObjectGroup2D* objectGroup = new TmxObjectGroup2D(this);
+            TileMapInfo2D info = info_;
+            info.width_ = imageWidth * PIXEL_SIZE / info.tileWidth_;
+            info.height_ = imageHeight * PIXEL_SIZE / info.tileHeight_;
+            objectGroup->Load(tileElem.GetChild("objectgroup"), info);
+            gidToColliderObjectGroupMapping_[gid] = SharedPtr<TmxObjectGroup2D>(objectGroup);
         }
     }
 
