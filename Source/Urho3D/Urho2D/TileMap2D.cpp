@@ -62,35 +62,36 @@ void TileMap2D::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
     const Color& color = Color::RED;
     float mapW = info_.GetMapWidth();
     float mapH = info_.GetMapHeight();
+    Vector2 nodePosition = GetNode()->GetPosition2D();
 
     switch (info_.orientation_)
     {
     case O_ORTHOGONAL:
-        debug->AddLine(Vector2(0.0f, 0.0f), Vector2(mapW, 0.0f), color);
-        debug->AddLine(Vector2(mapW, 0.0f), Vector2(mapW, mapH), color);
-        debug->AddLine(Vector2(mapW, mapH), Vector2(0.0f, mapH), color);
-        debug->AddLine(Vector2(0.0f, mapH), Vector2(0.0f, 0.0f), color);
+        debug->AddLine(Vector2(0.0f, 0.0f) + nodePosition, Vector2(mapW, 0.0f) + nodePosition, color);
+        debug->AddLine(Vector2(mapW, 0.0f) + nodePosition, Vector2(mapW, mapH) + nodePosition, color);
+        debug->AddLine(Vector2(mapW, mapH) + nodePosition, Vector2(0.0f, mapH) + nodePosition, color);
+        debug->AddLine(Vector2(0.0f, mapH) + nodePosition, Vector2(0.0f, 0.0f) + nodePosition, color);
         break;
 
     case O_ISOMETRIC:
-        debug->AddLine(Vector2(0.0f, mapH * 0.5f), Vector2(mapW * 0.5f, 0.0f), color);
-        debug->AddLine(Vector2(mapW * 0.5f, 0.0f), Vector2(mapW, mapH * 0.5f), color);
-        debug->AddLine(Vector2(mapW, mapH * 0.5f), Vector2(mapW * 0.5f, mapH), color);
-        debug->AddLine(Vector2(mapW * 0.5f, mapH), Vector2(0.0f, mapH * 0.5f), color);
+        debug->AddLine(Vector2(0.0f, mapH * 0.5f) + nodePosition, Vector2(mapW * 0.5f, 0.0f) + nodePosition, color);
+        debug->AddLine(Vector2(mapW * 0.5f, 0.0f) + nodePosition, Vector2(mapW, mapH * 0.5f) + nodePosition, color);
+        debug->AddLine(Vector2(mapW, mapH * 0.5f) + nodePosition, Vector2(mapW * 0.5f, mapH) + nodePosition, color);
+        debug->AddLine(Vector2(mapW * 0.5f, mapH) + nodePosition, Vector2(0.0f, mapH * 0.5f) + nodePosition, color);
         break;
 
     case O_STAGGERED:
-        debug->AddLine(Vector2(0.0f, 0.0f), Vector2(mapW, 0.0f), color);
-        debug->AddLine(Vector2(mapW, 0.0f), Vector2(mapW, mapH), color);
-        debug->AddLine(Vector2(mapW, mapH), Vector2(0.0f, mapH), color);
-        debug->AddLine(Vector2(0.0f, mapH), Vector2(0.0f, 0.0f), color);
+        debug->AddLine(Vector2(0.0f, 0.0f) + nodePosition, Vector2(mapW, 0.0f) + nodePosition, color);
+        debug->AddLine(Vector2(mapW, 0.0f) + nodePosition, Vector2(mapW, mapH) + nodePosition, color);
+        debug->AddLine(Vector2(mapW, mapH) + nodePosition, Vector2(0.0f, mapH) + nodePosition, color);
+        debug->AddLine(Vector2(0.0f, mapH) + nodePosition, Vector2(0.0f, 0.0f) + nodePosition, color);
         break;
 
     case O_HEXAGONAL:
-        debug->AddLine(Vector2(0.0f, 0.0f), Vector2(mapW, 0.0f), color);
-        debug->AddLine(Vector2(mapW, 0.0f), Vector2(mapW, mapH), color);
-        debug->AddLine(Vector2(mapW, mapH), Vector2(0.0f, mapH), color);
-        debug->AddLine(Vector2(0.0f, mapH), Vector2(0.0f, 0.0f), color);
+        debug->AddLine(Vector2(0.0f, 0.0f) + nodePosition, Vector2(mapW, 0.0f) + nodePosition, color);
+        debug->AddLine(Vector2(mapW, 0.0f) + nodePosition, Vector2(mapW, mapH) + nodePosition, color);
+        debug->AddLine(Vector2(mapW, mapH) + nodePosition, Vector2(0.0f, mapH) + nodePosition, color);
+        debug->AddLine(Vector2(0.0f, mapH) + nodePosition, Vector2(0.0f, 0.0f) + nodePosition, color);
         break;
     }
 

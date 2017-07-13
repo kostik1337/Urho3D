@@ -60,6 +60,7 @@ void TileMapLayer2D::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
 
     if (objectGroup_)
     {
+        const Vector2 nodePosition = GetTileMap()->GetNode()->GetPosition2D();
         for (unsigned i = 0; i < objectGroup_->GetNumObjects(); ++i)
         {
             TileMapObject2D* object = objectGroup_->GetObject(i);
@@ -72,10 +73,24 @@ void TileMapLayer2D::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
                     const Vector2& lb = object->GetPosition();
                     const Vector2& rt = lb + object->GetSize();
 
-                    debug->AddLine(Vector2(lb.x_, lb.y_), Vector2(rt.x_, lb.y_), color, depthTest);
-                    debug->AddLine(Vector2(rt.x_, lb.y_), Vector2(rt.x_, rt.y_), color, depthTest);
-                    debug->AddLine(Vector2(rt.x_, rt.y_), Vector2(lb.x_, rt.y_), color, depthTest);
-                    debug->AddLine(Vector2(lb.x_, rt.y_), Vector2(lb.x_, lb.y_), color, depthTest);
+                    switch (GetTileMap()->GetInfo().orientation_)
+                    {
+                    case O_ORTHOGONAL:
+                    case O_HEXAGONAL:
+                        debug->AddLine(Vector2(lb.x_, lb.y_) + nodePosition, Vector2(rt.x_, lb.y_) + nodePosition, color, depthTest);
+                        debug->AddLine(Vector2(rt.x_, lb.y_) + nodePosition, Vector2(rt.x_, rt.y_) + nodePosition, color, depthTest);
+                        debug->AddLine(Vector2(rt.x_, rt.y_) + nodePosition, Vector2(lb.x_, rt.y_) + nodePosition, color, depthTest);
+                        debug->AddLine(Vector2(lb.x_, rt.y_) + nodePosition, Vector2(lb.x_, lb.y_) + nodePosition, color, depthTest);
+                        break;
+                    case O_ISOMETRIC:
+                    case O_STAGGERED:
+                        const Vector2& size = object->GetSize();
+                        debug->AddLine(Vector2(lb.x_, lb.y_) + nodePosition, Vector2(lb.x_ + size.x_, lb.y_ + size.y_/2) + nodePosition, color, depthTest);
+                        debug->AddLine(Vector2(lb.x_ + size.x_, lb.y_ + size.y_/2) + nodePosition, Vector2(lb.x_ + 2 * size.x_, lb.y_) + nodePosition, color, depthTest);
+                        debug->AddLine(Vector2(lb.x_ + 2 * size.x_, lb.y_) + nodePosition, Vector2(lb.x_ + size.x_, lb.y_ - size.y_/2) + nodePosition, color, depthTest);
+                        debug->AddLine(Vector2(lb.x_ + size.x_, lb.y_ - size.y_/2) + nodePosition, Vector2(lb.x_, lb.y_) + nodePosition, color, depthTest);
+                        break;
+                    }
                 }
                 break;
 
