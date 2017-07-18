@@ -53,6 +53,10 @@ void TileMapLayer2D::RegisterObject(Context* context)
     context->RegisterFactory<TileMapLayer2D>();
 }
 
+Vector2 TransformIsometricVector(Vector2 vec) {
+    return Vector2(vec.x_ - vec.y_, - (vec.x_ + vec.y_) / 2);
+}
+
 void TileMapLayer2D::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
 {
     if (!debug)
@@ -64,6 +68,14 @@ void TileMapLayer2D::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
         for (unsigned i = 0; i < objectGroup_->GetNumObjects(); ++i)
         {
             TileMapObject2D* object = objectGroup_->GetObject(i);
+            if (object->GetObjectType() == OT_TILE)
+            {
+                Vector2 prevPos = object->GetPosition();
+                TmxObjectGroup2D *group = GetTileMap()->GetTmxFile()->GetColliderObjectGroup(object->GetTileGid());
+                if (group) {
+                    object = group->GetObject(0);
+                }
+            }
             const Color& color = Color::YELLOW;
 
             switch (object->GetObjectType())
@@ -71,41 +83,75 @@ void TileMapLayer2D::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
             case OT_RECTANGLE:
                 {
                     const Vector2& lb = object->GetPosition();
-                    const Vector2& rt = lb + object->GetSize();
 
                     switch (GetTileMap()->GetInfo().orientation_)
                     {
                     case O_ORTHOGONAL:
                     case O_HEXAGONAL:
-                        debug->AddLine(Vector2(lb.x_, lb.y_) + nodePosition, Vector2(rt.x_, lb.y_) + nodePosition, color, depthTest);
-                        debug->AddLine(Vector2(rt.x_, lb.y_) + nodePosition, Vector2(rt.x_, rt.y_) + nodePosition, color, depthTest);
-                        debug->AddLine(Vector2(rt.x_, rt.y_) + nodePosition, Vector2(lb.x_, rt.y_) + nodePosition, color, depthTest);
-                        debug->AddLine(Vector2(lb.x_, rt.y_) + nodePosition, Vector2(lb.x_, lb.y_) + nodePosition, color, depthTest);
-                        break;
-                    case O_ISOMETRIC:
                     case O_STAGGERED:
-                        const Vector2& size = object->GetSize();
-                        debug->AddLine(Vector2(lb.x_, lb.y_) + nodePosition, Vector2(lb.x_ + size.x_, lb.y_ + size.y_/2) + nodePosition, color, depthTest);
-                        debug->AddLine(Vector2(lb.x_ + size.x_, lb.y_ + size.y_/2) + nodePosition, Vector2(lb.x_ + 2 * size.x_, lb.y_) + nodePosition, color, depthTest);
-                        debug->AddLine(Vector2(lb.x_ + 2 * size.x_, lb.y_) + nodePosition, Vector2(lb.x_ + size.x_, lb.y_ - size.y_/2) + nodePosition, color, depthTest);
-                        debug->AddLine(Vector2(lb.x_ + size.x_, lb.y_ - size.y_/2) + nodePosition, Vector2(lb.x_, lb.y_) + nodePosition, color, depthTest);
-                        break;
+                        {
+                            const Vector2& rt = lb + object->GetSize();
+                            debug->AddLine(Vector2(lb.x_, lb.y_) + nodePosition, Vector2(rt.x_, lb.y_) + nodePosition, color, depthTest);
+                            debug->AddLine(Vector2(rt.x_, lb.y_) + nodePosition, Vector2(rt.x_, rt.y_) + nodePosition, color, depthTest);
+                            debug->AddLine(Vector2(rt.x_, rt.y_) + nodePosition, Vector2(lb.x_, rt.y_) + nodePosition, color, depthTest);
+                            debug->AddLine(Vector2(lb.x_, rt.y_) + nodePosition, Vector2(lb.x_, lb.y_) + nodePosition, color, depthTest);
+                            break;
+                        }
+                    case O_ISOMETRIC:
+                        {
+                            const Vector2& size = object->GetSize();
+                            const Vector2 lt = lb;
+                            const Vector2 lb = lt - TransformIsometricVector(Vector2(0, size.y_));
+                            const Vector2 rb = lb + TransformIsometricVector(Vector2(size.x_, 0));
+                            const Vector2 rt = lb + TransformIsometricVector(Vector2(size.x_, size.y_));
+                            debug->AddLine(lt + nodePosition, lb + nodePosition, color, depthTest);
+                            debug->AddLine(lb + nodePosition, rb + nodePosition, color, depthTest);
+                            debug->AddLine(rb + nodePosition, rt + nodePosition, color, depthTest);
+                            debug->AddLine(rt + nodePosition, lt + nodePosition, color, depthTest);
+                            break;
+                        }
                     }
                 }
                 break;
 
             case OT_ELLIPSE:
                 {
-                    const Vector2 halfSize = object->GetSize() * 0.5f;
-                    const Vector2 center = object->GetPosition() + halfSize;
-                    for (unsigned i = 0; i < 360; i += 30)
+                    switch (GetTileMap()->GetInfo().orientation_)
                     {
-                        unsigned j = i + 30;
-                        float x1 = halfSize.x_ * Cos((float)i);
-                        float y1 = halfSize.y_ * Sin((float)i);
-                        float x2 = halfSize.x_ * Cos((float)j);
-                        float y2 = halfSize.y_ * Sin((float)j);
-                        debug->AddLine(center + Vector2(x1, y1), center + Vector2(x2, y2), color, depthTest);
+                    case O_ORTHOGONAL:
+                    case O_HEXAGONAL:
+                    case O_STAGGERED:
+                        {
+                            const Vector2 halfSize = object->GetSize() * 0.5f;
+                            const Vector2 center = object->GetPosition() + halfSize + nodePosition;
+                            for (unsigned i = 0; i < 360; i += 30)
+                            {
+                                unsigned j = i + 30;
+                                float x1 = halfSize.x_ * Cos((float)i);
+                                float y1 = halfSize.y_ * Sin((float)i);
+                                float x2 = halfSize.x_ * Cos((float)j);
+                                float y2 = halfSize.y_ * Sin((float)j);
+                                debug->AddLine(center + Vector2(x1, y1), center + Vector2(x2, y2), color, depthTest);
+                            }
+                            break;
+                        }
+                    case O_ISOMETRIC:
+                        {
+                            const Vector2 halfSize = object->GetSize() * 0.5f;
+                            const Vector2 center = object->GetPosition() + nodePosition
+                                    + TransformIsometricVector(Vector2(halfSize.x_, -halfSize.y_));
+                            for (unsigned i = 0; i < 360; i += 30)
+                            {
+                                unsigned j = i + 30;
+                                float x1 = halfSize.x_ * Cos((float)i);
+                                float y1 = halfSize.y_ * Sin((float)i);
+                                float x2 = halfSize.x_ * Cos((float)j);
+                                float y2 = halfSize.y_ * Sin((float)j);
+                                debug->AddLine(center + TransformIsometricVector(Vector2(x1, y1)),
+                                               center + TransformIsometricVector(Vector2(x2, y2)), color, depthTest);
+                            }
+                            break;
+                        }
                     }
                 }
                 break;
@@ -114,10 +160,10 @@ void TileMapLayer2D::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
             case OT_POLYLINE:
                 {
                     for (unsigned j = 0; j < object->GetNumPoints() - 1; ++j)
-                        debug->AddLine(object->GetPoint(j), object->GetPoint(j + 1), color, depthTest);
+                        debug->AddLine(object->GetPoint(j) + nodePosition, object->GetPoint(j + 1) + nodePosition, color, depthTest);
 
                     if (object->GetObjectType() == OT_POLYGON)
-                        debug->AddLine(object->GetPoint(0), object->GetPoint(object->GetNumPoints() - 1), color, depthTest);
+                        debug->AddLine(object->GetPoint(0) + nodePosition, object->GetPoint(object->GetNumPoints() - 1) + nodePosition, color, depthTest);
                 }
                 break;
 
