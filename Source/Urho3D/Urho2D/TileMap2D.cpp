@@ -57,41 +57,46 @@ void TileMap2D::RegisterObject(Context* context)
         AM_DEFAULT);
 }
 
+Vector2 TransformNode2D(Matrix3x4 transform, Vector2 local) {
+    Vector3 transformed = transform * Vector4(local.x_, local.y_, 0.f, 1.f);
+    return Vector2(transformed.x_, transformed.y_);
+}
+
 void TileMap2D::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
 {
     const Color& color = Color::RED;
     float mapW = info_.GetMapWidth();
     float mapH = info_.GetMapHeight();
-    Vector2 nodePosition = GetNode()->GetPosition2D();
+    const Matrix3x4 transform = GetNode()->GetTransform();
 
     switch (info_.orientation_)
     {
     case O_ORTHOGONAL:
-        debug->AddLine(Vector2(0.0f, 0.0f) + nodePosition, Vector2(mapW, 0.0f) + nodePosition, color);
-        debug->AddLine(Vector2(mapW, 0.0f) + nodePosition, Vector2(mapW, mapH) + nodePosition, color);
-        debug->AddLine(Vector2(mapW, mapH) + nodePosition, Vector2(0.0f, mapH) + nodePosition, color);
-        debug->AddLine(Vector2(0.0f, mapH) + nodePosition, Vector2(0.0f, 0.0f) + nodePosition, color);
+        debug->AddLine(TransformNode2D(transform, Vector2(0.0f, 0.0f)), TransformNode2D(transform, Vector2(mapW, 0.0f)), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(mapW, 0.0f)), TransformNode2D(transform, Vector2(mapW, mapH)), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(mapW, mapH)), TransformNode2D(transform, Vector2(0.0f, mapH)), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(0.0f, mapH)), TransformNode2D(transform, Vector2(0.0f, 0.0f)), color);
         break;
 
     case O_ISOMETRIC:
-        debug->AddLine(Vector2(0.0f, mapH * 0.5f) + nodePosition, Vector2(mapW * 0.5f, 0.0f) + nodePosition, color);
-        debug->AddLine(Vector2(mapW * 0.5f, 0.0f) + nodePosition, Vector2(mapW, mapH * 0.5f) + nodePosition, color);
-        debug->AddLine(Vector2(mapW, mapH * 0.5f) + nodePosition, Vector2(mapW * 0.5f, mapH) + nodePosition, color);
-        debug->AddLine(Vector2(mapW * 0.5f, mapH) + nodePosition, Vector2(0.0f, mapH * 0.5f) + nodePosition, color);
+        debug->AddLine(TransformNode2D(transform, Vector2(0.0f, mapH * 0.5f)), TransformNode2D(transform, Vector2(mapW * 0.5f, 0.0f)), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(mapW * 0.5f, 0.0f)), TransformNode2D(transform, Vector2(mapW, mapH * 0.5f)), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(mapW, mapH * 0.5f)), TransformNode2D(transform, Vector2(mapW * 0.5f, mapH)), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(mapW * 0.5f, mapH)), TransformNode2D(transform, Vector2(0.0f, mapH * 0.5f)), color);
         break;
 
     case O_STAGGERED:
-        debug->AddLine(Vector2(0.0f, 0.0f) + nodePosition, Vector2(mapW, 0.0f) + nodePosition, color);
-        debug->AddLine(Vector2(mapW, 0.0f) + nodePosition, Vector2(mapW, mapH) + nodePosition, color);
-        debug->AddLine(Vector2(mapW, mapH) + nodePosition, Vector2(0.0f, mapH) + nodePosition, color);
-        debug->AddLine(Vector2(0.0f, mapH) + nodePosition, Vector2(0.0f, 0.0f) + nodePosition, color);
+        debug->AddLine(TransformNode2D(transform, Vector2(0.0f, 0.0f)), TransformNode2D(transform, Vector2(mapW, 0.0f)), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(mapW, 0.0f)), TransformNode2D(transform, Vector2(mapW, mapH)), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(mapW, mapH)), TransformNode2D(transform, Vector2(0.0f, mapH)), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(0.0f, mapH)), TransformNode2D(transform, Vector2(0.0f, 0.0f)), color);
         break;
 
     case O_HEXAGONAL:
-        debug->AddLine(Vector2(0.0f, 0.0f) + nodePosition, Vector2(mapW, 0.0f) + nodePosition, color);
-        debug->AddLine(Vector2(mapW, 0.0f) + nodePosition, Vector2(mapW, mapH) + nodePosition, color);
-        debug->AddLine(Vector2(mapW, mapH) + nodePosition, Vector2(0.0f, mapH) + nodePosition, color);
-        debug->AddLine(Vector2(0.0f, mapH) + nodePosition, Vector2(0.0f, 0.0f) + nodePosition, color);
+        debug->AddLine(TransformNode2D(transform, Vector2(0.0f, 0.0f)), TransformNode2D(transform, Vector2(mapW, 0.0f)), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(mapW, 0.0f)), TransformNode2D(transform, Vector2(mapW, mapH)), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(mapW, mapH)), TransformNode2D(transform, Vector2(0.0f, mapH)), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(0.0f, mapH)), TransformNode2D(transform, Vector2(0.0f, 0.0f)), color);
         break;
     }
 

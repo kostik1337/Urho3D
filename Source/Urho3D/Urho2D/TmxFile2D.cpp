@@ -634,10 +634,14 @@ bool TmxFile2D::LoadTileSet(const XMLElement& element)
     else
         tileSetElem = element;
 
+    bool isIsometricGrid = tileSetElem.HasChild("grid") && tileSetElem.GetChild("grid").GetAttribute("orientation") == "isometric";
     int tileWidth = tileSetElem.GetInt("tilewidth");
     int tileHeight = tileSetElem.GetInt("tileheight");
     int spacing = tileSetElem.GetInt("spacing");
     int margin = tileSetElem.GetInt("margin");
+
+    if (isIsometricGrid)
+        URHO3D_LOGWARNING("Tilesets with isometric orientation are not supported yet");
 
     // Set hot spot at left bottom
     Vector2 hotSpot(0.0f, 0.0f);
@@ -691,7 +695,8 @@ bool TmxFile2D::LoadTileSet(const XMLElement& element)
     {
         int gid = firstgid + tileElem.GetInt("id");
         // Tileset based on collection of images
-        if (!isSingleTileSet) {
+        if (!isSingleTileSet)
+        {
             XMLElement imageElem = tileElem.GetChild("image");
             if (imageElem.NotNull()) {
                 String textureFilePath = GetParentPath(GetName()) + imageElem.GetAttribute("source");
@@ -700,8 +705,8 @@ bool TmxFile2D::LoadTileSet(const XMLElement& element)
                     URHO3D_LOGERROR("Could not load image " + textureFilePath);
                     return false;
                 }
-                imageWidth = imageElem.GetInt("width");
-                imageHeight = imageElem.GetInt("height");
+                tileWidth = imageWidth = imageElem.GetInt("width");
+                tileHeight = imageHeight = imageElem.GetInt("height");
                 TileImageInfo info = {image, gid, imageWidth, imageHeight, 0, 0};
                 tileImageInfos.Push(info);
             }
@@ -714,16 +719,20 @@ bool TmxFile2D::LoadTileSet(const XMLElement& element)
         }
         if (tileElem.HasChild("objectgroup"))
         {
-            TmxObjectGroup2D* objectGroup = new TmxObjectGroup2D(this);
-            TileMapInfo2D info = info_;
-            info.width_ = imageWidth * PIXEL_SIZE / info.tileWidth_;
-            info.height_ = imageHeight * PIXEL_SIZE / info.tileHeight_;
-            objectGroup->Load(tileElem.GetChild("objectgroup"), info);
-            gidToColliderObjectGroupMapping_[gid] = SharedPtr<TmxObjectGroup2D>(objectGroup);
+            if (!isIsometricGrid)
+            {
+                TmxObjectGroup2D* objectGroup = new TmxObjectGroup2D(this);
+                TileMapInfo2D info = info_;
+                info.width_ = tileWidth * PIXEL_SIZE / info.tileWidth_;
+                info.height_ = tileHeight * PIXEL_SIZE / info.tileHeight_;
+                objectGroup->Load(tileElem.GetChild("objectgroup"), info);
+                gidToColliderObjectGroupMapping_[gid] = SharedPtr<TmxObjectGroup2D>(objectGroup);
+            }
         }
     }
 
-    if (!isSingleTileSet) {
+    if (!isSingleTileSet)
+    {
         if (tileImageInfos.Empty()) {
             return false;
         }
