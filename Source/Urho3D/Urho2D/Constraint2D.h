@@ -45,6 +45,13 @@ public:
     /// Register object factory.
     static void RegisterObject(Context* context);
 
+    /// Handle attribute write access.
+    virtual void OnSetAttribute(const AttributeInfo& attr, const Variant& src);
+    /// Apply attribute changes that can not be applied immediately. Called after scene load or a network update.
+    virtual void ApplyAttributes();
+    /// Return the depended on nodes to order network updates.
+    virtual void GetDependencyNodes(PODVector<Node*>& dest);
+
     /// Handle enabled/disabled state change.
     virtual void OnSetEnabled();
     /// Create joint.
@@ -56,7 +63,7 @@ public:
     void SetOtherBody(RigidBody2D* body);
     /// Set collide connected.
     void SetCollideConnected(bool collideConnected);
-    /// Set attached constriant (for gear).
+    /// Set attached constraint (for gear).
     void SetAttachedConstraint(Constraint2D* constraint);
 
     /// Return owner body.
@@ -98,6 +105,10 @@ protected:
     bool collideConnected_;
     /// Attached constraint.
     WeakPtr<Constraint2D> attachedConstraint_;
+    /// Other body node ID for pending constraint recreation.
+    unsigned otherBodyNodeID_;
+    /// Recreate constraint flag.
+    bool recreateConstraint_;
 };
 
 }

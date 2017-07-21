@@ -41,7 +41,8 @@ extern const char* URHO2D_CATEGORY;
 Constraint2D::Constraint2D(Context* context) :
     Component(context),
     joint_(0),
-    collideConnected_(false)
+    collideConnected_(false),
+    otherBodyNodeID_(0)
 {
 
 }
@@ -54,6 +55,45 @@ Constraint2D::~Constraint2D()
 void Constraint2D::RegisterObject(Context* context)
 {
     URHO3D_ACCESSOR_ATTRIBUTE("Collide Connected", GetCollideConnected, SetCollideConnected, bool, false, AM_DEFAULT);
+    URHO3D_ATTRIBUTE("Other Body NodeID", unsigned, otherBodyNodeID_, 0, AM_DEFAULT | AM_NODEID);
+}
+
+void Constraint2D::OnSetAttribute(const AttributeInfo& attr, const Variant& src)
+{
+    Serializable::OnSetAttribute(attr, src);
+
+    if (!attr.accessor_)
+    {
+        // Certain attribute changes require recreation of the constraint
+        if (attr.offset_ == offsetof(Constraint2D, otherBodyNodeID_))
+            recreateConstraint_ = true;
+//        else
+//            framesDirty_ = true;
+    }
+}
+
+void Constraint2D::ApplyAttributes()
+{
+    if (recreateConstraint_)
+    {
+		ReleaseJoint();
+
+        Scene* scene = GetScene();
+        if (scene && otherBodyNodeID_)
+        {
+            Node* otherNode = scene->GetNode(otherBodyNodeID_);
+            if (otherNode)
+                otherBody_ = otherNode->GetComponent<RigidBody2D>();
+        }
+
+        CreateJoint();
+    }
+}
+
+void Constraint2D::GetDependencyNodes(PODVector<Node*>& dest)
+{
+    if (otherBody_ && otherBody_->GetNode())
+        dest.Push(otherBody_->GetNode());
 }
 
 void Constraint2D::OnSetEnabled()
@@ -106,6 +146,10 @@ void Constraint2D::SetOtherBody(RigidBody2D* body)
         return;
 
     otherBody_ = body;
+
+    // Update the connected body attribute
+    Node* otherNode = otherBody_ ? otherBody_->GetNode() : 0;
+    otherBodyNodeID_ = otherNode ? otherNode->GetID() : 0;
 
     RecreateJoint();
     MarkNetworkUpdate();

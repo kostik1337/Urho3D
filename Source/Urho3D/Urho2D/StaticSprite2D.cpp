@@ -173,17 +173,6 @@ void StaticSprite2D::SetCustomMaterial(Material* customMaterial)
     MarkNetworkUpdate();
 }
 
-Sprite2D* StaticSprite2D::GetSprite() const
-{
-    return sprite_;
-}
-
-
-Material* StaticSprite2D::GetCustomMaterial() const
-{
-    return customMaterial_;
-}
-
 void StaticSprite2D::SetSpriteAttr(const ResourceRef& value)
 {
     Sprite2D* sprite = Sprite2D::LoadFromResourceRef(this, value);

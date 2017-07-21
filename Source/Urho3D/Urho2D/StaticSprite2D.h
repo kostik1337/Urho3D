@@ -64,7 +64,7 @@ public:
     void SetCustomMaterial(Material* customMaterial);
 
     /// Return sprite.
-    Sprite2D* GetSprite() const;
+    Sprite2D* GetSprite() const { return sprite_; }
 
     /// Return blend mode.
     BlendMode GetBlendMode() const { return blendMode_; }
@@ -88,7 +88,7 @@ public:
     const Vector2& GetHotSpot() const { return hotSpot_; }
 
     /// Return custom material.
-    Material* GetCustomMaterial() const;
+    Material* GetCustomMaterial() const { return customMaterial_; }
 
     /// Set sprite attribute.
     void SetSpriteAttr(const ResourceRef& value);

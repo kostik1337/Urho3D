@@ -36,7 +36,7 @@
 
 #ifdef URHO3D_SPINE
 #include <spine/spine.h>
-#endif 
+#endif
 
 namespace Urho3D
 {
@@ -102,7 +102,7 @@ void AnimatedSprite2D::OnSetEnabled()
 
 void AnimatedSprite2D::SetAnimationSet(AnimationSet2D* animationSet)
 {
-    if (animationSet == animationSet_) 
+    if (animationSet == animationSet_)
         return;
 
     Dispose();
@@ -282,7 +282,7 @@ void AnimatedSprite2D::SetSpineAnimation()
             return;
         }
     }
-    
+
     // Reset slots to setup pose, fix issue #932
     spSkeleton_setSlotsToSetupPose(skeleton_);
     spAnimationState_setAnimationByName(animationState_, 0, animationName_.CString(), loopMode_ != LM_FORCE_CLAMPED ? true : false);
@@ -298,7 +298,7 @@ void AnimatedSprite2D::UpdateSpineAnimation(float timeStep)
     skeleton_->flipX = flipX_;
     skeleton_->flipY = flipY_;
 
-    spSkeleton_update(skeleton_, timeStep); 
+    spSkeleton_update(skeleton_, timeStep);
     spAnimationState_update(animationState_, timeStep);
     spAnimationState_apply(animationState_, skeleton_);
     spSkeleton_updateWorldTransform(skeleton_);
@@ -324,9 +324,9 @@ void AnimatedSprite2D::UpdateSourceBatchesSpine()
         if (!attachment)
             continue;
 
-        unsigned color = Color(color_.r_ * slot->r, 
-            color_.g_ * slot->g, 
-            color_.b_ * slot->b, 
+        unsigned color = Color(color_.r_ * slot->r,
+            color_.g_ * slot->g,
+            color_.b_ * slot->b,
             color_.a_ * slot->a).ToUInt();
 
         if (attachment->type == SP_ATTACHMENT_REGION)
@@ -470,8 +470,8 @@ void AnimatedSprite2D::UpdateSourceBatchesSpriter()
         if (flipX_ != flipY_)
             angle = -angle;
 
-        Matrix3x4 localTransform(position * PIXEL_SIZE, 
-            Quaternion(angle), 
+        Matrix3x4 localTransform(position * PIXEL_SIZE,
+            Quaternion(angle),
             Vector3(info.scaleX_, info.scaleY_, 1.0f));
 
         Matrix3x4 worldTransform = nodeWorldTransform * localTransform;
@@ -479,8 +479,11 @@ void AnimatedSprite2D::UpdateSourceBatchesSpriter()
         if (!sprite)
             return;
 
-        if (timelineKey->useDefaultPivot_)
-            sprite->GetDrawRectangle(drawRect, flipX_, flipY_);
+///        if (useHotSpot_)
+///			sprite->GetDrawRectangle(drawRect, hotSpot_ + Vector2(timelineKey->pivotX_, timelineKey->pivotY_), flipX_, flipY_);
+///        else
+         if (timelineKey->useDefaultPivot_)
+			sprite->GetDrawRectangle(drawRect, flipX_, flipY_);
         else
             sprite->GetDrawRectangle(drawRect, Vector2(timelineKey->pivotX_, timelineKey->pivotY_), flipX_, flipY_);
 

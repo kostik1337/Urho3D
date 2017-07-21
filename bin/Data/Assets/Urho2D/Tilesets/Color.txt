@@ -1,0 +1,37 @@
+function convertHex(hex,opacity){
+    hex = hex.replace('#','');
+    r = parseInt(hex.substring(0,2), 16);
+    g = parseInt(hex.substring(2,4), 16);
+    b = parseInt(hex.substring(4,6), 16);
+
+    result = 'rgba('+r+','+g+','+b+','+opacity/100+')';
+    return result;
+}
+
+=======================================
+
+	int red   = (color>>24);
+	int green = (color>>16)&0xFF;
+	int blue  = (color>>8)&0xFF;
+	int alpha = (color)&0xFF;
+
+=======================================
+32 bit RGBA
+	const unsigned int redBits = 0xFF000000;
+	const unsigned int greenBits = 0x00FF0000;
+	const unsigned int blueBits = 0x0000FF00;
+	const unsigned int alphaBits = 0x000000FF;
+
+	unsigned char red = (color & redBits) >> 24;
+	unsigned char green = (color & greenBits) >> 16;
+	unsigned char blue = (color & blueBits) >> 8;
+	unsigned char alpha = color & alphaBits;
+
+=======================================
+
+Remove the #
+int r = num / 0x10000;
+int g = (num / 0x100) % 0x100;
+int b = num % 0x100;
+
+zone->SetFogColor(Color(((col >> 16) & 0xFF) / 255.0f, ((col >> 8) & 0xFF) / 255.0f, ((col) & 0xFF) / 255.0f));

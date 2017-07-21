@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="1" height="1" tilewidth="1280" tileheight="720" backgroundcolor="#000000" nextobjectid="85">
+ <tileset firstgid="1" name="Master" tilewidth="64" tileheight="64" tilecount="3" columns="0">
+  <tile id="0">
+   <image width="32" height="32" source="Ball.png"/>
+   <objectgroup draworder="index">
+    <object id="2" x="0" y="0" width="32" height="32">
+     <ellipse/>
+    </object>
+   </objectgroup>
+  </tile>
+  <tile id="1">
+   <image width="32" height="32" source="Box.png"/>
+   <objectgroup draworder="index">
+    <object id="2" x="0" y="0">
+     <polygon points="0,0 32,0 32,32 0,32"/>
+    </object>
+   </objectgroup>
+  </tile>
+  <tile id="2">
+   <image width="64" height="64" source="Aster.png"/>
+   <objectgroup draworder="index">
+    <object id="1" x="-15" y="64">
+     <polygon points="1.75,6 -10,-59 42,-83 83,-67 100,-17 89,16"/>
+    </object>
+   </objectgroup>
+  </tile>
+ </tileset>
+ <objectgroup name="Physics">
+  <object id="3" x="320" y="0">
+   <polyline points="0,0 0,720"/>
+  </object>
+  <object id="4" x="640" y="0">
+   <polyline points="0,0 0,720"/>
+  </object>
+  <object id="5" x="960" y="0">
+   <polyline points="0,0 0,720"/>
+  </object>
+  <object id="6" x="0" y="240">
+   <polyline points="0,0 1280,0"/>
+  </object>
+  <object id="7" x="0" y="480">
+   <polyline points="0,0 1280,0"/>
+  </object>
+  <object id="83" x="0" y="0">
+   <polyline points="0,0 0,720 1280,720 1280,0 0,0"/>
+  </object>
+ </objectgroup>
+ <objectgroup name="Constraints">
+  <object id="8" name="Ball" type="CollisionShape2D" gid="1" x="202.667" y="145.333" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="34" name="Ball" type="CollisionShape2D" gid="1" x="488" y="122" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="35" name="Ball" type="CollisionShape2D" gid="1" x="848" y="129" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="36" name="Ball" type="CollisionShape2D" gid="1" x="1141" y="118" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="37" name="Ball" type="CollisionShape2D" gid="1" x="135" y="414" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="38" name="Ball" type="CollisionShape2D" gid="1" x="404" y="380" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="39" name="Ball" type="CollisionShape2D" gid="1" x="841" y="375" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="40" name="Ball" type="CollisionShape2D" gid="1" x="1101" y="356" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="41" name="Ball" type="CollisionShape2D" gid="1" x="84" y="594" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="42" name="Ball" type="CollisionShape2D" gid="1" x="198" y="594" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="43" name="Ball" type="CollisionShape2D" gid="1" x="429" y="638" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="44" name="Ball" type="CollisionShape2D" gid="1" x="510" y="638" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="45" name="Box" type="CollisionShape2D" gid="2" x="80" y="146" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="46" name="Box" type="CollisionShape2D" gid="2" x="378" y="189" width="32" height="32">
+   <properties>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="47" name="Box" type="CollisionShape2D" gid="2" x="719" y="129" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="48" name="Box" type="CollisionShape2D" gid="2" x="1051" y="77" width="32" height="32">
+   <properties>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="49" name="Box" type="CollisionShape2D" gid="2" x="135" y="272" width="32" height="32">
+   <properties>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="50" name="Box" type="CollisionShape2D" gid="2" x="524" y="381" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="51" name="Box" type="CollisionShape2D" gid="2" x="729" y="377" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="52" name="Box" type="CollisionShape2D" gid="2" x="1100" y="466" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="53" name="Box" type="CollisionShape2D" gid="2" x="142" y="661" width="32" height="32">
+   <properties>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="54" name="Box" type="CollisionShape2D" gid="2" x="417" y="615" width="135" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="56" name="Box" type="CollisionShape2D" gid="2" x="1102" y="615" width="32" height="32">
+   <properties>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="59" name="Ball" type="CollisionShape2D" gid="1" x="1102" y="520" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+  <object id="62" name="CS_Distance" type="ConstraintDistance2D" x="96" y="130">
+   <properties>
+    <property name="DampingRatio" type="float" value="0.5"/>
+    <property name="FrequencyHz" type="float" value="4"/>
+   </properties>
+   <polyline points="0,0 121,0"/>
+  </object>
+  <object id="63" name="CS_Revolute" type="ConstraintRevolute2D" x="394" y="174">
+   <properties>
+    <property name="EnableLimit" type="bool" value="true"/>
+    <property name="EnableMotor" type="bool" value="true"/>
+    <property name="LowerAngle" type="float" value="-1"/>
+    <property name="MaxMotorTorque" type="float" value="10"/>
+    <property name="UpperAngle" type="float" value="0.5"/>
+   </properties>
+   <polyline points="0,0 110,0 110,-68"/>
+  </object>
+  <object id="64" name="CS_Pulley" type="ConstraintPulley2D" x="743" y="142">
+   <polyline points="-7,-28 -7,-141 121,-141 121,-28"/>
+  </object>
+  <object id="65" name="CS_Prismatic" type="ConstraintPrismatic2D" x="1068" y="61">
+   <properties>
+    <property name="EnableLimit" type="bool" value="true"/>
+    <property name="LowerTranslation" type="float" value="-1"/>
+    <property name="MaxMotorForce" type="float" value="1"/>
+    <property name="MotorSpeed" type="float" value="0"/>
+    <property name="UpperTranslation" type="float" value="0.5"/>
+   </properties>
+   <polyline points="0,0 53,40 -22,144 94,-16 89,41"/>
+  </object>
+  <object id="66" name="CS_Rope" type="ConstraintRope2D" x="151" y="256">
+   <properties>
+    <property name="CollideConnected" type="bool" value="true"/>
+   </properties>
+   <polyline points="0,0 0,35 0,140"/>
+  </object>
+  <object id="67" name="CS_Weld" type="ConstraintWeld2D" x="540" y="365">
+   <properties>
+    <property name="DampingRatio" type="float" value="0.5"/>
+    <property name="FrequencyHz" type="float" value="4"/>
+   </properties>
+   <polyline points="0,0 -120,0"/>
+  </object>
+  <object id="68" name="CS_Friction" type="ConstraintFriction2D" x="744" y="356">
+   <polyline points="0,5 112,3"/>
+  </object>
+  <object id="69" name="CS_Wheel" type="ConstraintWheel2D" x="1117" y="448">
+   <properties>
+    <property name="DampingRatio" type="float" value="0.5"/>
+    <property name="EnableMotor" type="bool" value="true"/>
+    <property name="FrequencyHz" type="float" value="4"/>
+    <property name="MaxMotorTorque" type="float" value="1"/>
+   </properties>
+   <polyline points="0,0 0,-110"/>
+  </object>
+  <object id="70" name="CS_Gear_Revolute1" type="ConstraintRevolute2D" x="160" y="645">
+   <properties>
+    <property name="Geared" type="bool" value="true"/>
+   </properties>
+   <polyline points="0,0 -60,-68 -60,-68"/>
+  </object>
+  <object id="71" name="CS_Gear_Revolute2" type="ConstraintRevolute2D" x="160" y="645">
+   <properties>
+    <property name="Geared" type="bool" value="true"/>
+   </properties>
+   <polyline points="0,0 56,-65 56,-65"/>
+  </object>
+  <object id="72" name="CS_Gear" type="ConstraintGear2D" x="101" y="576">
+   <properties>
+    <property name="Ratio" type="float" value="1"/>
+   </properties>
+   <polyline points="0,0 112,0"/>
+  </object>
+  <object id="77" name="CS_Wheel1" type="ConstraintWheel2D" x="445" y="623">
+   <properties>
+    <property name="DampingRatio" type="float" value="0.4"/>
+    <property name="FrequencyHz" type="float" value="4"/>
+    <property name="MaxMotorTorque" type="float" value="20"/>
+   </properties>
+   <polyline points="0,-20 0,0"/>
+  </object>
+  <object id="80" name="CS_Wheel2" type="ConstraintWheel2D" x="526" y="623">
+   <properties>
+    <property name="DampingRatio" type="float" value="0.4"/>
+    <property name="FrequencyHz" type="float" value="4"/>
+    <property name="MaxMotorTorque" type="float" value="10"/>
+   </properties>
+   <polyline points="0,-20 0,0"/>
+  </object>
+  <object id="81" name="CS_Motor" type="ConstraintMotor2D" x="1117" y="597">
+   <properties>
+    <property name="AngularOffset" type="float" value="0.1"/>
+    <property name="CorrectionFactor" type="float" value="1"/>
+    <property name="MaxForce" type="float" value="5"/>
+    <property name="MaxTorque" type="float" value="10"/>
+   </properties>
+   <polyline points="0,0 0,-98"/>
+  </object>
+  <object id="85" type="CollisionShape2D" gid="2" x="723" y="557" width="44" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+    <property name="Friction" type="float" value="0.4"/>
+    <property name="Restitution" type="float" value="0.1"/>
+   </properties>
+  </object>
+  <object id="86" type="CollisionShape2D" gid="2" x="723" y="582" width="44" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+    <property name="Friction" type="float" value="0.4"/>
+    <property name="Restitution" type="float" value="0.1"/>
+   </properties>
+  </object>
+  <object id="87" type="CollisionShape2D" gid="2" x="723" y="606" width="44" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+    <property name="Friction" type="float" value="0.4"/>
+    <property name="Restitution" type="float" value="0.1"/>
+   </properties>
+  </object>
+  <object id="88" type="CollisionShape2D" gid="2" x="701" y="576" width="22" height="50">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+    <property name="Friction" type="float" value="0.4"/>
+    <property name="Restitution" type="float" value="0.1"/>
+   </properties>
+  </object>
+  <object id="89" type="CollisionShape2D" gid="2" x="701" y="610" width="22" height="50">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+    <property name="Friction" type="float" value="0.4"/>
+    <property name="Restitution" type="float" value="0.1"/>
+   </properties>
+  </object>
+  <object id="90" type="CollisionShape2D" gid="2" x="767" y="576" width="22" height="50">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+    <property name="Friction" type="float" value="0.4"/>
+    <property name="Restitution" type="float" value="0.1"/>
+   </properties>
+  </object>
+  <object id="91" type="CollisionShape2D" gid="2" x="767" y="610" width="22" height="50">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+    <property name="Friction" type="float" value="0.4"/>
+    <property name="Restitution" type="float" value="0.1"/>
+   </properties>
+  </object>
+  <object id="92" type="CollisionShape2D" gid="2" x="723" y="652" width="22" height="56">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+    <property name="Friction" type="float" value="0.4"/>
+    <property name="Restitution" type="float" value="0.1"/>
+   </properties>
+  </object>
+  <object id="93" type="CollisionShape2D" gid="2" x="723" y="693" width="22" height="56">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+    <property name="Friction" type="float" value="0.4"/>
+    <property name="Restitution" type="float" value="0.1"/>
+   </properties>
+  </object>
+  <object id="94" type="CollisionShape2D" gid="2" x="745" y="652" width="22" height="56">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+    <property name="Friction" type="float" value="0.4"/>
+    <property name="Restitution" type="float" value="0.1"/>
+   </properties>
+  </object>
+  <object id="95" type="CollisionShape2D" gid="2" x="745" y="693" width="22" height="56">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+    <property name="Friction" type="float" value="0.4"/>
+    <property name="Restitution" type="float" value="0.1"/>
+   </properties>
+  </object>
+  <object id="96" type="CollisionShape2D" gid="1" x="727" y="521" width="32" height="32">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+    <property name="Friction" type="float" value="0.4"/>
+    <property name="Restitution" type="float" value="0.3"/>
+   </properties>
+  </object>
+  <object id="98" name="Shoulder.L" type="ConstraintRevolute2D" x="726" y="528">
+   <properties>
+    <property name="EnableLimit" type="bool" value="true"/>
+    <property name="LowerAngle" type="float" value="-1.48"/>
+    <property name="UpperAngle" type="float" value="2.27"/>
+   </properties>
+   <polyline points="0,0 -15,0"/>
+  </object>
+  <object id="99" name="Shoulder.R" type="ConstraintRevolute2D" x="760" y="528">
+   <properties>
+    <property name="EnableLimit" type="bool" value="true"/>
+    <property name="LowerAngle" type="float" value="-2.27"/>
+    <property name="UpperAngle" type="float" value="1.48"/>
+   </properties>
+   <polyline points="0,0 15,0"/>
+  </object>
+  <object id="100" name="Elbow.L" type="ConstraintRevolute2D" x="710" y="550">
+   <properties>
+    <property name="EnableLimit" type="bool" value="true"/>
+    <property name="LowerAngle" type="float" value="-2.27"/>
+    <property name="UpperAngle" type="float" value="0.17"/>
+   </properties>
+   <polyline points="0,0 0,20 0,23"/>
+  </object>
+  <object id="101" name="Elbow.R" type="ConstraintRevolute2D" x="776" y="550">
+   <properties>
+    <property name="EnableLimit" type="bool" value="true"/>
+    <property name="LowerAngle" type="float" value="-0.17"/>
+    <property name="UpperAngle" type="float" value="2.27"/>
+   </properties>
+   <polyline points="0,0 0,20 0,23"/>
+  </object>
+  <object id="103" name="Neck" type="ConstraintRevolute2D" x="743" y="530">
+   <properties>
+    <property name="EnableLimit" type="bool" value="true"/>
+    <property name="LowerAngle" type="float" value="-0.7"/>
+    <property name="UpperAngle" type="float" value="0.7"/>
+   </properties>
+   <polyline points="0,0 0,-25"/>
+  </object>
+  <object id="104" name="Torso" type="ConstraintRevolute2D" x="743" y="542">
+   <properties>
+    <property name="EnableLimit" type="bool" value="true"/>
+    <property name="LowerAngle" type="float" value="-0.26"/>
+    <property name="UpperAngle" type="float" value="0.26"/>
+   </properties>
+   <polyline points="0,0 0,25"/>
+  </object>
+  <object id="105" name="Spine" type="ConstraintRevolute2D" x="742" y="566">
+   <properties>
+    <property name="EnableLimit" type="bool" value="false"/>
+   </properties>
+   <polyline points="0,0 0,25"/>
+  </object>
+  <object id="106" name="Hip.L" type="ConstraintRevolute2D" x="736" y="590">
+   <properties>
+    <property name="EnableLimit" type="bool" value="true"/>
+    <property name="LowerAngle" type="float" value="-0.44"/>
+    <property name="UpperAngle" type="float" value="0.78"/>
+   </properties>
+   <polyline points="0,0 0,10"/>
+  </object>
+  <object id="107" name="Hip.R" type="ConstraintRevolute2D" x="752" y="590">
+   <properties>
+    <property name="EnableLimit" type="bool" value="true"/>
+    <property name="LowerAngle" type="float" value="-0.78"/>
+    <property name="UpperAngle" type="float" value="0.44"/>
+   </properties>
+   <polyline points="0,0 5,10"/>
+  </object>
+  <object id="108" name="Knee.L" type="ConstraintRevolute2D" x="736" y="630">
+   <properties>
+    <property name="EnableLimit" type="bool" value="true"/>
+    <property name="LowerAngle" type="float" value="-0.44"/>
+    <property name="UpperAngle" type="float" value="2"/>
+   </properties>
+   <polyline points="0,0 0,15 0,18"/>
+  </object>
+  <object id="109" name="Knee.R" type="ConstraintRevolute2D" x="757" y="630">
+   <properties>
+    <property name="EnableLimit" type="bool" value="true"/>
+    <property name="LowerAngle" type="float" value="-2"/>
+    <property name="UpperAngle" type="float" value="0.44"/>
+   </properties>
+   <polyline points="0,0 0,15 0,18"/>
+  </object>
+  <object id="61" name="Aster" type="CollisionShape2D" gid="3" x="870" y="700" width="64" height="64">
+   <properties>
+    <property name="BodyType" value="Dynamic"/>
+    <property name="Density" type="float" value="1"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

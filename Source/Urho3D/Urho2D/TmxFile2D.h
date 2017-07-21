@@ -28,6 +28,7 @@
 namespace Urho3D
 {
 
+class AnimationSet2D;
 class Sprite2D;
 class Texture2D;
 class TmxFile2D;
@@ -42,7 +43,7 @@ public:
     virtual ~TmxLayer2D();
 
     /// Return tmx file.
-    TmxFile2D* GetTmxFile() const;
+    TmxFile2D* GetTmxFile() const { return tmxFile_; }
 
     /// Return type.
     TileMapLayerType2D GetType() const { return type_; }
@@ -58,6 +59,12 @@ public:
 
     /// Return is visible.
     bool IsVisible() const { return visible_; }
+
+    /// Return opacity.
+    float GetOpacity() const { return opacity_; }
+
+    /// Return offset.
+    const Vector2& GetOffset() const { return offset_; }
 
     /// Return has property (use for script).
     bool HasProperty(const String& name) const;
@@ -83,6 +90,10 @@ protected:
     int height_;
     /// Visible.
     bool visible_;
+    /// Opacity.
+    float opacity_;
+    /// Offset.
+    Vector2 offset_;
     /// Property set.
     SharedPtr<PropertySet2D> propertySet_;
 };
@@ -99,11 +110,11 @@ public:
     Tile2D* GetTile(int x, int y) const;
 
 protected:
-    /// Tile.
+    /// Tiles.
     Vector<SharedPtr<Tile2D> > tiles_;
 };
 
-/// Tmx image layer.
+/// Tmx objects layer.
 class TmxObjectGroup2D : public TmxLayer2D
 {
 public:
@@ -112,13 +123,21 @@ public:
     /// Load from XML element.
     bool Load(const XMLElement& element, const TileMapInfo2D& info);
 
+    /// Store object.
+    void StoreObject(XMLElement objectElem, SharedPtr<TileMapObject2D> object, const TileMapInfo2D& info, bool isTile = false);
+
     /// Return number of objects.
     unsigned GetNumObjects() const { return objects_.Size(); }
 
     /// Return tile map object at index.
     TileMapObject2D* GetObject(unsigned index) const;
 
+    /// Return whether tile objects are drawn top-down (y-coordinate sorting, default) or according to their order of appearance in the tmx file.
+    bool DrawTopDown() const { return drawTopDown_; }
+
 private:
+    /// Draw order (tile object).
+    bool drawTopDown_;
     /// Objects.
     Vector<SharedPtr<TileMapObject2D> > objects_;
 };
@@ -139,7 +158,7 @@ public:
     const String& GetSource() const { return source_; }
 
     /// Return sprite.
-    Sprite2D* GetSprite() const;
+    Sprite2D* GetSprite() const { return sprite_; }
 
 private:
     /// Position.
@@ -180,8 +199,14 @@ public:
     /// Return Tilemap information.
     const TileMapInfo2D& GetInfo() const { return info_; }
 
-    /// Return tile sprite by gid, if not exist return 0.
+    /// Return tile sprite by gid.
     Sprite2D* GetTileSprite(int gid) const;
+
+    /// Return animation name set for a given gid.
+    String GetTileAnim(int gid) const;
+
+    /// Return tile collision shapes for a given gid.
+    Vector<SharedPtr<TileMapObject2D> > GetTileCollisionShapes(int gid) const;
 
     /// Return tile property set by gid, if not exist return 0.
     PropertySet2D* GetTilePropertySet(int gid) const;
@@ -192,11 +217,16 @@ public:
     /// Return layer at index.
     const TmxLayer2D* GetLayer(unsigned index) const;
 
+    /// Get actual tile gid (Tiled gid stores also stores bits for flip that we must clear and store).
+    void GetActualGid(unsigned& gid, Vector3& flipAxis);
+
 private:
     /// Load TSX file.
     SharedPtr<XMLFile> LoadTSXFile(const String& source);
     /// Load tile set.
     bool LoadTileSet(const XMLElement& element);
+    /// Create procedural animation.
+    AnimationSet2D* CreateProceduralAnimation(String animName, Vector<IntVector2> frames);
 
     /// XML file used during loading.
     SharedPtr<XMLFile> loadXMLFile_;
@@ -210,9 +240,14 @@ private:
     HashMap<int, SharedPtr<Sprite2D> > gidToSpriteMapping_;
     /// Gid to tile property set mapping.
     HashMap<int, SharedPtr<PropertySet2D> > gidToPropertySetMapping_;
+    /// Gid to tile animation mapping.
+    HashMap<int, String> gidToAnimMapping_;
+    /// Gid to tile collision shape mapping.
+    HashMap<int, Vector<SharedPtr<TileMapObject2D> > > gidToCollisionShapeMapping_;
     /// Layers.
     Vector<TmxLayer2D*> layers_;
+    /// Tile animation name.
+    String animationName_;
 };
 
 }
-

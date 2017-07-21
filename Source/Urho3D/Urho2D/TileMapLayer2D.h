@@ -34,6 +34,7 @@ namespace Urho3D
 
 class DebugRenderer;
 class Node;
+class StaticSprite2D;
 class TileMap2D;
 class TmxImageLayer2D;
 class TmxLayer2D;
@@ -62,9 +63,16 @@ public:
     void SetDrawOrder(int drawOrder);
     /// Set visible.
     void SetVisible(bool visible);
+    /// Set opacity.
+    void SetOpacity(float opacity);
+    /// Set offset.
+    void SetOffset(const Vector2& offset) { offset_ = offset; }
+
+    /// Convert position to tile index, if out of map return false.
+    bool PositionToTileIndex(int& x, int& y, const Vector2& position) const { return tileMap_->GetInfo().PositionToTileIndex(x, y, position - offset_); }
 
     /// Return tile map.
-    TileMap2D* GetTileMap() const;
+    TileMap2D* GetTileMap() const { return tileMap_; }
 
     /// Return tmx layer.
     const TmxLayer2D* GetTmxLayer() const { return tmxLayer_; }
@@ -74,6 +82,12 @@ public:
 
     /// Return visible.
     bool IsVisible() const { return visible_; }
+
+    /// Return opacity.
+    bool GetOpacity() const { return opacity_; }
+
+    /// Return offset.
+    const Vector2& GetOffset() const { return offset_; }
 
     /// Return has property
     bool HasProperty(const String& name) const;
@@ -93,13 +107,21 @@ public:
 
     /// Return number of tile map objects (for object group only).
     unsigned GetNumObjects() const;
-    /// Return tile map object (for object group only).
+    /// Return tile map object by index (for object group only).
     TileMapObject2D* GetObject(unsigned index) const;
+    /// Return tile map object by name (for object group only).
+    TileMapObject2D* GetObject(const String& name) const;
     /// Return object node (for object group only).
     Node* GetObjectNode(unsigned index) const;
 
     /// Return image node (for image layer only).
     Node* GetImageNode() const;
+
+    /// Return name.
+    const String& GetName() const { return name_; }
+
+    /// Get tile sprite order in layer according to RenderOrder2D.
+    int TileRenderOrder(int x, int y);
 
 private:
     /// Set tile layer.
@@ -108,6 +130,8 @@ private:
     void SetObjectGroup(const TmxObjectGroup2D* objectGroup);
     /// Set image layer.
     void SetImageLayer(const TmxImageLayer2D* imageLayer);
+    /// Flip sprite (tile and tile object).
+    void FlipSprite(StaticSprite2D* sprite, Vector3 flipAxis, Vector2 hotSpot);
 
     /// Tile map.
     WeakPtr<TileMap2D> tileMap_;
@@ -123,8 +147,14 @@ private:
     int drawOrder_;
     /// Visible.
     bool visible_;
-    /// Tile node or image nodes.
+    /// Opacity.
+    float opacity_;
+    /// Offset.
+    Vector2 offset_;
+    /// Objects nodes.
     Vector<SharedPtr<Node> > nodes_;
+    /// Layer name.
+    String name_;
 };
 
 }

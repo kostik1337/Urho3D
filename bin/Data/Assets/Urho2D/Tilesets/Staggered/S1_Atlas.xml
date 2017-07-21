@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TextureAtlas imagePath="S1.png">
+	<SubTexture name="S1_1x1"	x="0"		y="0"		width="64"	height="192"/>
+	<SubTexture name="S1_1x2"	x="64"		y="0"		width="64"	height="192"/>
+	<SubTexture name="S1_1x3"	x="128"	y="0"		width="64"	height="192"/>
+	<SubTexture name="S1_1x4"	x="192"	y="0"		width="64"	height="192"/>
+	<SubTexture name="S1_1x5"	x="256"	y="0"		width="64"	height="192"/>
+	<SubTexture name="S1_1x6"	x="320"	y="0"		width="64"	height="192"/>
+	<SubTexture name="S1_1x7"	x="384"	y="0"		width="64"	height="192"/>
+	<SubTexture name="S1_1x8"	x="448"	y="0"		width="64"	height="192"/>
+
+	<SubTexture name="S1_2x1"	x="0"		y="192"	width="64"	height="192"/>
+	<SubTexture name="S1_2x2"	x="64"		y="192"	width="64"	height="192"/>
+	<SubTexture name="S1_2x3"	x="128"	y="192"	width="64"	height="192"/>
+	<SubTexture name="S1_2x4"	x="192"	y="192"	width="64"	height="192"/>
+	<SubTexture name="S1_2x5"	x="256"	y="192"	width="64"	height="192"/>
+	<SubTexture name="S1_2x6"	x="320"	y="192"	width="64"	height="192"/>
+	<SubTexture name="S1_2x7"	x="384"	y="192"	width="64"	height="192"/>
+	<SubTexture name="S1_2x8"	x="448"	y="192"	width="64"	height="192"/>
+
+	<SubTexture name="S1_3x1"	x="0"		y="384"	width="64"	height="192"/>
+	<SubTexture name="S1_3x2"	x="64"		y="384"	width="64"	height="192"/>
+	<SubTexture name="S1_3x3"	x="128"	y="384"	width="64"	height="192"/>
+	<SubTexture name="S1_3x4"	x="192"	y="384"	width="64"	height="192"/>
+	<SubTexture name="S1_3x5"	x="256"	y="384"	width="64"	height="192"/>
+	<SubTexture name="S1_3x6"	x="320"	y="384"	width="64"	height="192"/>
+	<SubTexture name="S1_3x7"	x="384"	y="384"	width="64"	height="192"/>
+	<SubTexture name="S1_3x8"	x="448"	y="384"	width="64"	height="192"/>
+
+	<SubTexture name="S1_4x1"	x="0"		y="576"	width="64"	height="192"/>
+	<SubTexture name="S1_4x2"	x="64"		y="576"	width="64"	height="192"/>
+	<SubTexture name="S1_4x3"	x="128"	y="576"	width="64"	height="192"/>
+	<SubTexture name="S1_4x4"	x="192"	y="576"	width="64"	height="192"/>
+	<SubTexture name="S1_4x5"	x="256"	y="576"	width="64"	height="192"/>
+	<SubTexture name="S1_4x6"	x="320"	y="576"	width="64"	height="192"/>
+	<SubTexture name="S1_4x7"	x="384"	y="576"	width="64"	height="192"/>
+	<SubTexture name="S1_4x8"	x="448"	y="576"	width="64"	height="192"/>
+
+	<SubTexture name="S1_5x1"	x="0"		y="768"	width="64"	height="192"/>
+	<SubTexture name="S1_5x2"	x="64	"	y="768"	width="64"	height="192"/>
+	<SubTexture name="S1_5x3"	x="128"	y="768"	width="64"	height="192"/>
+	<SubTexture name="S1_5x4"	x="192"	y="768"	width="64"	height="192"/>
+	<SubTexture name="S1_5x5"	x="256"	y="768"	width="64"	height="192"/>
+	<SubTexture name="S1_5x6"	x="320"	y="768"	width="64"	height="192"/>
+	<SubTexture name="S1_5x7"	x="384"	y="768"	width="64"	height="192"/>
+	<SubTexture name="S1_5x8"	x="448"	y="768"	width="64"	height="192"/>
+</TextureAtlas>

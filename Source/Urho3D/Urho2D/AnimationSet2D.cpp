@@ -22,20 +22,20 @@
 
 #include "../Precompiled.h"
 
+#include "../Urho2D/AnimationSet2D.h"
+#include "../Math/AreaAllocator.h"
 #include "../Container/ArrayPtr.h"
 #include "../Core/Context.h"
-#include "../Graphics/Graphics.h"
-#include "../Graphics/Texture2D.h"
 #include "../IO/FileSystem.h"
-#include "../IO/Log.h"
-#include "../Math/AreaAllocator.h"
+#include "../Graphics/Graphics.h"
 #include "../Resource/Image.h"
+#include "../IO/Log.h"
 #include "../Resource/ResourceCache.h"
-#include "../Resource/XMLFile.h"
-#include "../Urho2D/AnimationSet2D.h"
 #include "../Urho2D/Sprite2D.h"
 #include "../Urho2D/SpriterData2D.h"
 #include "../Urho2D/SpriteSheet2D.h"
+#include "../Graphics/Texture2D.h"
+#include "../Resource/XMLFile.h"
 
 #include "../DebugNew.h"
 
@@ -79,7 +79,7 @@ void _spAtlasPage_disposeTexture(spAtlasPage* self)
 char* _spUtil_readFile(const char* path, int* length)
 {
     using namespace Urho3D;
-    
+
     if (!currentAnimationSet)
         return 0;
 
@@ -93,7 +93,7 @@ char* _spUtil_readFile(const char* path, int* length)
     char* data = MALLOC(char, size + 1);
     file->Read(data, size);
     data[size] = '\0';
-    
+
     file.Reset();
     *length = size;
 
@@ -194,7 +194,7 @@ bool AnimationSet2D::HasAnimation(const String& animationName) const
                 return true;
         }
     }
-#endif    
+#endif
     if (spriterData_ && !spriterData_->entities_.Empty())
     {
         const PODVector<Spriter::Animation*>& animations = spriterData_->entities_[0]->animations_;
@@ -206,11 +206,6 @@ bool AnimationSet2D::HasAnimation(const String& animationName) const
     }
 
     return false;
-}
-
-Sprite2D* AnimationSet2D::GetSprite() const
-{
-    return sprite_;
 }
 
 Sprite2D* AnimationSet2D::GetSpriterFileSprite(int folderId, int fileId) const
@@ -353,7 +348,7 @@ bool AnimationSet2D::EndLoadSpriter()
 {
     if (!spriterData_)
         return false;
-    
+
     ResourceCache* cache = GetSubsystem<ResourceCache>();
     if (hasSpriteSheet_)
     {
@@ -493,7 +488,7 @@ bool AnimationSet2D::EndLoadSpriter()
             texture->SetMipsToSkip(QUALITY_LOW, 0);
             texture->SetNumLevels(1);
 
-            SpriteInfo& info = spriteInfos[0];        
+            SpriteInfo& info = spriteInfos[0];
             texture->SetData(info.image_, true);
 
             sprite_ = new Sprite2D(context_);
@@ -534,6 +529,192 @@ void AnimationSet2D::Dispose()
     sprite_.Reset();
     spriteSheet_.Reset();
     spriterFileSprites_.Clear();
+}
+
+bool AnimationSet2D::Save(Serializer& dest) const
+{
+    XMLFile xmlFile(context_);
+
+    XMLElement rootElem = xmlFile.CreateRoot("spriter_data");
+    if (!SaveXML(rootElem))
+        return false;
+
+    return xmlFile.Save(dest);
+}
+
+bool AnimationSet2D::SaveXML(XMLElement& dest) const
+{
+	// Header
+	dest.SetInt("scml_version", spriterData_->scmlVersion_);
+	dest.SetAttribute("generator", spriterData_->generator_);
+	dest.SetAttribute("generator_version", spriterData_->generatorVersion_);
+
+	// Folders
+	const PODVector<Spriter::Folder*>& folders = spriterData_->folders_;
+	for (size_t i = 0; i < folders.Size(); ++i)
+	{
+		XMLElement folderElem = dest.CreateChild("folder");
+		Spriter::Folder* folder = folders[i];
+		folderElem.SetInt("id", folder->id_);
+		if (!folder->name_.Empty())
+			folderElem.SetAttribute("name", folder->name_);
+
+		// Files
+		const PODVector<Spriter::File*>& files = folder->files_;
+		for (size_t f = 0; f < files.Size(); ++f)
+		{
+			XMLElement fileElem = folderElem.CreateChild("file");
+			Spriter::File* file = files[f];
+			fileElem.SetInt("id", file->id_);
+			fileElem.SetAttribute("name", file->name_);
+			fileElem.SetFloat("width", file->width_);
+			fileElem.SetFloat("height", file->height_);
+			fileElem.SetFloat("pivot_x", file->pivotX_);
+			fileElem.SetFloat("pivot_y", file->pivotY_);
+		}
+	}
+
+	// Entities (note that obj_info is discarded)
+	const PODVector<Spriter::Entity*>& entities = spriterData_->entities_;
+	for (size_t e = 0; e < entities.Size(); ++e)
+    {
+		XMLElement entityElem = dest.CreateChild("entity");
+		Spriter::Entity* entity = entities[e];
+		entityElem.SetInt("id", entity->id_);
+		entityElem.SetAttribute("name", entity->name_);
+
+		// Character maps
+		const PODVector<Spriter::CharacterMap*>& characterMaps = entity->characterMaps_;
+		for (size_t cm = 0; cm < characterMaps.Size(); ++cm)
+		{
+			XMLElement characterMapElem = entityElem.CreateChild("character_map");
+			Spriter::CharacterMap* characterMap = characterMaps[cm];
+			characterMapElem.SetInt("id", characterMap->id_);
+			characterMapElem.SetAttribute("name", characterMap->name_);
+
+			const PODVector<Spriter::MapInstruction*>& maps = characterMap->maps_;
+			for (size_t mi = 0; mi < characterMaps.Size(); ++mi)
+			{
+				XMLElement mapElem = characterMapElem.CreateChild("character_map");
+				Spriter::MapInstruction* map = maps[mi];
+				mapElem.SetInt("folder", map->folder_);
+				mapElem.SetInt("file", map->file_);
+				mapElem.SetInt("target_folder", map->targetFolder_);
+				mapElem.SetInt("target_file", map->targetFile_);
+			}
+		}
+
+		// Animations
+		const PODVector<Spriter::Animation*>& animations = entity->animations_;
+		for (size_t a = 0; a < animations.Size(); ++a)
+		{
+			XMLElement animationElem = entityElem.CreateChild("animation");
+			Spriter::Animation* animation = animations[a];
+			animationElem.SetInt("id", animation->id_);
+			animationElem.SetAttribute("name", animation->name_);
+			animationElem.SetFloat("length", animation->length_ * 1000.0f);
+			if (!animation->looping_)
+				animationElem.SetBool("looping", animation->looping_);
+
+			// Main line keys (note that some object_ref settings are discarded)
+			XMLElement mainlineElem = animationElem.CreateChild("mainline");
+			const PODVector<Spriter::MainlineKey*>& mainlineKeys = animation->mainlineKeys_;
+			for (size_t m = 0; m < mainlineKeys.Size(); ++m)
+			{
+				XMLElement keyElem = mainlineElem.CreateChild("key");
+				Spriter::MainlineKey* mainlineKey = mainlineKeys[m];
+				keyElem.SetInt("id", mainlineKey->id_);
+				if (mainlineKey->time_ > 0.0f)
+					keyElem.SetFloat("time", mainlineKey->time_ * 1000.0f);
+
+				// Bone refs
+				const PODVector<Spriter::Ref*>& boneRefs = mainlineKey->boneRefs_;
+				for (size_t b = 0; b < boneRefs.Size(); ++b)
+				{
+					XMLElement boneRefsElem = keyElem.CreateChild("bone_ref");
+					Spriter::Ref* boneRef = boneRefs[b];
+					boneRefsElem.SetInt("id", boneRef->id_);
+					if (boneRef->parent_ >= 0)
+						boneRefsElem.SetInt("parent", boneRef->parent_);
+					boneRefsElem.SetInt("timeline", boneRef->timeline_);
+					boneRefsElem.SetInt("key", boneRef->key_);
+				}
+
+				// Object refs
+				const PODVector<Spriter::Ref*>& objectRefs = mainlineKey->objectRefs_;
+				for (size_t o = 0; o < objectRefs.Size(); ++o)
+				{
+					XMLElement objectRefsElem = keyElem.CreateChild("object_ref");
+					Spriter::Ref* objectRef = objectRefs[o];
+					objectRefsElem.SetInt("id", objectRef->id_);
+					if (objectRef->parent_ >= 0)
+						objectRefsElem.SetInt("parent", objectRef->parent_);
+					objectRefsElem.SetInt("timeline", objectRef->timeline_);
+					objectRefsElem.SetInt("key", objectRef->key_);
+					objectRefsElem.SetInt("z_index", objectRef->zIndex_);
+				}
+			}
+
+			// Timelines
+			const PODVector<Spriter::Timeline*>& timelines = animation->timelines_;
+			for (size_t t = 0; t < timelines.Size(); ++t)
+			{
+				XMLElement timelineElem = animationElem.CreateChild("timeline");
+				Spriter::Timeline* timeline = animation->timelines_[t];
+				timelineElem.SetInt("id", timeline->id_);
+				timelineElem.SetAttribute("name", timeline->name_);
+				if (timeline->objectType_ == Spriter::BONE)
+					timelineElem.SetAttribute("object_type", "bone");
+
+				// Keys
+				const PODVector<Spriter::SpatialTimelineKey*>& keys = timeline->keys_;
+				for (size_t i = 0; i < keys.Size(); ++i)
+				{
+					XMLElement keyElem = timelineElem.CreateChild("key");
+					Spriter::SpatialTimelineKey* spatialKey = keys[i];
+					const Spriter::SpatialInfo& info = spatialKey->info_;
+					keyElem.SetInt("id", spatialKey->id_);
+					if (spatialKey->time_ > 0.0f)
+						keyElem.SetFloat("time", spatialKey->time_ * 1000.0f);
+					if (info.spin != 1)
+						keyElem.SetInt("spin", info.spin);
+
+					XMLElement elt;
+					if (timeline->objectType_ == Spriter::SPRITE)
+					{
+						elt = keyElem.CreateChild("object");
+						Spriter::SpriteTimelineKey* spriteKey = (Spriter::SpriteTimelineKey*)(spatialKey);
+						elt.SetInt("folder", spriteKey->folderId_);
+						elt.SetInt("file", spriteKey->fileId_);
+						elt.SetBool("useDefaultPivot", spriteKey->useDefaultPivot_); // True if missing pivot_x and pivot_y in object tag
+						if (spriteKey->pivotX_ != 0.0f)
+							elt.SetFloat("pivot_x", spriteKey->pivotX_);
+						if (spriteKey->pivotY_ != 0.0f)
+							elt.SetFloat("pivot_y", spriteKey->pivotY_);
+					}
+					else if (timeline->objectType_ == Spriter::BONE)
+					{
+						elt = keyElem.CreateChild("bone");
+						Spriter::BoneTimelineKey* boneKey = (Spriter::BoneTimelineKey*)(spatialKey);
+						elt.SetFloat("w", boneKey->length_); // Unimplemented in Spriter
+						elt.SetFloat("h", boneKey->width_); // Unimplemented in Spriter
+					}
+
+					if (info.x_ != 0.0f)
+						elt.SetFloat("x", info.x_);
+					if (info.y_ != 0.0f)
+						elt.SetFloat("y", info.y_);
+					elt.SetFloat("angle", info.angle_);
+					if (info.scaleX_ != 1.0f)
+						elt.SetFloat("scale_x", info.scaleX_);
+					if (info.scaleY_ != 1.0f)
+						elt.SetFloat("scale_y", info.scaleY_);
+					if (info.alpha_ != 1.0f)
+						elt.SetFloat("a", info.alpha_);
+				}
+			}
+		}
+	}
 }
 
 }

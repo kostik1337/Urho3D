@@ -41,6 +41,7 @@ namespace Spriter
 
 class Sprite2D;
 class SpriteSheet2D;
+class XMLElement;
 
 /// Spriter animation set, it includes one or more animations, for more information please refer to http://www.esotericsoftware.com and http://www.brashmonkey.com/spriter.htm.
 class URHO3D_API AnimationSet2D : public Resource
@@ -52,13 +53,17 @@ public:
     AnimationSet2D(Context* context);
     /// Destruct.
     virtual ~AnimationSet2D();
-    /// Register object factory. 
+    /// Register object factory.
     static void RegisterObject(Context* context);
 
     /// Load resource from stream. May be called from a worker thread. Return true if successful.
     virtual bool BeginLoad(Deserializer& source);
     /// Finish resource loading. Always called from the main thread. Return true if successful.
     virtual bool EndLoad();
+    /// Save resource. Return true if successful.
+    virtual bool Save(Serializer& dest) const;
+    /// Save as XML data. Return true if successful.
+    bool SaveXML(XMLElement& dest) const;
 
     /// Get number of animations.
     unsigned GetNumAnimations() const;
@@ -66,9 +71,9 @@ public:
     String GetAnimation(unsigned index) const;
     /// Check has animation.
     bool HasAnimation(const String& animation) const;
-    
+
     /// Return sprite.
-    Sprite2D* GetSprite() const;
+    Sprite2D* GetSprite() const { return sprite_; }
 
 #ifdef URHO3D_SPINE
     /// Return spine skeleton data.
@@ -79,6 +84,15 @@ public:
     Spriter::SpriterData* GetSpriterData() const { return spriterData_; }
     /// Return spriter file sprite.
     Sprite2D* GetSpriterFileSprite(int folderId, int fileId) const;
+    /// Return number of spriter file sprites.
+    unsigned GetNumSpriterFileSprites() const { return spriterFileSprites_.Size(); }
+
+    /// Set sprite externally for procedural animation.
+    void SetSprite(Sprite2D* sprite) { sprite_ = sprite; }
+	/// Set spriter data externally for procedural animation.
+	void SetSpriterData(Spriter::SpriterData* data) { spriterData_ = data; }
+	/// Set spriter sprites externally for procedural animation.
+	void SetSpriterFileSprites(HashMap<int, SharedPtr<Sprite2D> > sprites) { spriterFileSprites_ = sprites; }
 
 private:
     /// Return sprite by hash.
@@ -95,10 +109,10 @@ private:
     bool EndLoadSpriter();
     /// Dispose all data.
     void Dispose();
-    
+
     /// Spine sprite.
     SharedPtr<Sprite2D> sprite_;
-    
+
 #ifdef URHO3D_SPINE
     /// Spine json data.
     SharedArrayPtr<char> jsonData_;
@@ -107,7 +121,7 @@ private:
     /// Spine atlas.
     spAtlas* atlas_;
 #endif
-    
+
     /// Spriter data.
     Spriter::SpriterData* spriterData_;
     /// Has sprite sheet.
@@ -121,4 +135,3 @@ private:
 };
 
 }
-

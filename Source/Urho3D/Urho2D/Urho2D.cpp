@@ -41,8 +41,10 @@
 #include "../Urho2D/ConstraintRope2D.h"
 #include "../Urho2D/ConstraintWeld2D.h"
 #include "../Urho2D/ConstraintWheel2D.h"
+#include "../Urho2D/NavMesh2D.h" ///======================
 #include "../Urho2D/ParticleEffect2D.h"
 #include "../Urho2D/ParticleEmitter2D.h"
+#include "../Urho2D/PhysicsLoader2D.h"
 #include "../Urho2D/PhysicsWorld2D.h"
 #include "../Urho2D/Renderer2D.h"
 #include "../Urho2D/RigidBody2D.h"
@@ -102,6 +104,11 @@ void RegisterUrho2DLibrary(Context* context)
     ConstraintRope2D::RegisterObject(context);
     ConstraintWeld2D::RegisterObject(context);
     ConstraintWheel2D::RegisterObject(context);
+
+    PhysicsLoader2D::RegisterObject(context);
+    PhysicsData2D::RegisterObject(context);
+
+    NavMesh2D::RegisterObject(context); ///======================
 }
 
 }

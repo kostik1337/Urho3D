@@ -90,6 +90,8 @@ endif ()
 
 if (URHO3D_URHO2D)
     add_subdirectory (ThirdParty/Box2D)
+    add_subdirectory (ThirdParty/polypartition)
+    add_subdirectory (ThirdParty/polypath)
     if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/spine)
         add_subdirectory (ThirdParty/spine)
         # Add definition for Spine

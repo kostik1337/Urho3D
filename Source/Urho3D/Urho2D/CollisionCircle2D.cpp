@@ -32,14 +32,14 @@ namespace Urho3D
 {
 
 extern const char* URHO2D_CATEGORY;
-static const float DEFAULT_CLRCLE_RADIUS(0.01f);
+static const float DEFAULT_CIRCLE_RADIUS(0.01f);
 
 CollisionCircle2D::CollisionCircle2D(Context* context) :
     CollisionShape2D(context),
-    radius_(DEFAULT_CLRCLE_RADIUS),
+    radius_(DEFAULT_CIRCLE_RADIUS),
     center_(Vector2::ZERO)
 {
-    circleShape_.m_radius = DEFAULT_CLRCLE_RADIUS * cachedWorldScale_.x_;
+    circleShape_.m_radius = DEFAULT_CIRCLE_RADIUS * cachedWorldScale_.x_;
     fixtureDef_.shape = &circleShape_;
 }
 
@@ -52,7 +52,7 @@ void CollisionCircle2D::RegisterObject(Context* context)
     context->RegisterFactory<CollisionCircle2D>(URHO2D_CATEGORY);
 
     URHO3D_ACCESSOR_ATTRIBUTE("Is Enabled", IsEnabled, SetEnabled, bool, true, AM_DEFAULT);
-    URHO3D_ACCESSOR_ATTRIBUTE("Radius", GetRadius, SetRadius, float, DEFAULT_CLRCLE_RADIUS, AM_DEFAULT);
+    URHO3D_ACCESSOR_ATTRIBUTE("Radius", GetRadius, SetRadius, float, DEFAULT_CIRCLE_RADIUS, AM_DEFAULT);
     URHO3D_ACCESSOR_ATTRIBUTE("Center", GetCenter, SetCenter, Vector2, Vector2::ZERO, AM_DEFAULT);
     URHO3D_COPY_BASE_ATTRIBUTES(CollisionShape2D);
 }

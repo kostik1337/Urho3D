@@ -106,6 +106,8 @@ public:
     IntRect GetIntRect() const;
     /// Return IntVector2, for string type.
     IntVector2 GetIntVector2() const;
+    /// Return Vector2, for string type.
+    Vector2 GetVector2() const;
     /// Return value map.
     const PListValueMap& GetValueMap() const;
     /// Return value vector.
