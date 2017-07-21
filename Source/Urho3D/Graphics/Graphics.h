@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -101,7 +101,7 @@ public:
     /// Set screen mode. Return true if successful.
     bool SetMode
         (int width, int height, bool fullscreen, bool borderless, bool resizable, bool highDPI, bool vsync, bool tripleBuffer,
-            int multiSample);
+            int multiSample, int monitor, int refreshRate);
     /// Set screen resolution only. Return true if successful.
     bool SetMode(int width, int height);
     /// Set whether the main window uses sRGB conversion on write.
@@ -230,6 +230,8 @@ public:
     void SetDepthWrite(bool enable);
     /// Set polygon fill mode.
     void SetFillMode(FillMode mode);
+    /// Set line antialiasing on/off.
+    void SetLineAntiAlias(bool enable);
     /// Set scissor test.
     void SetScissorTest(bool enable, const Rect& rect = Rect::FULL, bool borderInclusive = true);
     /// Set scissor test.
@@ -280,6 +282,9 @@ public:
     /// Return multisample mode (1 = no multisampling.)
     int GetMultiSample() const { return multiSample_; }
 
+    /// Return window size in pixels.
+    IntVector2 GetSize() const { return IntVector2(width_, height_); }
+
     /// Return whether window is fullscreen.
     bool GetFullscreen() const { return fullscreen_; }
 
@@ -294,6 +299,12 @@ public:
 
     /// Return whether vertical sync is on.
     bool GetVSync() const { return vsync_; }
+
+    /// Return refresh rate when using vsync in fullscreen
+    int GetRefreshRate() const { return refreshRate_; }
+
+    /// Return the current monitor index. Effective on in fullscreen
+    int GetMonitor() const { return monitor_; }
 
     /// Return whether triple buffering is enabled.
     bool GetTripleBuffer() const { return tripleBuffer_; }
@@ -355,12 +366,14 @@ public:
     /// Return whether sRGB conversion on rendertarget writing is supported.
     bool GetSRGBWriteSupport() const { return sRGBWriteSupport_; }
 
-    /// Return supported fullscreen resolutions. Will be empty if listing the resolutions is not supported on the platform (e.g. Web).
-    PODVector<IntVector2> GetResolutions() const;
+    /// Return supported fullscreen resolutions (third component is refreshRate). Will be empty if listing the resolutions is not supported on the platform (e.g. Web).
+    PODVector<IntVector3> GetResolutions(int monitor) const;
     /// Return supported multisampling levels.
     PODVector<int> GetMultiSampleLevels() const;
     /// Return the desktop resolution.
-    IntVector2 GetDesktopResolution() const;
+    IntVector2 GetDesktopResolution(int monitor) const;
+    /// Return the number of currently connected monitors.
+    int GetMonitorCount() const;
     /// Return hardware format for a compressed image format, or 0 if unsupported.
     unsigned GetFormat(CompressedFormat format) const;
     /// Return a shader variation by name and defines.
@@ -430,6 +443,9 @@ public:
 
     /// Return polygon fill mode.
     FillMode GetFillMode() const { return fillMode_; }
+
+    /// Return whether line antialiasing is enabled.
+    bool GetLineAntiAlias() const { return lineAntiAlias_; }
 
     /// Return whether stencil test is enabled.
     bool GetStencilTest() const { return stencilTest_; }
@@ -552,7 +568,7 @@ private:
     /// Create the application window icon.
     void CreateWindowIcon();
     /// Adjust the window for new resolution and fullscreen mode.
-    void AdjustWindow(int& newWidth, int& newHeight, bool& newFullscreen, bool& newBorderless);
+    void AdjustWindow(int& newWidth, int& newHeight, bool& newFullscreen, bool& newBorderless, int& monitor);
     /// Create the Direct3D11 device and swap chain. Requires an open window. Can also be called again to recreate swap chain. Return true on success.
     bool CreateDevice(int width, int height, int multiSample);
     /// Update Direct3D11 swap chain state for a new mode and create views for the backbuffer & default depth buffer. Return true on success.
@@ -632,6 +648,10 @@ private:
     bool highDPI_;
     /// Vertical sync flag.
     bool vsync_;
+    /// Refresh rate in Hz. Only used in fullscreen, 0 when windowed
+    int refreshRate_;
+    /// Monitor index. Only used in fullscreen, 0 when windowed
+    int monitor_;
     /// Triple buffering flag.
     bool tripleBuffer_;
     /// Flush GPU command buffer flag.
@@ -718,12 +738,14 @@ private:
     CompareMode depthTestMode_;
     /// Depth write enable flag.
     bool depthWrite_;
+    /// Line antialiasing enable flag.
+    bool lineAntiAlias_;
     /// Polygon fill mode.
     FillMode fillMode_;
-    /// Scissor test rectangle.
-    IntRect scissorRect_;
     /// Scissor test enable flag.
     bool scissorTest_;
+    /// Scissor test rectangle.
+    IntRect scissorRect_;
     /// Stencil test compare mode.
     CompareMode stencilTestMode_;
     /// Stencil operation on pass.

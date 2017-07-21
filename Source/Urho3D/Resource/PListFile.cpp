@@ -239,6 +239,16 @@ Vector2 PListValue::GetVector2() const
     return Vector2(x, y);
 }
 
+IntVector3 PListValue::GetIntVector3() const
+{
+    if (type_ != PLVT_STRING)
+        return IntVector3::ZERO;
+
+    int x, y, z;
+    sscanf(string_->CString(), "{%d,%d,%d}", &x, &y, &z);
+    return IntVector3(x, y, z);
+}
+
 const PListValueMap& PListValue::GetValueMap() const
 {
     return type_ == PLVT_VALUEMAP ? *valueMap_ : EMPTY_VALUEMAP;

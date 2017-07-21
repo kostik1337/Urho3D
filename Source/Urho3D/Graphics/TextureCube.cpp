@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -297,9 +297,8 @@ bool TextureCube::SetSize(int size, unsigned format, TextureUsage usage, int mul
 #endif
         }
 
-        // Nearest filtering and mipmaps disabled by default
+        // Nearest filtering by default
         filterMode_ = FILTER_NEAREST;
-        requestedLevels_ = 1;
     }
 
     if (usage == TEXTURE_RENDERTARGET)
@@ -309,11 +308,32 @@ bool TextureCube::SetSize(int size, unsigned format, TextureUsage usage, int mul
 
     width_ = size;
     height_ = size;
+    depth_ = 1;
     format_ = format;
     multiSample_ = multiSample;
     autoResolve_ = multiSample > 1;
 
     return Create();
+}
+
+SharedPtr<Image> TextureCube::GetImage(CubeMapFace face) const
+{
+    if (format_ != Graphics::GetRGBAFormat() && format_ != Graphics::GetRGBFormat())
+    {
+        URHO3D_LOGERROR("Unsupported texture format, can not convert to Image");
+        return SharedPtr<Image>();
+    }
+
+    Image* rawImage = new Image(context_);
+    if (format_ == Graphics::GetRGBAFormat())
+        rawImage->SetSize(width_, height_, 4);
+    else if (format_ == Graphics::GetRGBFormat())
+        rawImage->SetSize(width_, height_, 3);
+    else
+        assert(0);
+
+    GetData(face, 0, rawImage->GetData());
+    return SharedPtr<Image>(rawImage);
 }
 
 void TextureCube::HandleRenderSurfaceUpdate(StringHash eventType, VariantMap& eventData)

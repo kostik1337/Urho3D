@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -198,8 +198,13 @@ bool AnimationController::Play(const String& name, unsigned char layer, bool loo
 
 bool AnimationController::PlayExclusive(const String& name, unsigned char layer, bool looped, float fadeTime)
 {
-    FadeOthers(name, 0.0f, fadeTime);
-    return Play(name, layer, looped, fadeTime);
+    bool success = Play(name, layer, looped, fadeTime);
+    
+    // Fade other animations only if successfully started the new one
+    if (success)
+        FadeOthers(name, 0.0f, fadeTime);
+    
+    return success;
 }
 
 bool AnimationController::Stop(const String& name, float fadeOutTime)
@@ -429,6 +434,18 @@ bool AnimationController::IsPlaying(const String& name) const
     AnimationState* state;
     FindAnimation(name, index, state);
     return index != M_MAX_UNSIGNED;
+}
+
+bool AnimationController::IsPlaying(unsigned char layer) const
+{
+    for (Vector<AnimationControl>::ConstIterator i = animations_.Begin(); i != animations_.End(); ++i)
+    {
+        AnimationState* state = GetAnimationState(i->hash_);
+        if (state && state->GetLayer() == layer)
+            return true;
+    }
+
+    return false;
 }
 
 bool AnimationController::IsFadingIn(const String& name) const

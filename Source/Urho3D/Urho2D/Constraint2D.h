@@ -51,7 +51,6 @@ public:
     virtual void ApplyAttributes();
     /// Return the depended on nodes to order network updates.
     virtual void GetDependencyNodes(PODVector<Node*>& dest);
-
     /// Handle enabled/disabled state change.
     virtual void OnSetEnabled();
     /// Create joint.
@@ -101,14 +100,15 @@ protected:
     WeakPtr<RigidBody2D> ownerBody_;
     /// Other body.
     WeakPtr<RigidBody2D> otherBody_;
+    /// Other body node ID for serialization.
+    unsigned otherBodyNodeID_;
+    /// Collide connected flag.
     /// Collide connected.
     bool collideConnected_;
+    /// Other body node ID dirty flag.
+    bool otherBodyNodeIDDirty_;
     /// Attached constraint.
     WeakPtr<Constraint2D> attachedConstraint_;
-    /// Other body node ID for pending constraint recreation.
-    unsigned otherBodyNodeID_;
-    /// Recreate constraint flag.
-    bool recreateConstraint_;
 };
 
 }

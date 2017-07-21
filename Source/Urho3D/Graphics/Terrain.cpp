@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -168,7 +168,7 @@ void Terrain::ApplyAttributes()
 {
     if (recreateTerrain_)
         CreateGeometry();
-    
+
     if (neighborsDirty_)
     {
         Scene* scene = GetScene();
@@ -228,7 +228,7 @@ void Terrain::SetMaxLodLevels(unsigned levels)
     {
         maxLodLevels_ = levels;
         lastPatchSize_ = 0; // Force full recreate
-        
+
         CreateGeometry();
         MarkNetworkUpdate();
     }
@@ -240,7 +240,7 @@ void Terrain::SetOcclusionLodLevel(unsigned level)
     {
         occlusionLodLevel_ = level;
         lastPatchSize_ = 0; // Force full recreate
-        
+
         CreateGeometry();
         MarkNetworkUpdate();
     }
@@ -564,7 +564,7 @@ TerrainPatch* Terrain::GetNeighborPatch(int x, int z) const
         return west_->GetPatch(x + west_->GetNumPatches().x_, z);
     else if (x >= numPatches_.x_ && east_)
         return east_->GetPatch(x - numPatches_.x_, z);
-    else 
+    else
         return GetPatch(x, z);
 }
 
@@ -575,8 +575,8 @@ float Terrain::GetHeight(const Vector3& worldPosition) const
         Vector3 position = node_->GetWorldTransform().Inverse() * worldPosition;
         float xPos = (position.x_ - patchWorldOrigin_.x_) / spacing_.x_;
         float zPos = (position.z_ - patchWorldOrigin_.y_) / spacing_.z_;
-        float xFrac = xPos - floorf(xPos);
-        float zFrac = zPos - floorf(zPos);
+        float xFrac = Fract(xPos);
+        float zFrac = Fract(zPos);
         float h1, h2, h3;
 
         if (xFrac + zFrac >= 1.0f)
@@ -609,8 +609,8 @@ Vector3 Terrain::GetNormal(const Vector3& worldPosition) const
         Vector3 position = node_->GetWorldTransform().Inverse() * worldPosition;
         float xPos = (position.x_ - patchWorldOrigin_.x_) / spacing_.x_;
         float zPos = (position.z_ - patchWorldOrigin_.y_) / spacing_.z_;
-        float xFrac = xPos - floorf(xPos);
-        float zFrac = zPos - floorf(zPos);
+        float xFrac = Fract(xPos);
+        float zFrac = Fract(zPos);
         Vector3 n1, n2, n3;
 
         if (xFrac + zFrac >= 1.0f)
@@ -649,6 +649,21 @@ IntVector2 Terrain::WorldToHeightMap(const Vector3& worldPosition) const
     return IntVector2(xPos, numVertices_.y_ - 1 - zPos);
 }
 
+Vector3 Terrain::HeightMapToWorld(const IntVector2& pixelPosition) const
+{
+    if (!node_)
+        return Vector3::ZERO;
+
+    IntVector2 pos(pixelPosition.x_, numVertices_.y_ - 1 - pixelPosition.y_);
+    float xPos = (float)(pos.x_ * spacing_.x_ + patchWorldOrigin_.x_);
+    float zPos = (float)(pos.y_ * spacing_.z_ + patchWorldOrigin_.y_);
+    Vector3 lPos(xPos, 0.0f, zPos);
+    Vector3 wPos = node_->GetWorldTransform() * lPos;
+    wPos.y_ = GetHeight(wPos);
+
+    return wPos;
+}
+
 void Terrain::CreatePatchGeometry(TerrainPatch* patch)
 {
     URHO3D_PROFILE(CreatePatchGeometry);
@@ -679,7 +694,7 @@ void Terrain::CreatePatchGeometry(TerrainPatch* patch)
         const IntVector2& coords = patch->GetCoordinates();
         int lodExpand = (1 << (occlusionLevel)) - 1;
         int halfLodExpand = (1 << (occlusionLevel)) / 2;
-        
+
         for (int z = 0; z <= patchSize_; ++z)
         {
             for (int x = 0; x <= patchSize_; ++x)
@@ -697,7 +712,7 @@ void Terrain::CreatePatchGeometry(TerrainPatch* patch)
                 *positionData++ = position.z_;
 
                 box.Merge(position);
-                
+
                 // For vertices that are part of the occlusion LOD, calculate the minimum height in the neighborhood
                 // to prevent false positive occlusion due to inaccuracy between occlusion LOD & visible LOD
                 float minHeight = position.y_;
@@ -724,7 +739,7 @@ void Terrain::CreatePatchGeometry(TerrainPatch* patch)
                 *vertexData++ = normal.z_;
 
                 // Texture coordinate
-                Vector2 texCoord((float)xPos / (float)numVertices_.x_, 1.0f - (float)zPos / (float)numVertices_.y_);
+                Vector2 texCoord((float)xPos / (float)(numVertices_.x_ - 1), 1.0f - (float)zPos / (float)(numVertices_.y_ - 1));
                 *vertexData++ = texCoord.x_;
                 *vertexData++ = texCoord.y_;
 
@@ -817,7 +832,7 @@ void Terrain::SetPatchSizeAttr(int value)
 void Terrain::SetMaxLodLevelsAttr(unsigned value)
 {
     value = Clamp(value, MIN_LOD_LEVELS, MAX_LOD_LEVELS);
-    
+
     if (value != maxLodLevels_)
     {
         maxLodLevels_ = value;
@@ -1039,8 +1054,7 @@ void Terrain::CreateGeometry()
                     {
                         // Create the patch scene node as local and temporary so that it is not unnecessarily serialized to either
                         // file or replicated over the network
-                        patchNode = node_->CreateChild(nodeName, LOCAL);
-                        patchNode->SetTemporary(true);
+                        patchNode = node_->CreateTemporaryChild(nodeName, LOCAL);
                     }
 
                     patchNode->SetPosition(Vector3(patchWorldOrigin_.x_ + (float)x * patchWorldSize_.x_, 0.0f,

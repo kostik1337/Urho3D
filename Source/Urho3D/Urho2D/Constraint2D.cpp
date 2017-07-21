@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,8 @@ Constraint2D::Constraint2D(Context* context) :
     Component(context),
     joint_(0),
     collideConnected_(false),
-    otherBodyNodeID_(0)
+    otherBodyNodeID_(0),
+    otherBodyNodeIDDirty_(false)
 {
 
 }
@@ -62,31 +63,23 @@ void Constraint2D::OnSetAttribute(const AttributeInfo& attr, const Variant& src)
 {
     Serializable::OnSetAttribute(attr, src);
 
-    if (!attr.accessor_)
-    {
-        // Certain attribute changes require recreation of the constraint
-        if (attr.offset_ == offsetof(Constraint2D, otherBodyNodeID_))
-            recreateConstraint_ = true;
-//        else
-//            framesDirty_ = true;
-    }
+    if (!attr.accessor_ && attr.offset_ == offsetof(Constraint2D, otherBodyNodeID_))
+        otherBodyNodeIDDirty_ = true;
 }
 
 void Constraint2D::ApplyAttributes()
 {
-    if (recreateConstraint_)
+    // If other body node ID dirty, try to find it now and apply
+    if (otherBodyNodeIDDirty_)
     {
-		ReleaseJoint();
-
         Scene* scene = GetScene();
-        if (scene && otherBodyNodeID_)
+        if (scene)
         {
             Node* otherNode = scene->GetNode(otherBodyNodeID_);
             if (otherNode)
-                otherBody_ = otherNode->GetComponent<RigidBody2D>();
+                SetOtherBody(otherNode->GetComponent<RigidBody2D>());
         }
-
-        CreateJoint();
+        otherBodyNodeIDDirty_ = false;
     }
 }
 
@@ -147,8 +140,7 @@ void Constraint2D::SetOtherBody(RigidBody2D* body)
 
     otherBody_ = body;
 
-    // Update the connected body attribute
-    Node* otherNode = otherBody_ ? otherBody_->GetNode() : 0;
+    Node* otherNode = body ? body->GetNode() : (Node*)0;
     otherBodyNodeID_ = otherNode ? otherNode->GetID() : 0;
 
     RecreateJoint();
@@ -189,7 +181,11 @@ void Constraint2D::OnNodeSet(Node* node)
 void Constraint2D::OnSceneSet(Scene* scene)
 {
     if (scene)
-        physicsWorld_ = scene->GetOrCreateComponent<PhysicsWorld2D>();
+    {
+        physicsWorld_ = scene->GetDerivedComponent<PhysicsWorld2D>();
+        if (!physicsWorld_)
+            physicsWorld_ = scene->CreateComponent<PhysicsWorld2D>();
+    }
 }
 
 void Constraint2D::InitializeJointDef(b2JointDef* jointDef)

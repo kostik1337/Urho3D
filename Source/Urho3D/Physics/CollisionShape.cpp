@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -194,40 +194,26 @@ private:
     Vector<SharedArrayPtr<unsigned char> > dataArrays_;
 };
 
-TriangleMeshData::TriangleMeshData(Model* model, unsigned lodLevel) :
-    meshInterface_(0),
-    shape_(0),
-    infoMap_(0)
+TriangleMeshData::TriangleMeshData(Model* model, unsigned lodLevel)
 {
     meshInterface_ = new TriangleMeshInterface(model, lodLevel);
-    shape_ = new btBvhTriangleMeshShape(meshInterface_, meshInterface_->useQuantize_, true);
+    shape_ = new btBvhTriangleMeshShape(meshInterface_.Get(), meshInterface_->useQuantize_, true);
 
     infoMap_ = new btTriangleInfoMap();
-    btGenerateInternalEdgeInfo(shape_, infoMap_);
+    btGenerateInternalEdgeInfo(shape_.Get(), infoMap_.Get());
 }
 
-TriangleMeshData::TriangleMeshData(CustomGeometry* custom) :
-    meshInterface_(0),
-    shape_(0),
-    infoMap_(0)
+TriangleMeshData::TriangleMeshData(CustomGeometry* custom)
 {
     meshInterface_ = new TriangleMeshInterface(custom);
-    shape_ = new btBvhTriangleMeshShape(meshInterface_, meshInterface_->useQuantize_, true);
+    shape_ = new btBvhTriangleMeshShape(meshInterface_.Get(), meshInterface_->useQuantize_, true);
 
     infoMap_ = new btTriangleInfoMap();
-    btGenerateInternalEdgeInfo(shape_, infoMap_);
+    btGenerateInternalEdgeInfo(shape_.Get(), infoMap_.Get());
 }
 
 TriangleMeshData::~TriangleMeshData()
 {
-    delete shape_;
-    shape_ = 0;
-
-    delete meshInterface_;
-    meshInterface_ = 0;
-
-    delete infoMap_;
-    infoMap_ = 0;
 }
 
 ConvexData::ConvexData(Model* model, unsigned lodLevel)
@@ -410,7 +396,6 @@ bool HasDynamicBuffers(Model* model, unsigned lodLevel)
 
 CollisionShape::CollisionShape(Context* context) :
     Component(context),
-    shape_(0),
     shapeType_(SHAPE_BOX),
     position_(Vector3::ZERO),
     rotation_(Quaternion::IDENTITY),
@@ -474,9 +459,6 @@ void CollisionShape::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
 {
     if (debug && physicsWorld_ && shape_ && node_ && IsEnabledEffective())
     {
-        physicsWorld_->SetDebugRenderer(debug);
-        physicsWorld_->SetDebugDepthTest(depthTest);
-
         // Use the rigid body's world transform if possible, as it may be different from the rendering transform
         Matrix3x4 worldTransform;
         RigidBody* body = GetComponent<RigidBody>();
@@ -489,22 +471,49 @@ void CollisionShape::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
         else
             worldTransform = node_->GetWorldTransform();
 
-        Vector3 position = position_;
-        // For terrains, undo the height centering performed automatically by Bullet
-        if (shapeType_ == SHAPE_TERRAIN && geometry_)
+        // Special case code for convex hull: bypass Bullet's own rendering to draw triangles correctly, not just edges
+        if (shapeType_ == SHAPE_CONVEXHULL)
         {
-            HeightfieldData* heightfield = static_cast<HeightfieldData*>(geometry_.Get());
-            position.y_ += (heightfield->minHeight_ + heightfield->maxHeight_) * 0.5f;
+            ConvexData *convexData = static_cast<ConvexData*>(GetGeometryData());
+            RigidBody* body = GetComponent<RigidBody>();
+            Color color = bodyActive ? Color::WHITE : Color::GREEN;
+            Matrix3x4 shapeTransform(worldTransform * position_, worldTransform.Rotation() * rotation_, worldTransform.Scale());
+
+            if (convexData)
+            {
+                for (unsigned i = 0; i < convexData->indexCount_; i += 3)
+                {
+                    Vector3 a = shapeTransform * convexData->vertexData_[convexData->indexData_[i + 0]];
+                    Vector3 b = shapeTransform * convexData->vertexData_[convexData->indexData_[i + 1]];
+                    Vector3 c = shapeTransform * convexData->vertexData_[convexData->indexData_[i + 2]];
+                    debug->AddLine(a, b, color, depthTest);
+                    debug->AddLine(b, c, color, depthTest);
+                    debug->AddLine(a, c, color, depthTest);
+                }
+             }
         }
+        else
+        {
+            physicsWorld_->SetDebugRenderer(debug);
+            physicsWorld_->SetDebugDepthTest(depthTest);
 
-        Vector3 worldPosition(worldTransform * position);
-        Quaternion worldRotation(worldTransform.Rotation() * rotation_);
+            Vector3 position = position_;
+            // For terrains, undo the height centering performed automatically by Bullet
+            if (shapeType_ == SHAPE_TERRAIN && geometry_)
+            {
+                HeightfieldData* heightfield = static_cast<HeightfieldData*>(geometry_.Get());
+                position.y_ += (heightfield->minHeight_ + heightfield->maxHeight_) * 0.5f;
+            }
 
-        btDiscreteDynamicsWorld* world = physicsWorld_->GetWorld();
-        world->debugDrawObject(btTransform(ToBtQuaternion(worldRotation), ToBtVector3(worldPosition)), shape_, bodyActive ?
-            WHITE : GREEN);
+            Vector3 worldPosition(worldTransform * position);
+            Quaternion worldRotation(worldTransform.Rotation() * rotation_);
 
-        physicsWorld_->SetDebugRenderer(0);
+            btDiscreteDynamicsWorld* world = physicsWorld_->GetWorld();
+            world->debugDrawObject(btTransform(ToBtQuaternion(worldRotation), ToBtVector3(worldPosition)), shape_.Get(), bodyActive ?
+                WHITE : GREEN);
+
+            physicsWorld_->SetDebugRenderer(0);
+        }
     }
 }
 
@@ -863,7 +872,7 @@ void CollisionShape::NotifyRigidBody(bool updateMass)
     if (node_ && shape_ && compound)
     {
         // Remove the shape first to ensure it is not added twice
-        compound->removeChildShape(shape_);
+        compound->removeChildShape(shape_.Get());
 
         if (IsEnabledEffective())
         {
@@ -879,7 +888,7 @@ void CollisionShape::NotifyRigidBody(bool updateMass)
             btTransform offset;
             offset.setOrigin(ToBtVector3(node_->GetWorldScale() * position));
             offset.setRotation(ToBtQuaternion(rotation_));
-            compound->addChildShape(offset, shape_);
+            compound->addChildShape(offset, shape_.Get());
         }
 
         // Finally tell the rigid body to update its mass
@@ -906,12 +915,11 @@ void CollisionShape::ReleaseShape()
     btCompoundShape* compound = GetParentCompoundShape();
     if (shape_ && compound)
     {
-        compound->removeChildShape(shape_);
+        compound->removeChildShape(shape_.Get());
         rigidBody_->UpdateMass();
     }
 
-    delete shape_;
-    shape_ = 0;
+    shape_.Reset();
 
     geometry_.Reset();
 
@@ -1072,7 +1080,7 @@ void CollisionShape::UpdateShape()
                 {
                     geometry_ = new TriangleMeshData(custom);
                     TriangleMeshData* triMesh = static_cast<TriangleMeshData*>(geometry_.Get());
-                    shape_ = new btScaledBvhTriangleMeshShape(triMesh->shape_, ToBtVector3(newWorldScale * size_));
+                    shape_ = new btScaledBvhTriangleMeshShape(triMesh->shape_.Get(), ToBtVector3(newWorldScale * size_));
                 }
                 else
                     URHO3D_LOGWARNING("Could not find custom geometry component ID " + String(customGeometryID_) +
@@ -1095,7 +1103,7 @@ void CollisionShape::UpdateShape()
                 }
 
                 TriangleMeshData* triMesh = static_cast<TriangleMeshData*>(geometry_.Get());
-                shape_ = new btScaledBvhTriangleMeshShape(triMesh->shape_, ToBtVector3(newWorldScale * size_));
+                shape_ = new btScaledBvhTriangleMeshShape(triMesh->shape_.Get(), ToBtVector3(newWorldScale * size_));
                 // Watch for live reloads of the collision model to reload the geometry if necessary
                 SubscribeToEvent(model_, E_RELOADFINISHED, URHO3D_HANDLER(CollisionShape, HandleModelReloadFinished));
             }

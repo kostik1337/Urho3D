@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -277,7 +277,7 @@ Renderer::Renderer(Context* context) :
     shadowMapSize_(1024),
     shadowQuality_(SHADOWQUALITY_PCF_16BIT),
     shadowSoftness_(1.0f),
-    vsmShadowParams_(0.0000001f, 0.2f),
+    vsmShadowParams_(0.0000001f, 0.9f),
     vsmMultiSample_(1),
     maxShadowMaps_(1),
     minInstances_(2),
@@ -687,7 +687,7 @@ void Renderer::Update(float timeStep)
         LoadShaders();
 
     // Queue update of the main viewports. Use reverse order, as rendering order is also reverse
-    // to render auxiliary views before dependant main views
+    // to render auxiliary views before dependent main views
     for (unsigned i = viewports_.Size() - 1; i < viewports_.Size(); --i)
         QueueViewport(0, viewports_[i]);
 
@@ -759,6 +759,9 @@ void Renderer::Render()
 
     // Remove unused occlusion buffers and renderbuffers
     RemoveUnusedBuffers();
+
+    // All views done, custom rendering can now be done before UI
+    SendEvent(E_ENDALLVIEWSRENDER);
 }
 
 void Renderer::DrawDebugGeometry(bool depthTest)
@@ -956,6 +959,9 @@ Texture2D* Renderer::GetShadowMap(Light* light, Camera* camera, unsigned viewWid
     int retries = 3;
     unsigned dummyColorFormat = graphics_->GetDummyColorFormat();
 
+    // Disable mipmaps from the shadow map
+    newShadowMap->SetNumLevels(1);
+
     while (retries)
     {
         if (!newShadowMap->SetSize(width, height, shadowMapFormat, shadowMapUsage, multiSample))
@@ -984,6 +990,7 @@ Texture2D* Renderer::GetShadowMap(Light* light, Camera* camera, unsigned viewWid
                 if (!colorShadowMaps_.Contains(searchKey))
                 {
                     colorShadowMaps_[searchKey] = new Texture2D(context_);
+                    colorShadowMaps_[searchKey]->SetNumLevels(1);
                     colorShadowMaps_[searchKey]->SetSize(width, height, dummyColorFormat, TEXTURE_RENDERTARGET);
                 }
                 // Link the color rendertarget to the shadow map
@@ -1051,6 +1058,8 @@ Texture* Renderer::GetScreenBuffer(int width, int height, unsigned format, int m
         if (!cubemap)
         {
             SharedPtr<Texture2D> newTex2D(new Texture2D(context_));
+            /// \todo Mipmaps disabled for now. Allow to request mipmapped buffer?
+            newTex2D->SetNumLevels(1);
             newTex2D->SetSize(width, height, format, depthStencil ? TEXTURE_DEPTHSTENCIL : TEXTURE_RENDERTARGET, multiSample, autoResolve);
 
 #ifdef URHO3D_OPENGL
@@ -1072,6 +1081,7 @@ Texture* Renderer::GetScreenBuffer(int width, int height, unsigned format, int m
         else
         {
             SharedPtr<TextureCube> newTexCube(new TextureCube(context_));
+            newTexCube->SetNumLevels(1);
             newTexCube->SetSize(width, format, TEXTURE_RENDERTARGET, multiSample);
 
             newBuffer = newTexCube;
@@ -1166,18 +1176,20 @@ View* Renderer::GetActualView(View* view)
         return view;
 }
 
-void Renderer::SetBatchShaders(Batch& batch, Technique* tech, bool allowShadows)
+void Renderer::SetBatchShaders(Batch& batch, Technique* tech, bool allowShadows, const BatchQueue& queue)
 {
-    // Check if shaders are unloaded or need reloading
     Pass* pass = batch.pass_;
-    Vector<SharedPtr<ShaderVariation> >& vertexShaders = pass->GetVertexShaders();
-    Vector<SharedPtr<ShaderVariation> >& pixelShaders = pass->GetPixelShaders();
-    if (!vertexShaders.Size() || !pixelShaders.Size() || pass->GetShadersLoadedFrameNumber() != shadersChangedFrameNumber_)
-    {
-        // First release all previous shaders, then load
+
+    // Check if need to release/reload all shaders
+    if (pass->GetShadersLoadedFrameNumber() != shadersChangedFrameNumber_)
         pass->ReleaseShaders();
-        LoadPassShaders(pass);
-    }
+
+    Vector<SharedPtr<ShaderVariation> >& vertexShaders = queue.hasExtraDefines_ ? pass->GetVertexShaders(queue.vsExtraDefinesHash_) : pass->GetVertexShaders();
+    Vector<SharedPtr<ShaderVariation> >& pixelShaders = queue.hasExtraDefines_ ? pass->GetPixelShaders(queue.psExtraDefinesHash_) : pass->GetPixelShaders();
+    
+    // Load shaders now if necessary
+    if (!vertexShaders.Size() || !pixelShaders.Size())
+        LoadPassShaders(pass, vertexShaders, pixelShaders, queue);
 
     // Make sure shaders are loaded now
     if (vertexShaders.Size() && pixelShaders.Size())
@@ -1653,26 +1665,42 @@ void Renderer::LoadShaders()
     shadersDirty_ = false;
 }
 
-void Renderer::LoadPassShaders(Pass* pass)
+void Renderer::LoadPassShaders(Pass* pass, Vector<SharedPtr<ShaderVariation> >& vertexShaders, Vector<SharedPtr<ShaderVariation> >& pixelShaders, const BatchQueue& queue)
 {
     URHO3D_PROFILE(LoadPassShaders);
-
-    Vector<SharedPtr<ShaderVariation> >& vertexShaders = pass->GetVertexShaders();
-    Vector<SharedPtr<ShaderVariation> >& pixelShaders = pass->GetPixelShaders();
 
     // Forget all the old shaders
     vertexShaders.Clear();
     pixelShaders.Clear();
 
-    String extraShaderDefines = " ";
+    String vsDefines = pass->GetEffectiveVertexShaderDefines();
+    String psDefines = pass->GetEffectivePixelShaderDefines();
+
+    // Make sure to end defines with space to allow appending engine's defines
+    if (vsDefines.Length() && !vsDefines.EndsWith(" "))
+        vsDefines += ' ';
+    if (psDefines.Length() && !psDefines.EndsWith(" "))
+        psDefines += ' ';
+
+    // Append defines from batch queue (renderpath command) if needed
+    if (queue.vsExtraDefines_.Length())
+    {
+        vsDefines += queue.vsExtraDefines_;
+        vsDefines += ' ';
+    }
+    if (queue.psExtraDefines_.Length())
+    {
+        psDefines += queue.psExtraDefines_;
+        psDefines += ' ';
+    }
+
+    // Add defines for VSM in the shadow pass if necessary
     if (pass->GetName() == "shadow"
         && (shadowQuality_ == SHADOWQUALITY_VSM || shadowQuality_ == SHADOWQUALITY_BLUR_VSM))
     {
-        extraShaderDefines = " VSM_SHADOW ";
+        vsDefines += "VSM_SHADOW ";
+        psDefines += "VSM_SHADOW ";
     }
-
-    String vsDefines = pass->GetEffectiveVertexShaderDefines();
-    String psDefines = pass->GetEffectivePixelShaderDefines();
 
     if (pass->GetLightingMode() == LIGHTING_PERPIXEL)
     {
@@ -1686,7 +1714,7 @@ void Renderer::LoadPassShaders(Pass* pass)
             unsigned l = j % MAX_LIGHT_VS_VARIATIONS;
 
             vertexShaders[j] = graphics_->GetShader(VS, pass->GetVertexShader(),
-                vsDefines + extraShaderDefines + lightVSVariations[l] + geometryVSVariations[g]);
+                vsDefines + lightVSVariations[l] + geometryVSVariations[g]);
         }
         for (unsigned j = 0; j < MAX_LIGHT_PS_VARIATIONS * 2; ++j)
         {
@@ -1696,12 +1724,12 @@ void Renderer::LoadPassShaders(Pass* pass)
             if (l & LPS_SHADOW)
             {
                 pixelShaders[j] = graphics_->GetShader(PS, pass->GetPixelShader(),
-                    psDefines + extraShaderDefines + lightPSVariations[l] + GetShadowVariations() +
+                    psDefines + lightPSVariations[l] + GetShadowVariations() +
                     heightFogVariations[h]);
             }
             else
                 pixelShaders[j] = graphics_->GetShader(PS, pass->GetPixelShader(),
-                    psDefines + extraShaderDefines + lightPSVariations[l] + heightFogVariations[h]);
+                    psDefines + lightPSVariations[l] + heightFogVariations[h]);
         }
     }
     else
@@ -1715,7 +1743,7 @@ void Renderer::LoadPassShaders(Pass* pass)
                 unsigned g = j / MAX_VERTEXLIGHT_VS_VARIATIONS;
                 unsigned l = j % MAX_VERTEXLIGHT_VS_VARIATIONS;
                 vertexShaders[j] = graphics_->GetShader(VS, pass->GetVertexShader(),
-                    vsDefines + extraShaderDefines + vertexLightVSVariations[l] + geometryVSVariations[g]);
+                    vsDefines + vertexLightVSVariations[l] + geometryVSVariations[g]);
             }
         }
         else
@@ -1724,7 +1752,7 @@ void Renderer::LoadPassShaders(Pass* pass)
             for (unsigned j = 0; j < MAX_GEOMETRYTYPES; ++j)
             {
                 vertexShaders[j] = graphics_->GetShader(VS, pass->GetVertexShader(),
-                    vsDefines + extraShaderDefines + geometryVSVariations[j]);
+                    vsDefines + geometryVSVariations[j]);
             }
         }
 
@@ -1732,7 +1760,7 @@ void Renderer::LoadPassShaders(Pass* pass)
         for (unsigned j = 0; j < 2; ++j)
         {
             pixelShaders[j] =
-                graphics_->GetShader(PS, pass->GetPixelShader(), psDefines + extraShaderDefines + heightFogVariations[j]);
+                graphics_->GetShader(PS, pass->GetPixelShader(), psDefines + heightFogVariations[j]);
         }
     }
 

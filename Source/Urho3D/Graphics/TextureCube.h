@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -67,6 +67,8 @@ public:
 
     /// Get data from a face's mip level. The destination buffer must be big enough. Return true if successful.
     bool GetData(CubeMapFace face, unsigned level, void* dest) const;
+    /// Get image data from a face's zero mip level. Only RGB and RGBA textures are supported.
+    SharedPtr<Image> GetImage(CubeMapFace face) const;
 
     /// Return render surface for one face.
     RenderSurface* GetRenderSurface(CubeMapFace face) const { return renderSurfaces_[face]; }

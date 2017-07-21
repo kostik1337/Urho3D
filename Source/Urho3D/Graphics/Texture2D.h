@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -68,6 +68,8 @@ public:
 
     /// Get data from a mip level. The destination buffer must be big enough. Return true if successful.
     bool GetData(unsigned level, void* dest) const;
+    /// Get image data from zero mip level. Only RGB and RGBA textures are supported.
+    SharedPtr<Image> GetImage() const;
 
     /// Return render surface.
     RenderSurface* GetRenderSurface() const { return renderSurface_; }

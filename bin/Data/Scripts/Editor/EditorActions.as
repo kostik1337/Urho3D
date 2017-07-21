@@ -732,7 +732,7 @@ class CreateUIElementAction : EditAction
             // Have to update manually because the element ID var is not set yet when the E_ELEMENTADDED event is sent
             suppressUIElementChanges = true;
 
-            if (parent.LoadChildXML(elementData.root, styleFile))
+            if (parent.LoadChildXML(elementData.root, styleFile) !is null)
             {
                 UIElement@ element = parent.children[parent.numChildren - 1];
                 UpdateHierarchyItem(element);
@@ -773,7 +773,7 @@ class DeleteUIElementAction : EditAction
             // Have to update manually because the element ID var is not set yet when the E_ELEMENTADDED event is sent
             suppressUIElementChanges = true;
 
-            if (parent.LoadChildXML(elementData.root, styleFile))
+            if (parent.LoadChildXML(elementData.root, styleFile) !is null)
             {
                 XMLElement rootElem = elementData.root;
                 uint index = rootElem.GetUInt("index");
@@ -908,7 +908,7 @@ class ApplyUIElementStyleAction : EditAction
             suppressUIElementChanges = true;
 
             parent.RemoveChild(element);
-            if (parent.LoadChildXML(elementData.root, styleFile))
+            if (parent.LoadChildXML(elementData.root, styleFile) !is null)
             {
                 XMLElement rootElem = elementData.root;
                 uint index = rootElem.GetUInt("index");
@@ -1059,8 +1059,8 @@ class AssignModelAction : EditAction
     void Define(StaticModel@ staticModel_, Model@ oldModel_, Model@ newModel_)
     {
         staticModel = staticModel_;
-        oldModel = oldModel_.name;
-        newModel = newModel_.name;
+        oldModel = (oldModel_ !is null) ? oldModel_.name : "";
+        newModel = (newModel_ !is null) ? newModel_.name : "";
     }
 
     void Undo()
@@ -1087,4 +1087,66 @@ class AssignModelAction : EditAction
         staticModel_.model = model;
     }
 
+}
+
+class ModifyTerrainAction : EditAction
+{
+    WeakHandle terrain;
+    IntVector2 offset;
+    VectorBuffer compressedOldBuffer;
+    VectorBuffer compressedNewBuffer;
+
+    void Define(Terrain@ terrain_, IntVector2 offset_, Image@ oldImage_, Image@ newImage_)
+    {
+        terrain = terrain_;
+        offset = offset_;
+        VectorBuffer uncompressedOldBuffer;
+        VectorBuffer uncompressedNewBuffer;
+        oldImage_.Save(uncompressedOldBuffer);
+        newImage_.Save(uncompressedNewBuffer);
+        compressedOldBuffer = CompressVectorBuffer(uncompressedOldBuffer);
+        compressedNewBuffer = CompressVectorBuffer(uncompressedNewBuffer);
+    }
+
+    void Undo()
+    {
+        Terrain@ terrain_ = terrain.Get();
+        if (terrain_ is null)
+            return;
+
+        VectorBuffer uncompressedOldBuffer = DecompressVectorBuffer(compressedOldBuffer);
+        Image oldImage;
+        oldImage.Load(uncompressedOldBuffer);
+
+        for (int y = 0; y < oldImage.height; ++y)
+        {
+            for (int x = 0; x < oldImage.width; ++x)
+            {
+                terrain_.heightMap.SetPixel(offset.x + x, offset.y + y, oldImage.GetPixel(x, y));
+            }
+        }
+
+        terrain_.ApplyHeightMap();
+    }
+
+    void Redo()
+    {
+        Terrain@ terrain_ = terrain.Get();
+        if (terrain_ is null)
+            return;
+
+        VectorBuffer uncompressedNewBuffer = DecompressVectorBuffer(compressedNewBuffer);
+        Image newImage;
+        newImage.Load(uncompressedNewBuffer);
+
+        for (int y = 0; y < newImage.height; ++y)
+        {
+            for (int x = 0; x < newImage.width; ++x)
+            {
+                terrain_.heightMap.SetPixel(offset.x + x, offset.y + y, newImage.GetPixel(x, y));
+            }
+        }
+
+        terrain_.ApplyHeightMap();
+    }
 }

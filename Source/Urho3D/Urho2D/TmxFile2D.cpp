@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@
 #include "../IO/Log.h"
 #include "../Urho3D/Graphics/Renderer.h"
 #include "../Resource/ResourceCache.h"
+#include "../Resource/XMLFile.h"
 #include "../Urho2D/Sprite2D.h"
 #include "../Urho2D/SpriterData2D.h"
 #include "../Graphics/Texture2D.h"
@@ -90,6 +91,12 @@ TmxTileLayer2D::TmxTileLayer2D(TmxFile2D* tmxFile) :
 {
 }
 
+enum LayerEncoding {
+    XML,
+    CSV,
+    Base64,
+};
+
 bool TmxTileLayer2D::Load(const XMLElement& element, const TileMapInfo2D& info)
 {
     LoadInfo(element);
@@ -101,39 +108,112 @@ bool TmxTileLayer2D::Load(const XMLElement& element, const TileMapInfo2D& info)
         return false;
     }
 
-    if (dataElem.HasAttribute("encoding") && dataElem.GetAttribute("encoding") != "xml")
+    LayerEncoding encoding;
+    if (dataElem.HasAttribute("compression"))
     {
-        URHO3D_LOGERROR("Encoding is not supported. Please use tmx format");
+        URHO3D_LOGERROR("Compression not supported now");
         return false;
     }
 
-    XMLElement tileElem = dataElem.GetChild("tile");
-    tiles_.Resize((unsigned)(width_ * height_));
-
-    for (int y = 0; y < height_; ++y)
+    if (dataElem.HasAttribute("encoding"))
     {
-        for (int x = 0; x < width_; ++x)
+        String encodingAttribute = dataElem.GetAttribute("encoding");
+        if (encodingAttribute == "xml")
+            encoding = XML;
+        else if (encodingAttribute == "csv")
+            encoding = CSV;
+        else if (encodingAttribute == "base64")
+            encoding = Base64;
+        else
         {
-            if (!tileElem)
-                return false;
+            URHO3D_LOGERROR("Invalid encoding: " + encodingAttribute);
+            return false;
+        }
+    }
+    else
+        encoding = XML;
 
-            unsigned gid = tileElem.GetUInt("gid");
-            Vector3 flipAxis;
-            tmxFile_->GetActualGid(gid, flipAxis);
+    tiles_.Resize((unsigned)(width_ * height_));
+    if (encoding == XML)
+    {
+        XMLElement tileElem = dataElem.GetChild("tile");
 
-            if (gid > 0)
+        for (int y = 0; y < height_; ++y)
+        {
+            for (int x = 0; x < width_; ++x)
             {
-                SharedPtr<Tile2D> tile(new Tile2D());
-                tile->gid_ = (int)gid;
-                tile->sprite_ = tmxFile_->GetTileSprite(gid);
-                tile->anim_ = tmxFile_->GetTileAnim(gid);
-                tile->collisionShapes_ = tmxFile_->GetTileCollisionShapes(gid);
-                tile->flipAxis_ = flipAxis;
-                tile->propertySet_ = tmxFile_->GetTilePropertySet(gid);
-                tiles_[y * width_ + x] = tile;
-            }
+                if (!tileElem)
+                    return false;
 
-            tileElem = tileElem.GetNext("tile");
+                unsigned gid = tileElem.GetInt("gid");
+                Vector3 flipAxis;
+                tmxFile_->GetActualGid(gid, flipAxis);
+
+                if (gid > 0)
+                {
+                    SharedPtr<Tile2D> tile(new Tile2D());
+                    tile->gid_ = (int)gid;
+                    tile->sprite_ = tmxFile_->GetTileSprite(gid);
+                    tile->anim_ = tmxFile_->GetTileAnim(gid);
+                    tile->collisionShapes_ = tmxFile_->GetTileCollisionShapes(gid);
+                    tile->flipAxis_ = flipAxis;
+                    tile->propertySet_ = tmxFile_->GetTilePropertySet(gid);
+                    tiles_[y * width_ + x] = tile;
+                }
+
+                tileElem = tileElem.GetNext("tile");
+            }
+        }
+    }
+    else if (encoding == CSV)
+    {
+        String dataValue = dataElem.GetValue();
+        Vector<String> gidVector = dataValue.Split(',');
+        int currentIndex = 0;
+        for (int y = 0; y < height_; ++y)
+        {
+            for (int x = 0; x < width_; ++x)
+            {
+                gidVector[currentIndex].Replace("\n", "");
+                int gid = ToInt(gidVector[currentIndex]);
+                if (gid > 0)
+                {
+                    SharedPtr<Tile2D> tile(new Tile2D());
+                    tile->gid_ = gid;
+                    tile->sprite_ = tmxFile_->GetTileSprite(gid);
+                    tile->propertySet_ = tmxFile_->GetTilePropertySet(gid);
+                    tiles_[y * width_ + x] = tile;
+                }
+                ++currentIndex;
+            }
+        }
+    }
+    else if (encoding == Base64)
+    {
+        String dataValue = dataElem.GetValue();
+        int startPosition = 0;
+        while (!IsAlpha(dataValue[startPosition]) && !IsDigit(dataValue[startPosition])
+              && dataValue[startPosition] != '+' && dataValue[startPosition] != '/') ++startPosition;
+        dataValue = dataValue.Substring(startPosition);
+        PODVector<unsigned char> buffer = DecodeBase64(dataValue);
+        int currentIndex = 0;
+        for (int y = 0; y < height_; ++y)
+        {
+            for (int x = 0; x < width_; ++x)
+            {
+                // buffer contains 32-bit integers in little-endian format
+                int gid = (buffer[currentIndex+3] << 24) | (buffer[currentIndex+2] << 16)
+                        | (buffer[currentIndex+1] << 8) | buffer[currentIndex];
+                if (gid > 0)
+                {
+                    SharedPtr<Tile2D> tile(new Tile2D());
+                    tile->gid_ = gid;
+                    tile->sprite_ = tmxFile_->GetTileSprite(gid);
+                    tile->propertySet_ = tmxFile_->GetTilePropertySet(gid);
+                    tiles_[y * width_ + x] = tile;
+                }
+                currentIndex += 4;
+            }
         }
     }
 
@@ -290,7 +370,7 @@ void TmxObjectGroup2D::StoreObject(XMLElement objectElem, SharedPtr<TileMapObjec
                 for (unsigned i = 0; i < points.Size(); ++i)
                 {
                     points[i].Replace(',', ' ');
-					object->points_[i] = info.ConvertPosition(position + object->RotatedPosition(ToVector2(points[i]), rotation), isTile);
+                    object->points_[i] = info.ConvertPosition(position + object->RotatedPosition(ToVector2(points[i]), rotation), isTile);
                 }
             }
             break;
