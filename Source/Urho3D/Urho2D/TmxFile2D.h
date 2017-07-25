@@ -99,11 +99,11 @@ public:
     Tile2D* GetTile(int x, int y) const;
 
 protected:
-    /// Tile.
+    /// Tiles.
     Vector<SharedPtr<Tile2D> > tiles_;
 };
 
-/// Tmx image layer.
+/// Tmx objects layer.
 class TmxObjectGroup2D : public TmxLayer2D
 {
 public:
@@ -180,8 +180,14 @@ public:
     /// Return Tilemap information.
     const TileMapInfo2D& GetInfo() const { return info_; }
 
-    /// Return tile sprite by gid, if not exist return 0.
+    /// Return tile sprite by gid.
     Sprite2D* GetTileSprite(int gid) const;
+
+    /// Return animation name set for a given gid.
+    String GetTileAnim(int gid) const;
+
+    /// Return tile collision shapes for a given gid.
+    Vector<SharedPtr<TileMapObject2D> > GetTileCollisionShapes(int gid) const;
 
     /// Return tile property set by gid, if not exist return 0.
     PropertySet2D* GetTilePropertySet(int gid) const;
@@ -213,11 +219,19 @@ private:
     HashMap<int, SharedPtr<Sprite2D> > gidToSpriteMapping_;
     /// Gid to tile property set mapping.
     HashMap<int, SharedPtr<PropertySet2D> > gidToPropertySetMapping_;
+<<<<<<< HEAD
     /// Gid to collision object group mapping.
     HashMap<int, SharedPtr<TmxObjectGroup2D> > gidToCollisionObjectGroupMapping_;
+=======
+    /// Gid to tile animation mapping.
+    HashMap<int, String> gidToAnimMapping_;
+    /// Gid to tile collision shape mapping.
+    HashMap<int, Vector<SharedPtr<TileMapObject2D> > > gidToCollisionShapeMapping_;
+>>>>>>> new-tmx-features
     /// Layers.
     Vector<TmxLayer2D*> layers_;
+    /// Tile animation name.
+    String animationName_;
 };
 
 }
-
