@@ -90,10 +90,10 @@ public:
 
     /// Set sprite externally for procedural animation.
     void SetSprite(Sprite2D* sprite) { sprite_ = sprite; }
-	/// Set spriter data externally for procedural animation.
-	void SetSpriterData(Spriter::SpriterData* data) { spriterData_ = data; }
-	/// Set spriter sprites externally for procedural animation.
-	void SetSpriterFileSprites(HashMap<int, SharedPtr<Sprite2D> > sprites) { spriterFileSprites_ = sprites; }
+    /// Set spriter data externally for procedural animation.
+    void SetSpriterData(Spriter::SpriterData* data) { spriterData_ = data; }
+    /// Set spriter sprites externally for procedural animation.
+    void SetSpriterFileSprites(HashMap<int, SharedPtr<Sprite2D> > sprites) { spriterFileSprites_ = sprites; }
 
 private:
     /// Return sprite by hash.

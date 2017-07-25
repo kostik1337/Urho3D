@@ -396,11 +396,11 @@ const String& TileMapObject2D::GetProperty(const String& name) const
 
 Vector2 TileMapObject2D::RotatedPosition(const Vector2& position, float rotation)
 {
-	if (rotation == 0.0f || position.IsNaN())
-		return position;
+    if (rotation == 0.0f || position.IsNaN())
+        return position;
 
-	Vector3 rotated = Quaternion(0.0f, 0.0f, rotation) * Vector3(position);
-	return Vector2(rotated.x_, rotated.y_);
+    Vector3 rotated = Quaternion(0.0f, 0.0f, rotation) * Vector3(position);
+    return Vector2(rotated.x_, rotated.y_);
 }
 
 }

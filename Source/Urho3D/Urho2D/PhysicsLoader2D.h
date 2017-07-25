@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ class XMLFile;
 /// Circle Data.
 struct CircleData2D
 {
-	/// Circle radius.
+    /// Circle radius.
     float radius_;
     /// Circle center (position).
     Vector2 center_;
@@ -50,53 +50,53 @@ struct URHO3D_API FixtureData2D
 {
     /// Construct.
     FixtureData2D() :
-		density_(1.0f),
-		friction_(0.2f),
-		restitution_(0.0f),
-		categoryBits_(1),
-		groupIndex_(0),
-		maskBits_(65535),
-		trigger_(false),
-		solid_(true)
+        density_(1.0f),
+        friction_(0.2f),
+        restitution_(0.0f),
+        categoryBits_(1),
+        groupIndex_(0),
+        maskBits_(65535),
+        trigger_(false),
+        solid_(true)
     {
     }
 
-	/// Vertices (polygons). One Vector for each polygon.
+    /// Vertices (polygons). One Vector for each polygon.
     Vector<Vector<Vector2> > vertices_;
-	/// Cercle info (center and radius).
-	Vector<CircleData2D> circles_;
-	/// Polyline info (points).
-	Vector<Vector2> points_;
+    /// Cercle info (center and radius).
+    Vector<CircleData2D> circles_;
+    /// Polyline info (points).
+    Vector<Vector2> points_;
     /// Shape density.
     float density_;
     /// Shape friction.
     float friction_;
     /// Shape restitution.
-	float restitution_;
-	/// Shape category bits.
-	int categoryBits_;
-	/// Shape group index.
-	int groupIndex_;
-	/// Shape mask bits.
-	int maskBits_;
-	/// Shape trigger flag.
-	bool trigger_;
-	/// Flag to discriminate between solid (polygon) and hollow (polyline) shapes.
-	bool solid_;
+    float restitution_;
+    /// Shape category bits.
+    int categoryBits_;
+    /// Shape group index.
+    int groupIndex_;
+    /// Shape mask bits.
+    int maskBits_;
+    /// Shape trigger flag.
+    bool trigger_;
+    /// Flag to discriminate between solid (polygon) and hollow (polyline) shapes.
+    bool solid_;
 };
 
 /// Physics information.
 struct URHO3D_API PhysicsInfo2D
 {
-	/// Construct.
+    /// Construct.
     PhysicsInfo2D() :
-		bodyType_(BT_DYNAMIC),
-		mass_(1.0f),
-		gravityScale_(1.0f),
-		fixedRotation_(false),
-		scale_(1.0f),
-		leftBottom_(false),
-		pbeNoSprite_(false)
+        bodyType_(BT_DYNAMIC),
+        mass_(1.0f),
+        gravityScale_(1.0f),
+        fixedRotation_(false),
+        scale_(1.0f),
+        leftBottom_(false),
+        pbeNoSprite_(false)
     {
     }
 
@@ -120,10 +120,10 @@ struct URHO3D_API PhysicsInfo2D
     SharedPtr<Sprite2D> sprite_;
     /// Origin.
     Vector2 origin_;
-	/// Left-bottom pivot flag used to trigger shape centering according to sprite's size.
-	bool leftBottom_;
-	/// Flag used to trigger collision shape scaling and centering according to sprite size when sprite is not found or not set in Physics Body Editor file.
-	bool pbeNoSprite_;
+    /// Left-bottom pivot flag used to trigger shape centering according to sprite's size.
+    bool leftBottom_;
+    /// Flag used to trigger collision shape scaling and centering according to sprite size when sprite is not found or not set in Physics Body Editor file.
+    bool pbeNoSprite_;
 };
 
 

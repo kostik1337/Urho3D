@@ -98,26 +98,26 @@ public:
     Node* CreateProceduralModel(Vector<float> polypoints, bool dummy = false, Node* = 0);
     /// Store objects' vertices in Urho3D format, to be used for procedural 3D shapes. Return model center position.
     Vector3 StoreVertices(unsigned& numVertices, PODVector<float>& vertexData, PODVector<unsigned short>& indexData, BoundingBox& bbox, Vector<float> polypoints, bool dummy = false);
-	/// Convert edges (from a polyline) to triangles by duplicating the second vertice of each pair of points.
-	void EdgesToTriangles(Vector<float>& points);
-	/// Triangulate
-	bool Triangulate(Vector<float>& vertices, Vector<Vector2> points);
-	/// Create a procedural 3D model from polyline points.
-	Node* ModelFromPolyline(Vector<Vector2> points, Node* node = 0);
-	/// Get navigation mesh.
-	NavigationMesh* GetNavMesh() const;
-	/// Remove an obstacle from the navigation mesh.
-	void RemoveObstacle(Node* hitNode);
-	/// Add an obstacle to the navigation mesh. Optionaly add a child node that can be used to display a Drawable2D.
-	void AddObstacle(const Vector2& pos, Vector<Vector2> points, Node* node = 0);
-	/// Add an obstacle to the navigation mesh. Optionaly add a child node that can be used to display a Drawable2D.
-	void AddObstacle(const Vector2& pos, TileMapObject2D* obj, Node* node = 0);
-	/// Fully rebuild navigation mesh.
-	bool RebuildNavMesh();
-	///
-	Vector<SharedPtr<TileMapObject2D> > GetTileCollisionShapes(int gid) const;
-	/// Detach constraints (parent them to scene) and optionaly remove tile map (if you don't intend to use it).
-	void DetachConstraints(bool removeTileMap = false);
+    /// Convert edges (from a polyline) to triangles by duplicating the second vertice of each pair of points.
+    void EdgesToTriangles(Vector<float>& points);
+    /// Triangulate
+    bool Triangulate(Vector<float>& vertices, Vector<Vector2> points);
+    /// Create a procedural 3D model from polyline points.
+    Node* ModelFromPolyline(Vector<Vector2> points, Node* node = 0);
+    /// Get navigation mesh.
+    NavigationMesh* GetNavMesh() const;
+    /// Remove an obstacle from the navigation mesh.
+    void RemoveObstacle(Node* hitNode);
+    /// Add an obstacle to the navigation mesh. Optionaly add a child node that can be used to display a Drawable2D.
+    void AddObstacle(const Vector2& pos, Vector<Vector2> points, Node* node = 0);
+    /// Add an obstacle to the navigation mesh. Optionaly add a child node that can be used to display a Drawable2D.
+    void AddObstacle(const Vector2& pos, TileMapObject2D* obj, Node* node = 0);
+    /// Fully rebuild navigation mesh.
+    bool RebuildNavMesh();
+    ///
+    Vector<SharedPtr<TileMapObject2D> > GetTileCollisionShapes(int gid) const;
+    /// Detach constraints (parent them to scene) and optionaly remove tile map (if you don't intend to use it).
+    void DetachConstraints(bool removeTileMap = false);
 
 private:
     /// Tmx file.

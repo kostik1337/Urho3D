@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -99,7 +99,7 @@ void TileMapLayer2D::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
                         points.Push(Vector2::ZERO);
 
                         for (unsigned i = 0; i < points.Size(); ++i)
-							points[i] = object->GetPosition() + object->RotatedPosition(points[i], rotation);
+                            points[i] = object->GetPosition() + object->RotatedPosition(points[i], rotation);
 
                         for (unsigned j = 0; j < points.Size() - 1; ++j)
                             debug->AddLine(points[j], points[j + 1], color, depthTest);
@@ -332,12 +332,12 @@ TileMapObject2D* TileMapLayer2D::GetObject(const String& name) const
     if (!objectGroup_)
         return 0;
 
-	for (unsigned i = 0; i < objectGroup_->GetNumObjects(); ++i)
-	{
-		TileMapObject2D* object = objectGroup_->GetObject(i);
-		if (object && object->GetName() == name)
-			return object;
-	}
+    for (unsigned i = 0; i < objectGroup_->GetNumObjects(); ++i)
+    {
+        TileMapObject2D* object = objectGroup_->GetObject(i);
+        if (object && object->GetName() == name)
+            return object;
+    }
 
     return 0;
 }

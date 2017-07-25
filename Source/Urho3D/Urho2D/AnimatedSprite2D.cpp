@@ -479,10 +479,10 @@ void AnimatedSprite2D::UpdateSourceBatchesSpriter()
             return;
 
 ///        if (useHotSpot_)
-///			sprite->GetDrawRectangle(drawRect, hotSpot_ + Vector2(timelineKey->pivotX_, timelineKey->pivotY_), flipX_, flipY_);
+///            sprite->GetDrawRectangle(drawRect, hotSpot_ + Vector2(timelineKey->pivotX_, timelineKey->pivotY_), flipX_, flipY_);
 ///        else
-         if (timelineKey->useDefaultPivot_)
-			sprite->GetDrawRectangle(drawRect, flipX_, flipY_);
+        if (timelineKey->useDefaultPivot_)
+            sprite->GetDrawRectangle(drawRect, flipX_, flipY_);
         else
             sprite->GetDrawRectangle(drawRect, Vector2(timelineKey->pivotX_, timelineKey->pivotY_), flipX_, flipY_);
 

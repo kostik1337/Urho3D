@@ -97,6 +97,23 @@ enum LayerEncoding {
     Base64,
 };
 
+void TmxTileLayer2D::SaveTileForGid(int x, int y, unsigned gid) {
+    Vector3 flipAxis;
+    tmxFile_->GetActualGid(gid, flipAxis);
+
+    if (gid > 0)
+    {
+        SharedPtr<Tile2D> tile(new Tile2D());
+        tile->gid_ = (int)gid;
+        tile->sprite_ = tmxFile_->GetTileSprite(gid);
+        tile->anim_ = tmxFile_->GetTileAnim(gid);
+        tile->collisionShapes_ = tmxFile_->GetTileCollisionShapes(gid);
+        tile->flipAxis_ = flipAxis;
+        tile->propertySet_ = tmxFile_->GetTilePropertySet(gid);
+        tiles_[y * width_ + x] = tile;
+    }
+}
+
 bool TmxTileLayer2D::Load(const XMLElement& element, const TileMapInfo2D& info)
 {
     LoadInfo(element);
@@ -146,20 +163,7 @@ bool TmxTileLayer2D::Load(const XMLElement& element, const TileMapInfo2D& info)
                     return false;
 
                 unsigned gid = tileElem.GetInt("gid");
-                Vector3 flipAxis;
-                tmxFile_->GetActualGid(gid, flipAxis);
-
-                if (gid > 0)
-                {
-                    SharedPtr<Tile2D> tile(new Tile2D());
-                    tile->gid_ = (int)gid;
-                    tile->sprite_ = tmxFile_->GetTileSprite(gid);
-                    tile->anim_ = tmxFile_->GetTileAnim(gid);
-                    tile->collisionShapes_ = tmxFile_->GetTileCollisionShapes(gid);
-                    tile->flipAxis_ = flipAxis;
-                    tile->propertySet_ = tmxFile_->GetTilePropertySet(gid);
-                    tiles_[y * width_ + x] = tile;
-                }
+                SaveTileForGid(x, y, gid);
 
                 tileElem = tileElem.GetNext("tile");
             }
@@ -175,15 +179,8 @@ bool TmxTileLayer2D::Load(const XMLElement& element, const TileMapInfo2D& info)
             for (int x = 0; x < width_; ++x)
             {
                 gidVector[currentIndex].Replace("\n", "");
-                int gid = ToInt(gidVector[currentIndex]);
-                if (gid > 0)
-                {
-                    SharedPtr<Tile2D> tile(new Tile2D());
-                    tile->gid_ = gid;
-                    tile->sprite_ = tmxFile_->GetTileSprite(gid);
-                    tile->propertySet_ = tmxFile_->GetTilePropertySet(gid);
-                    tiles_[y * width_ + x] = tile;
-                }
+                unsigned gid = ToUInt(gidVector[currentIndex]);
+                SaveTileForGid(x, y, gid);
                 ++currentIndex;
             }
         }
@@ -202,16 +199,9 @@ bool TmxTileLayer2D::Load(const XMLElement& element, const TileMapInfo2D& info)
             for (int x = 0; x < width_; ++x)
             {
                 // buffer contains 32-bit integers in little-endian format
-                int gid = (buffer[currentIndex+3] << 24) | (buffer[currentIndex+2] << 16)
-                        | (buffer[currentIndex+1] << 8) | buffer[currentIndex];
-                if (gid > 0)
-                {
-                    SharedPtr<Tile2D> tile(new Tile2D());
-                    tile->gid_ = gid;
-                    tile->sprite_ = tmxFile_->GetTileSprite(gid);
-                    tile->propertySet_ = tmxFile_->GetTilePropertySet(gid);
-                    tiles_[y * width_ + x] = tile;
-                }
+                unsigned gid = (buffer[currentIndex+3] << 24) | (buffer[currentIndex+2] << 16)
+                             | (buffer[currentIndex+1] << 8) | buffer[currentIndex];
+                SaveTileForGid(x, y, gid);
                 currentIndex += 4;
             }
         }
@@ -300,7 +290,7 @@ void TmxObjectGroup2D::StoreObject(XMLElement objectElem, SharedPtr<TileMapObjec
                 object->points_.Resize(points.Size());
 
                 for (unsigned i = 0; i < points.Size(); ++i)
-					object->points_[i] = info.ConvertPosition(position + object->RotatedPosition(points[i], rotation), isTile);
+                    object->points_[i] = info.ConvertPosition(position + object->RotatedPosition(points[i], rotation), isTile);
             }
             else if (type == OT_ELLIPSE && !isSphere) // If ellipse is not a sphere, convert to poly line (8 vertices, in case we use it as a collision shape)
             {
@@ -311,11 +301,11 @@ void TmxObjectGroup2D::StoreObject(XMLElement objectElem, SharedPtr<TileMapObjec
                 for (unsigned i = 0; i <= 360; i += 45)
                 {
                     Vector2 point = Vector2(halfSize.x_ * Cos((float)i), halfSize.y_ * Sin((float)i)) + halfSize;
-					object->points_.Push(info.ConvertPosition(position + object->RotatedPosition(point, -rotation), isTile));
+                    object->points_.Push(info.ConvertPosition(position + object->RotatedPosition(point, -rotation), isTile));
                 }
             }
             else if (type == OT_ELLIPSE && isSphere) // Apply rotation to rotated sphere
-				object->position_ = info.ConvertPosition(object->RotatedPosition(position, -rotation), isTile); /// Check rotation sign
+                object->position_ = info.ConvertPosition(object->RotatedPosition(position, -rotation), isTile); /// Check rotation sign
             else
                 object->position_ = info.ConvertPosition(position, isTile);
             object->size_ = size * PIXEL_SIZE;

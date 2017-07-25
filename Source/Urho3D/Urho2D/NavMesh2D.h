@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -45,35 +45,35 @@ public:
     /// Add debug geometry to the debug renderer.
     virtual void DrawDebugGeometry(DebugRenderer* debug, bool depthTest);
 
-	/// Create polygon or polyline shape from vertices. Return shape ID, starting from 1.
-	int CreateShape(Vector<Vector2> vertices);
+    /// Create polygon or polyline shape from vertices. Return shape ID, starting from 1.
+    int CreateShape(Vector<Vector2> vertices);
 
-	/// Build navigation mesh.
-	void Build();
+    /// Build navigation mesh.
+    void Build();
 
-	/// Find path. Return 0 if successful, 1 if no source link and 2 if no dest link (when dest is unreachable : inside a shape and/or due to agent radius).
-	int FindPath(const Vector2& start_pos, const Vector2& end_pos);
+    /// Find path. Return 0 if successful, 1 if no source link and 2 if no dest link (when dest is unreachable : inside a shape and/or due to agent radius).
+    int FindPath(const Vector2& start_pos, const Vector2& end_pos);
 
-	/// Set agent radius.
-	void SetAgentRadius(float radius) { s_AgentRadius = radius; }
-	/// Return agent radius.
-	float GetAgentRadius() const { return s_AgentRadius; }
+    /// Set agent radius.
+    void SetAgentRadius(float radius) { s_AgentRadius = radius; }
+    /// Return agent radius.
+    float GetAgentRadius() const { return s_AgentRadius; }
 
-	/// Return number of shapes.
-	int GetNumShapes() const { return s_PPF.GetNumShapes(); }
+    /// Return number of shapes.
+    int GetNumShapes() const { return s_PPF.GetNumShapes(); }
 
 private:
-	/// Convert Vector2 to Vec2.
-	polypath::Vec2 ToVec2(const Vector2& point) { return polypath::Vec2(point.x_, point.y_); }
-	/// Convert Vec2 to Vector2.
-	Vector2 ToVector2(const polypath::Vec2& point) { return Vector2(point.x, point.y); }
+    /// Convert Vector2 to Vec2.
+    polypath::Vec2 ToVec2(const Vector2& point) { return polypath::Vec2(point.x_, point.y_); }
+    /// Convert Vec2 to Vector2.
+    Vector2 ToVector2(const polypath::Vec2& point) { return Vector2(point.x, point.y); }
 
-	/// Map definition.
-	polypath::MapDef s_PPF;
-	/// Path.
-	Vector<Vector2> path_; //static std::vector<polypath::Vec2> s_Path;
-	/// Agent radius.
-	float s_AgentRadius;
+    /// Map definition.
+    polypath::MapDef s_PPF;
+    /// Path.
+    Vector<Vector2> path_; //static std::vector<polypath::Vec2> s_Path;
+    /// Agent radius.
+    float s_AgentRadius;
 };
 
 }

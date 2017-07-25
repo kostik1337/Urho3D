@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -57,60 +57,60 @@ void NavMesh2D::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
     if (!debug)
         return;
 
-	// Draw shapes ~ Note: with agent radius (offset) applied
-	std::vector<std::vector<polypath::Vec2> > shapes;
-	s_PPF.getInstanceShapeVertices(s_AgentRadius, shapes);
-	std::vector<std::vector<polypath::Vec2> >::const_iterator shape;
-	std::vector<polypath::Vec2>::const_iterator vertice;
-	for (shape = shapes.begin(); shape != shapes.end(); ++shape)
-	{
-		if ((*shape).empty())
-			continue;
+    // Draw shapes ~ Note: with agent radius (offset) applied
+    std::vector<std::vector<polypath::Vec2> > shapes;
+    s_PPF.getInstanceShapeVertices(s_AgentRadius, shapes);
+    std::vector<std::vector<polypath::Vec2> >::const_iterator shape;
+    std::vector<polypath::Vec2>::const_iterator vertice;
+    for (shape = shapes.begin(); shape != shapes.end(); ++shape)
+    {
+        if ((*shape).empty())
+            continue;
 
-		for (vertice = (*shape).begin(); vertice != (*shape).end() - 1; ++vertice)
-			debug->AddLine(Vector2(vertice->x, vertice->y), Vector2((vertice + 1)->x, (vertice + 1)->y), Color(1.0f, 1.0f, 1.0f));
-		debug->AddCircle(Vector2((*shape).begin()->x, (*shape).begin()->y), Vector3::FORWARD, 0.05f, Color(1.0f, 1.0f, 1.0f), 64, depthTest); // Also draw a circle at origin to indicate direction
-	}
+        for (vertice = (*shape).begin(); vertice != (*shape).end() - 1; ++vertice)
+            debug->AddLine(Vector2(vertice->x, vertice->y), Vector2((vertice + 1)->x, (vertice + 1)->y), Color(1.0f, 1.0f, 1.0f));
+        debug->AddCircle(Vector2((*shape).begin()->x, (*shape).begin()->y), Vector3::FORWARD, 0.05f, Color(1.0f, 1.0f, 1.0f), 64, depthTest); // Also draw a circle at origin to indicate direction
+    }
 
-	// Draw path
-	if (path_.Empty())
+    // Draw path
+    if (path_.Empty())
         return;
-	for (unsigned i = 0; i < path_.Size() - 1; ++i)
-		debug->AddLine(path_[i], path_[i + 1], Color(1.0f, 1.0f, 1.0f));
+    for (unsigned i = 0; i < path_.Size() - 1; ++i)
+        debug->AddLine(path_[i], path_[i + 1], Color(1.0f, 1.0f, 1.0f));
 }
 
 int NavMesh2D::CreateShape(Vector<Vector2> vertices)
 {
-	if (vertices.Size() < 2)
-		return 0;
+    if (vertices.Size() < 2)
+        return 0;
 
-	std::vector<polypath::Vec2> shape;
-	for (unsigned i = 0; i < vertices.Size(); ++i)
-		shape.push_back(ToVec2(vertices[i]));
+    std::vector<polypath::Vec2> shape;
+    for (unsigned i = 0; i < vertices.Size(); ++i)
+        shape.push_back(ToVec2(vertices[i]));
 
-	return(s_PPF.addShape(shape));
+    return(s_PPF.addShape(shape));
 }
 
 //void NavMesh2D::DeleteShape(int shapeID)
 //{
-//	s_PPF.removeShape(shapeID + 1); // First shape ID is 1
-//	s_PPF.rebuildInstances();
+//    s_PPF.removeShape(shapeID + 1); // First shape ID is 1
+//    s_PPF.rebuildInstances();
 //}
 
 void NavMesh2D::Build()
 {
-	s_PPF.initInstance(s_AgentRadius);
+    s_PPF.initInstance(s_AgentRadius);
 }
 
 int NavMesh2D::FindPath(const Vector2& start_pos, const Vector2& end_pos)
 {
-	path_.Clear();
-	std::vector<polypath::Vec2> s_Path;
-	int result = s_PPF.computePath(s_AgentRadius, ToVec2(start_pos), ToVec2(end_pos), &s_Path, NULL);
-	for (unsigned i = 0; i < s_Path.size(); ++i)
-		path_.Push(ToVector2(s_Path[i]));
+    path_.Clear();
+    std::vector<polypath::Vec2> s_Path;
+    int result = s_PPF.computePath(s_AgentRadius, ToVec2(start_pos), ToVec2(end_pos), &s_Path, NULL);
+    for (unsigned i = 0; i < s_Path.size(); ++i)
+        path_.Push(ToVector2(s_Path[i]));
 
-	return result;
+    return result;
 }
 
 }

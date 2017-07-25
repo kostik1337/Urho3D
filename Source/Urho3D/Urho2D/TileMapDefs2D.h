@@ -188,7 +188,7 @@ public:
     unsigned GetNumProperties() const;
 
     /// Return object or point position with object's rotation applied.
-	Vector2 RotatedPosition(const Vector2& position, float rotation);
+    Vector2 RotatedPosition(const Vector2& position, float rotation);
 
 private:
     friend class TmxObjectGroup2D;

@@ -112,6 +112,10 @@ public:
 protected:
     /// Tiles.
     Vector<SharedPtr<Tile2D> > tiles_;
+
+private:
+    /// Save Tile2D in tiles_ for the given gid
+    void SaveTileForGid(int x, int y, unsigned gid);
 };
 
 /// Tmx objects layer.
