@@ -96,10 +96,11 @@ void TileMapLayer2D::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
                         }
                         case O_ISOMETRIC:
                         {
+                            float ratio = (info.tileWidth_ / info.tileHeight_) * 0.5f; // For isometric only
                             points.Push(Vector2::ZERO);
-                            points.Push(Vector2(size.y_, size.y_ / 2));
-                            points.Push(Vector2(size.x_ + size.y_, (-size.x_ + size.y_) / 2));
-                            points.Push(Vector2(size.x_, -size.x_ / 2));
+                            points.Push(Vector2(size.y_ * ratio, size.y_ * 0.5f));
+                            points.Push(Vector2((size.x_ + size.y_) * ratio, (-size.x_ + size.y_) * 0.5f));
+                            points.Push(Vector2(size.x_ * ratio, -size.x_ * 0.5f));
                             break;
                         }
                     }
@@ -117,6 +118,10 @@ void TileMapLayer2D::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
                     float ratio = (info.tileWidth_ / info.tileHeight_) * 0.5f; // For isometric only
 
                     Vector2 pivot = object->GetPosition();
+                    if (info.orientation_ == O_ISOMETRIC)
+                    {
+                        pivot += Vector2((halfSize.x_ + halfSize.y_) * ratio, (-halfSize.x_ + halfSize.y_) * 0.5f);
+                    }
 
                     for (unsigned i = 0; i < 360; i += 30)
                     {
