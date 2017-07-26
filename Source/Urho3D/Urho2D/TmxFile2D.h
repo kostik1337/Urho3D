@@ -112,6 +112,9 @@ public:
     /// Load from XML element.
     bool Load(const XMLElement& element, const TileMapInfo2D& info);
 
+    /// Store object.
+    void StoreObject(XMLElement objectElem, SharedPtr<TileMapObject2D> object, const TileMapInfo2D& info, bool isTile = false);
+
     /// Return number of objects.
     unsigned GetNumObjects() const { return objects_.Size(); }
 
@@ -183,17 +186,11 @@ public:
     /// Return tile sprite by gid.
     Sprite2D* GetTileSprite(int gid) const;
 
-    /// Return animation name set for a given gid.
-    String GetTileAnim(int gid) const;
-
     /// Return tile collision shapes for a given gid.
     Vector<SharedPtr<TileMapObject2D> > GetTileCollisionShapes(int gid) const;
 
     /// Return tile property set by gid, if not exist return 0.
     PropertySet2D* GetTilePropertySet(int gid) const;
-
-    /// Return collision object group by gid, if not exist return 0.
-    TmxObjectGroup2D* GetCollisionObjectGroup(int gid) const;
 
     /// Return number of layers.
     unsigned GetNumLayers() const { return layers_.Size(); }
@@ -213,25 +210,14 @@ private:
     HashMap<String, SharedPtr<XMLFile> > tsxXMLFiles_;
     /// Tile map information.
     TileMapInfo2D info_;
-    /// Tile set textures.
-    Vector<SharedPtr<Texture2D> > tileSetTextures_;
     /// Gid to tile sprite mapping.
     HashMap<int, SharedPtr<Sprite2D> > gidToSpriteMapping_;
     /// Gid to tile property set mapping.
     HashMap<int, SharedPtr<PropertySet2D> > gidToPropertySetMapping_;
-<<<<<<< HEAD
-    /// Gid to collision object group mapping.
-    HashMap<int, SharedPtr<TmxObjectGroup2D> > gidToCollisionObjectGroupMapping_;
-=======
-    /// Gid to tile animation mapping.
-    HashMap<int, String> gidToAnimMapping_;
     /// Gid to tile collision shape mapping.
     HashMap<int, Vector<SharedPtr<TileMapObject2D> > > gidToCollisionShapeMapping_;
->>>>>>> new-tmx-features
     /// Layers.
     Vector<TmxLayer2D*> layers_;
-    /// Tile animation name.
-    String animationName_;
 };
 
 }

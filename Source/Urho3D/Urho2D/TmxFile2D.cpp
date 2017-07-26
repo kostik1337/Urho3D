@@ -240,7 +240,18 @@ bool TmxObjectGroup2D::Load(const XMLElement& element, const TileMapInfo2D& info
     for (XMLElement objectElem = element.GetChild("object"); objectElem; objectElem = objectElem.GetNext("object"))
     {
         SharedPtr<TileMapObject2D> object(new TileMapObject2D());
+        StoreObject(objectElem, object, info);
+        objects_.Push(object);
+    }
 
+    if (element.HasChild("properties"))
+        LoadPropertySet(element.GetChild("properties"));
+
+    return true;
+}
+
+void TmxObjectGroup2D::StoreObject(XMLElement objectElem, SharedPtr<TileMapObject2D> object, const TileMapInfo2D& info, bool isTile)
+{
         if (objectElem.HasAttribute("name"))
             object->name_ = objectElem.GetAttribute("name");
         if (objectElem.HasAttribute("type"))
@@ -294,7 +305,7 @@ bool TmxObjectGroup2D::Load(const XMLElement& element, const TileMapInfo2D& info
                 points = polygonElem.GetAttribute("points").Split(' ');
 
                 if (points.Size() <= 1)
-                    continue;
+                    return;
 
                 object->points_.Resize(points.Size());
 
@@ -315,14 +326,6 @@ bool TmxObjectGroup2D::Load(const XMLElement& element, const TileMapInfo2D& info
             object->propertySet_ = new PropertySet2D();
             object->propertySet_->Load(objectElem.GetChild("properties"));
         }
-
-        objects_.Push(object);
-    }
-
-    if (element.HasChild("properties"))
-        LoadPropertySet(element.GetChild("properties"));
-
-    return true;
 }
 
 TileMapObject2D* TmxObjectGroup2D::GetObject(unsigned index) const
@@ -561,15 +564,6 @@ Sprite2D* TmxFile2D::GetTileSprite(int gid) const
     return i->second_;
 }
 
-String TmxFile2D::GetTileAnim(int gid) const
-{
-    HashMap<int, String>::ConstIterator i = gidToAnimMapping_.Find(gid);
-    if (i == gidToAnimMapping_.End())
-        return String::EMPTY;
-
-    return i->second_;
-}
-
 Vector<SharedPtr<TileMapObject2D> > TmxFile2D::GetTileCollisionShapes(int gid) const
 {
     Vector<SharedPtr<TileMapObject2D> > tileShapes;
@@ -584,14 +578,6 @@ PropertySet2D* TmxFile2D::GetTilePropertySet(int gid) const
 {
     HashMap<int, SharedPtr<PropertySet2D> >::ConstIterator i = gidToPropertySetMapping_.Find(gid);
     if (i == gidToPropertySetMapping_.End())
-        return 0;
-    return i->second_;
-}
-
-TmxObjectGroup2D* TmxFile2D::GetCollisionObjectGroup(int gid) const
-{
-    HashMap<int, SharedPtr<TmxObjectGroup2D> >::ConstIterator i = gidToCollisionObjectGroupMapping_.Find(gid);
-    if (i == gidToCollisionObjectGroupMapping_.End())
         return 0;
     return i->second_;
 }
@@ -653,62 +639,14 @@ bool TmxFile2D::LoadTileSet(const XMLElement& element)
     else
         tileSetElem = element;
 
-<<<<<<< HEAD
-    bool isIsometricGrid = tileSetElem.HasChild("grid") && tileSetElem.GetChild("grid").GetAttribute("orientation") == "isometric";
     int tileWidth = tileSetElem.GetInt("tilewidth");
     int tileHeight = tileSetElem.GetInt("tileheight");
     int spacing = tileSetElem.GetInt("spacing");
     int margin = tileSetElem.GetInt("margin");
-    bool isSingleTileSet = false;
     int imageWidth;
     int imageHeight;
+    bool isSingleTileSet = false;
 
-    if (isIsometricGrid)
-        URHO3D_LOGWARNING("Tilesets with isometric orientation are not supported yet");
-=======
-    XMLElement imageElem = tileSetElem.GetChild("image");
-
-    // Note that a tileset is not mandatory, as we can use individual images, with various texture sizes
-    if (!imageElem.IsNull())
-    {
-        String textureFilePath = GetParentPath(GetName()) + imageElem.GetAttribute("source");
-        ResourceCache* cache = GetSubsystem<ResourceCache>();
-        SharedPtr<Texture2D> texture(cache->GetResource<Texture2D>(textureFilePath));
-        tileSetTextures_.Push(texture);
-
-        int tileWidth = tileSetElem.GetInt("tilewidth");
-        int tileHeight = tileSetElem.GetInt("tileheight");
-        int spacing = tileSetElem.GetInt("spacing");
-        int margin = tileSetElem.GetInt("margin");
-        int imageWidth = imageElem.GetInt("width");
-        int imageHeight = imageElem.GetInt("height");
-
-        // Set hot spot at left bottom
-        Vector2 hotSpot(0.0f, 0.0f);
-        if (tileSetElem.HasChild("tileoffset"))
-        {
-            XMLElement offsetElem = tileSetElem.GetChild("tileoffset");
-            hotSpot.x_ += offsetElem.GetFloat("x") / (float)tileWidth;
-            hotSpot.y_ += offsetElem.GetFloat("y") / (float)tileHeight;
-        }
-
-        int gid = firstgid;
-        for (int y = margin; y + tileHeight <= imageHeight - margin; y += tileHeight + spacing)
-        {
-            for (int x = margin; x + tileWidth <= imageWidth - margin; x += tileWidth + spacing)
-            {
-                SharedPtr<Sprite2D> sprite(new Sprite2D(context_));
-                sprite->SetTexture(texture);
-                sprite->SetRectangle(IntRect(x, y, x + tileWidth, y + tileHeight));
-                sprite->SetHotSpot(hotSpot);
->>>>>>> new-tmx-features
-
-                gidToSpriteMapping_[gid++] = sprite;
-            }
-        }
-    }
-
-<<<<<<< HEAD
     ResourceCache* cache = GetSubsystem<ResourceCache>();
     {
         XMLElement imageElem = tileSetElem.GetChild("image");
@@ -723,7 +661,14 @@ bool TmxFile2D::LoadTileSet(const XMLElement& element)
                 return false;
             }
 
-            tileSetTextures_.Push(texture);
+            // Set hot spot at left bottom
+            Vector2 hotSpot(0.0f, 0.0f);
+            if (tileSetElem.HasChild("tileoffset"))
+            {
+                XMLElement offsetElem = tileSetElem.GetChild("tileoffset");
+                hotSpot.x_ += offsetElem.GetFloat("x") / (float)tileWidth;
+                hotSpot.y_ += offsetElem.GetFloat("y") / (float)tileHeight;
+            }
 
             imageWidth = imageElem.GetInt("width");
             imageHeight = imageElem.GetInt("height");
@@ -741,29 +686,9 @@ bool TmxFile2D::LoadTileSet(const XMLElement& element)
                     gidToSpriteMapping_[gid++] = sprite;
                 }
             }
-=======
-    // Tile properties, animation, collision shape and image
-    for (XMLElement tileElem = tileSetElem.GetChild("tile"); tileElem; tileElem = tileElem.GetNext("tile"))
-    {
-        // Tile image
-        for (XMLElement imageElem = tileElem.GetChild("image"); imageElem; imageElem = imageElem.GetNext("image"))
-        {
-            String textureFilePath = GetParentPath(GetName()) + imageElem.GetAttribute("source");
-            ResourceCache* cache = GetSubsystem<ResourceCache>();
-            SharedPtr<Texture2D> texture(cache->GetResource<Texture2D>(textureFilePath));
-            if (!texture)
-                return false;
-
-            SharedPtr<Sprite2D> sprite(new Sprite2D(context_));
-            sprite->SetTexture(texture);
-            sprite->SetRectangle(IntRect(0, 0, imageElem.GetInt("width"), imageElem.GetInt("height")));
-            sprite->SetHotSpot(Vector2::ZERO); // Set hot spot at left bottom
-
-            gidToSpriteMapping_[firstgid + tileElem.GetInt("id")] = sprite;
->>>>>>> new-tmx-features
         }
+    }
 
-<<<<<<< HEAD
     Vector<TileImageInfo> tileImageInfos;
     for (XMLElement tileElem = tileSetElem.GetChild("tile"); tileElem; tileElem = tileElem.GetNext("tile"))
     {
@@ -786,58 +711,28 @@ bool TmxFile2D::LoadTileSet(const XMLElement& element)
                 tileImageInfos.Push(info);
             }
         }
-=======
         // Tile collision shape(s)
+        TmxObjectGroup2D objectGroup(this);
         for (XMLElement collisionElem = tileElem.GetChild("objectgroup"); collisionElem; collisionElem = collisionElem.GetNext("objectgroup"))
         {
             Vector<SharedPtr<TileMapObject2D> > objects;
             for (XMLElement objectElem = collisionElem.GetChild("object"); objectElem; objectElem = objectElem.GetNext("object"))
             {
                 SharedPtr<TileMapObject2D> object(new TileMapObject2D());
-                IntVector2 spriteSize = GetTileSprite(firstgid + tileElem.GetInt("id"))->GetRectangle().Size();
 
                 // Convert Tiled local position (left top) to Urho3D local position (left bottom)
-                objectElem.SetAttribute("y", String(info_.GetMapHeight() / PIXEL_SIZE - (spriteSize.y_ - objectElem.GetFloat("y"))));
+                objectElem.SetAttribute("y", String(info_.GetMapHeight() / PIXEL_SIZE - (tileHeight - objectElem.GetFloat("y"))));
 
-                TmxObjectGroup2D* objectGroup = new TmxObjectGroup2D(this);
-                objectGroup->StoreObject(objectElem, object, info_, true);
+                objectGroup.StoreObject(objectElem, object, info_, true);
                 objects.Push(object);
             }
-            gidToCollisionShapeMapping_[firstgid + tileElem.GetInt("id")] = objects;
+            gidToCollisionShapeMapping_[gid] = objects;
         }
-
-        // Tile animation
-        for (XMLElement animElem = tileElem.GetChild("animation"); animElem; animElem = animElem.GetNext("animation"))
-        {
-            Vector<IntVector2> frames;
-
-            for (XMLElement frameElem = animElem.GetChild("frame"); frameElem; frameElem = frameElem.GetNext("frame"))
-                frames.Push(IntVector2(firstgid + frameElem.GetInt("tileid"), frameElem.GetInt("duration")));
-
-            String animName = "TileAnimationGid_" + String(firstgid + tileElem.GetInt("id"));
-            gidToAnimMapping_[firstgid + tileElem.GetInt("id")] = animName;
-            CreateProceduralAnimation(animName, frames);
-        }
-
-        // Custom properties
->>>>>>> new-tmx-features
         if (tileElem.HasChild("properties"))
         {
             SharedPtr<PropertySet2D> propertySet(new PropertySet2D());
             propertySet->Load(tileElem.GetChild("properties"));
             gidToPropertySetMapping_[gid] = propertySet;
-        }
-        if (tileElem.HasChild("objectgroup"))
-        {
-            if (!isIsometricGrid)
-            {
-                TmxObjectGroup2D* objectGroup = new TmxObjectGroup2D(this);
-                TileMapInfo2D info = info_;
-                info.width_ = tileWidth * PIXEL_SIZE / info.tileWidth_;
-                info.height_ = tileHeight * PIXEL_SIZE / info.tileHeight_;
-                objectGroup->Load(tileElem.GetChild("objectgroup"), info);
-                gidToCollisionObjectGroupMapping_[gid] = SharedPtr<TmxObjectGroup2D>(objectGroup);
-            }
         }
     }
 
@@ -857,7 +752,7 @@ bool TmxFile2D::LoadTileSet(const XMLElement& element)
                 return false;
             }
         }
-<<<<<<< HEAD
+
         SharedPtr<Texture2D> texture(new Texture2D(context_));
         texture->SetMipsToSkip(QUALITY_LOW, 0);
         texture->SetNumLevels(1);
@@ -881,153 +776,13 @@ bool TmxFile2D::LoadTileSet(const XMLElement& element)
             SharedPtr<Sprite2D> sprite(new Sprite2D(context_));
             sprite->SetTexture(texture);
             sprite->SetRectangle(IntRect(info.x, info.y, info.x + info.imageWidth, info.y +  + info.imageHeight));
-            sprite->SetHotSpot(hotSpot);
+            sprite->SetHotSpot(Vector2::ZERO);
             gidToSpriteMapping_[info.tileGid] = sprite;
         }
         texture->SetData(0, 0, 0, allocator.GetWidth(), allocator.GetHeight(), textureData.Get());
-        tileSetTextures_.Push(texture);
-=======
->>>>>>> new-tmx-features
     }
 
     return true;
-}
-
-void TmxFile2D::GetActualGid(unsigned& gid, Vector3& flipAxis)
-{
-    // Bits on the far end of the 32-bit global tile ID (gid) are used for tile flags
-    const unsigned FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
-    const unsigned FLIPPED_VERTICALLY_FLAG = 0x40000000;
-    const unsigned FLIPPED_DIAGONALLY_FLAG = 0x20000000;
-
-    // Read out the flags
-    bool flipped_horizontally = (gid & FLIPPED_HORIZONTALLY_FLAG);
-    bool flipped_vertically = (gid & FLIPPED_VERTICALLY_FLAG);
-    bool flipped_diagonally = (gid & FLIPPED_DIAGONALLY_FLAG);
-
-    // Store flips
-    if (flipped_horizontally) flipAxis.x_ = 1.0f;
-    if (flipped_vertically) flipAxis.y_ = 1.0f;
-    if (flipped_diagonally) flipAxis.z_ = 1.0f;
-
-    // Clear the flags
-    gid &= ~(FLIPPED_HORIZONTALLY_FLAG | FLIPPED_VERTICALLY_FLAG | FLIPPED_DIAGONALLY_FLAG);
-}
-
-AnimationSet2D* TmxFile2D::CreateProceduralAnimation(String animName, Vector<IntVector2> frames)
-{
-    if (frames.Empty())
-        return 0;
-
-    // SpriterData (we can skip header, folders and files as we are using a spritesheet)
-    Spriter::SpriterData* spriterData = new Spriter::SpriterData();
-
-    // Entity
-    PODVector<Spriter::Entity*> entities;
-
-    Spriter::Entity* entity = new Spriter::Entity();
-    entity->id_ = 0;
-    entity->name_ = animName;
-
-    // Animation
-    PODVector<Spriter::Animation*> animations;
-
-    Spriter::Animation* animation = new Spriter::Animation();
-    animation->id_ = 0;
-    animation->name_ = "TileAnim";
-    float animLength = 0.0f;
-    for (int i = 0; i < frames.Size(); ++i)
-        animLength += (float)frames[i].y_ / 1000.0f; // Frames are in ms
-    animation->length_ = animLength;
-    animation->looping_ = true;
-
-    // Mainline
-    PODVector<Spriter::MainlineKey*> mainlineKeys;
-
-    float time = 0.0f;
-    for (int i = 0; i < frames.Size(); ++i)
-    {
-        // Key
-        Spriter::MainlineKey* mainlineKey = new Spriter::MainlineKey();
-        mainlineKey->id_ = i;
-        mainlineKey->time_ = time;
-        time += (float)frames[i].y_ / 1000.0f;  // Frames are in ms
-
-        // Ref
-        PODVector<Spriter::Ref*> objectRefs;
-
-        Spriter::Ref* objectRef = new Spriter::Ref();
-        objectRef->id_ = 0;
-        objectRef->parent_ = -1;
-        objectRef->timeline_ = 0;
-        objectRef->key_ = i;
-        objectRefs.Push(objectRef);
-
-        mainlineKey->objectRefs_ = objectRefs;
-        mainlineKeys.Push(mainlineKey);
-    }
-
-    animation->mainlineKeys_ = mainlineKeys;
-
-    // Timeline
-    PODVector<Spriter::Timeline*> timelines;
-
-    Spriter::Timeline* timeline = new Spriter::Timeline();
-    timeline->id_ = 0;
-    timeline->name_ = "TileAnim";
-    timeline->objectType_ = Spriter::SPRITE;
-
-    // Keys
-    PODVector<Spriter::SpatialTimelineKey*> keys;
-
-    for (int i = 0; i < frames.Size(); ++i)
-    {
-        Spriter::SpriteTimelineKey* key = new Spriter::SpriteTimelineKey(timeline);
-        key->folderId_ = 0;
-        key->fileId_ = i;
-        key->useDefaultPivot_ = true; // Equivalent to key->pivotX_ = 0.5f and key->pivotY_ = 0.5f
-
-        keys.Push((Spriter::SpatialTimelineKey*)(key));
-    }
-
-    timeline->keys_ = keys;
-    timelines.Push(timeline);
-
-    animation->timelines_ = timelines;
-
-    animations.Push(animation);
-
-    entity->animations_ = animations;
-
-    // Add entity
-    entities.Push(entity);
-    spriterData->entities_ = entities;
-
-    // Create the AnimationSet2D resource
-    AnimationSet2D* anim(new AnimationSet2D(context_));
-    anim->SetName(animName);
-    anim->SetSpriterData(spriterData);
-
-    // Set sprites
-    HashMap<int, SharedPtr<Sprite2D> > sprites;
-    for (int i = 0; i < frames.Size(); ++i)
-    {
-        IntVector2 frame = frames[i];
-        int key = (0 << 16) + i;
-        Sprite2D* sprite = GetTileSprite(frame.x_);
-        sprite->SetHotSpot(Vector2(0.5f, 0.5f));
-        sprites[key] = sprite;
-
-        if (!anim->GetSprite())
-            anim->SetSprite(sprite);
-    }
-
-    anim->SetSpriterFileSprites(sprites);
-
-    // Add anim to the ResourceCache
-    GetSubsystem<ResourceCache>()->AddManualResource(anim);
-
-    return anim;
 }
 
 }
