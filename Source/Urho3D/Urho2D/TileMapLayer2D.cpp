@@ -53,14 +53,8 @@ void TileMapLayer2D::RegisterObject(Context* context)
     context->RegisterFactory<TileMapLayer2D>();
 }
 
-// Transform vector from tiled isometric space to Urho3d node-local space
-static Vector2 TransformIsometricVector(Vector2 vec)
-{
-    return Vector2(vec.x_ - vec.y_, - (vec.x_ + vec.y_) / 2);
-}
-
 // Transform vector from node-local space to global space
-Vector2 TransformNode2D(Matrix3x4 transform, Vector2 local)
+static Vector2 TransformNode2D(Matrix3x4 transform, Vector2 local)
 {
     Vector3 transformed = transform * Vector4(local.x_, local.y_, 0.f, 1.f);
     return Vector2(transformed.x_, transformed.y_);
@@ -93,21 +87,21 @@ void TileMapLayer2D::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
                     case O_ORTHOGONAL:
                     case O_HEXAGONAL:
                     case O_STAGGERED:
-                    {
-                        points.Push(Vector2::ZERO);
-                        points.Push(Vector2(size.x_, 0.0f));
-                        points.Push(Vector2(size.x_, -size.y_));
-                        points.Push(Vector2(0.0f, -size.y_));
-                        break;
-                    }
-                    case O_ISOMETRIC:
-                    {
-                        points.Push(Vector2::ZERO);
-                        points.Push(TransformIsometricVector(Vector2(0, -size.y_)));
-                        points.Push(TransformIsometricVector(Vector2(size.x_, -size.y_)));
-                        points.Push(TransformIsometricVector(Vector2(size.x_, 0)));
-                        break;
-                    }
+                        {
+                            points.Push(Vector2::ZERO);
+                            points.Push(Vector2(size.x_, 0.0f));
+                            points.Push(Vector2(size.x_, -size.y_));
+                            points.Push(Vector2(0.0f, -size.y_));
+                            break;
+                        }
+                        case O_ISOMETRIC:
+                        {
+                            points.Push(Vector2::ZERO);
+                            points.Push(Vector2(size.y_, size.y_ / 2));
+                            points.Push(Vector2(size.x_ + size.y_, (-size.x_ + size.y_) / 2));
+                            points.Push(Vector2(size.x_, -size.x_ / 2));
+                            break;
+                        }
                     }
 
                     for (unsigned j = 0; j < points.Size(); ++j)
@@ -157,7 +151,7 @@ void TileMapLayer2D::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
                                        TransformNode2D(transform, object->GetPoint(object->GetNumPoints() - 1)), color, depthTest);
                     // Also draw a circle at origin to indicate direction
                     else
-                        debug->AddCircle(object->GetPoint(0), Vector3::FORWARD, 0.05f, color, 64, depthTest); // Also draw a circle at origin to indicate direction
+                        debug->AddCircle(TransformNode2D(transform, object->GetPoint(0)), Vector3::FORWARD, 0.05f, color, 64, depthTest); // Also draw a circle at origin to indicate direction
                 }
                 break;
 

@@ -57,7 +57,12 @@ void TileMap2D::RegisterObject(Context* context)
         AM_DEFAULT);
 }
 
-Vector2 TransformNode2D(Matrix3x4 transform, Vector2 local);
+// Transform vector from node-local space to global space
+static Vector2 TransformNode2D(Matrix3x4 transform, Vector2 local)
+{
+    Vector3 transformed = transform * Vector4(local.x_, local.y_, 0.f, 1.f);
+    return Vector2(transformed.x_, transformed.y_);
+}
 
 void TileMap2D::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
 {
