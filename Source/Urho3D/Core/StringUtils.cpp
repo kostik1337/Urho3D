@@ -758,13 +758,13 @@ String GetFileSizeString(unsigned long long memorySize)
     return output;
 }
 
-// Implementation of base64 decoding originally by RenÃ© Nyffenegger.
+// Implementation of base64 decoding originally by René Nyffenegger.
 // Modified by Konstantin Guschin and Lasse Oorni
 
 /*
 base64.cpp and base64.h
 
-Copyright (C) 2004-2017 RenÃ© Nyffenegger
+Copyright (C) 2004-2017 René Nyffenegger
 
 This source code is provided 'as-is', without any express or implied
 warranty. In no event will the author be held liable for any damages
@@ -784,7 +784,7 @@ misrepresented as being the original source code.
 
 3. This notice may not be removed or altered from any source distribution.
 
-RenÃ© Nyffenegger rene.nyffenegger@adp-gmbh.ch
+René Nyffenegger rene.nyffenegger@adp-gmbh.ch
 
 */
 
