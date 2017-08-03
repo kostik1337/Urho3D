@@ -675,8 +675,13 @@ void Text::UpdateText(bool onResize)
         // Set minimum and current size according to the text size, but respect fixed width if set
         if (!IsFixedWidth())
         {
-            SetMinWidth(wordWrap_ ? 0 : width);
-            SetWidth(width);
+            if (wordWrap_)
+                SetMinWidth(0);
+            else
+            {
+                SetMinWidth(width);
+                SetWidth(width);
+            }
         }
         SetFixedHeight(height);
 
@@ -821,7 +826,7 @@ void Text::ConstructBatch(UIBatch& pageBatch, const PODVector<GlyphLocation>& pa
         const GlyphLocation& glyphLocation = pageGlyphLocation[i];
         const FontGlyph& glyph = *glyphLocation.glyph_;
         pageBatch.AddQuad(dx + glyphLocation.x_ + glyph.offsetX_, dy + glyphLocation.y_ + glyph.offsetY_, glyph.width_,
-            glyph.height_, glyph.x_, glyph.y_);
+            glyph.height_, glyph.x_, glyph.y_, glyph.texWidth_, glyph.texHeight_);
     }
 
     if (depthBias != 0.0f)
