@@ -4398,6 +4398,8 @@ Vector3 ReadVector3();
 Vector4 ReadVector4();
 VectorBuffer ReadVectorBuffer(uint);
 uint Seek(uint);
+uint SeekRelative(int);
+uint Tell() const;
 
 // Properties:
 /* readonly */
@@ -5059,7 +5061,9 @@ Vector3 ReadVector3();
 Vector4 ReadVector4();
 VectorBuffer ReadVectorBuffer(uint);
 uint Seek(uint);
+uint SeekRelative(int);
 void SendEvent(const String&, VariantMap& = VariantMap ( ));
+uint Tell() const;
 uint Write(Array<uint8>);
 bool WriteBool(bool);
 bool WriteBoundingBox(const BoundingBox&);
@@ -5476,6 +5480,8 @@ Vector3 ReadVector3();
 Vector4 ReadVector4();
 VectorBuffer ReadVectorBuffer(uint);
 uint Seek(uint);
+uint SeekRelative(int);
+uint Tell() const;
 
 // Properties:
 /* readonly */
@@ -5628,7 +5634,6 @@ bool enabled;
 bool enabledEffective;
 /* readonly */
 uint id;
-bool inheritParentRotation;
 /* readonly */
 Node node;
 /* readonly */
@@ -5657,7 +5662,13 @@ class IKSolver
 {
 public:
 // Methods:
+void ApplyActivePoseToScene();
 void ApplyAttributes();
+void ApplyOriginalPoseToActivePose();
+void ApplyOriginalPoseToScene();
+void ApplySceneToActivePose();
+void ApplySceneToInitialPose();
+void CalculateJointRotations();
 void DrawDebugGeometry(DebugRenderer, bool);
 void DrawDebugGeometry(bool);
 Variant GetAttribute(const String&) const;
@@ -5666,6 +5677,7 @@ float GetAttributeAnimationSpeed(const String&) const;
 float GetAttributeAnimationTime(const String&) const;
 WrapMode GetAttributeAnimationWrapMode(const String&) const;
 Variant GetAttributeDefault(const String&) const;
+bool GetFeature(IKFeature) const;
 bool GetInterceptNetworkUpdate(const String&) const;
 bool HasSubscribedToEvent(Object, const String&);
 bool HasSubscribedToEvent(const String&);
@@ -5674,12 +5686,13 @@ bool Load(VectorBuffer&, bool = false);
 bool LoadJSON(const JSONValue&, bool = false);
 bool LoadXML(const XMLElement&, bool = false);
 void MarkNetworkUpdate() const;
+void RebuildData();
+void RecalculateSegmentLengths();
 void Remove();
 void RemoveAttributeAnimation(const String&);
 void RemoveInstanceDefault();
 void RemoveObjectAnimation();
 void ResetToDefault();
-void ResetToInitialPose();
 bool Save(File) const;
 bool Save(VectorBuffer&) const;
 bool SaveJSON(JSONValue&) const;
@@ -5691,9 +5704,9 @@ void SetAttributeAnimation(const String&, ValueAnimation, WrapMode = WM_LOOP, fl
 void SetAttributeAnimationSpeed(const String&, float);
 void SetAttributeAnimationTime(const String&, float);
 void SetAttributeAnimationWrapMode(const String&, WrapMode);
+void SetFeature(IKFeature, bool);
 void SetInterceptNetworkUpdate(const String&, bool);
 void Solve();
-void UpdateInitialPose();
 
 // Properties:
 IKAlgorithm algorithm;
@@ -5703,11 +5716,8 @@ Array<Variant> attributeDefaults;
 /* readonly */
 Array<AttributeInfo> attributeInfos;
 Array<Variant> attributes;
-bool autoSolve;
-bool boneRotations;
 /* readonly */
 String category;
-bool continuousSolving;
 bool enabled;
 /* readonly */
 bool enabledEffective;
@@ -5721,14 +5731,12 @@ uint numAttributes;
 ObjectAnimation objectAnimation;
 /* readonly */
 int refs;
-bool targetRotation;
 bool temporary;
 float tolerance;
 /* readonly */
 StringHash type;
 /* readonly */
 String typeName;
-bool updatePose;
 /* readonly */
 int weakRefs;
 };
@@ -5766,6 +5774,7 @@ bool SaveDDS(const String&) const;
 bool SaveJPG(const String&, int) const;
 bool SavePNG(const String&) const;
 bool SaveTGA(const String&) const;
+bool SaveWEBP(const String&, float = 0.0f) const;
 void SendEvent(const String&, VariantMap& = VariantMap ( ));
 void SetPixel(int, int, const Color&);
 void SetPixel(int, int, int, const Color&);
@@ -7389,7 +7398,9 @@ Vector3 ReadVector3();
 Vector4 ReadVector4();
 VectorBuffer ReadVectorBuffer(uint);
 uint Seek(uint);
+uint SeekRelative(int);
 void SendEvent(const String&, VariantMap& = VariantMap ( ));
+uint Tell() const;
 uint Write(Array<uint8>);
 bool WriteBool(bool);
 bool WriteBoundingBox(const BoundingBox&);
@@ -13389,6 +13400,7 @@ WrapMode GetAttributeAnimationWrapMode(const String&) const;
 Variant GetAttributeDefault(const String&) const;
 bool GetInterceptNetworkUpdate(const String&) const;
 TileMapLayer2D GetLayer(uint) const;
+Array<TileMapObject2D> GetTileCollisionShapes(int) const;
 bool HasSubscribedToEvent(Object, const String&);
 bool HasSubscribedToEvent(const String&);
 bool Load(File, bool = false);
@@ -14455,7 +14467,9 @@ Vector4 ReadVector4();
 VectorBuffer ReadVectorBuffer(uint);
 void Resize(uint);
 uint Seek(uint);
+uint SeekRelative(int);
 void SetData(Deserializer, uint);
+uint Tell() const;
 uint Write(Array<uint8>);
 bool WriteBool(bool);
 bool WriteBoundingBox(const BoundingBox&);
@@ -15603,7 +15617,20 @@ HTTP_CLOSED,
 
 enum IKAlgorithm
 {
+ONE_BONE,
+TWO_BONE,
 FABRIK,
+};
+
+enum IKFeature
+{
+JOINT_ROTATIONS,
+TARGET_ROTATIONS,
+UPDATE_ORIGINAL_POSE,
+UPDATE_ACTIVE_POSE,
+USE_ORIGINAL_POSE,
+CONSTRAINTS,
+AUTO_SOLVE,
 };
 
 enum InterpMethod

@@ -97,28 +97,36 @@ void TileMap2D::RegisterObject(Context* context)
         AM_DEFAULT);
 }
 
+// Transform vector from node-local space to global space
+static Vector2 TransformNode2D(Matrix3x4 transform, Vector2 local)
+{
+    Vector3 transformed = transform * Vector4(local.x_, local.y_, 0.f, 1.f);
+    return Vector2(transformed.x_, transformed.y_);
+}
+
 void TileMap2D::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
 {
     const Color& color = Color::RED;
     float mapW = info_.GetMapWidth();
     float mapH = info_.GetMapHeight();
+    const Matrix3x4 transform = GetNode()->GetTransform();
 
     switch (info_.orientation_)
     {
     case O_ORTHOGONAL:
     case O_STAGGERED:
     case O_HEXAGONAL:
-        debug->AddLine(Vector2(0.0f, 0.0f), Vector2(mapW, 0.0f), color);
-        debug->AddLine(Vector2(mapW, 0.0f), Vector2(mapW, mapH), color);
-        debug->AddLine(Vector2(mapW, mapH), Vector2(0.0f, mapH), color);
-        debug->AddLine(Vector2(0.0f, mapH), Vector2(0.0f, 0.0f), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(0.0f, 0.0f)), TransformNode2D(transform, Vector2(mapW, 0.0f)), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(mapW, 0.0f)), TransformNode2D(transform, Vector2(mapW, mapH)), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(mapW, mapH)), TransformNode2D(transform, Vector2(0.0f, mapH)), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(0.0f, mapH)), TransformNode2D(transform, Vector2(0.0f, 0.0f)), color);
         break;
 
     case O_ISOMETRIC:
-        debug->AddLine(Vector2(0.0f, mapH * 0.5f), Vector2(mapW * 0.5f, 0.0f), color);
-        debug->AddLine(Vector2(mapW * 0.5f, 0.0f), Vector2(mapW, mapH * 0.5f), color);
-        debug->AddLine(Vector2(mapW, mapH * 0.5f), Vector2(mapW * 0.5f, mapH), color);
-        debug->AddLine(Vector2(mapW * 0.5f, mapH), Vector2(0.0f, mapH * 0.5f), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(0.0f, mapH * 0.5f)), TransformNode2D(transform, Vector2(mapW * 0.5f, 0.0f)), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(mapW * 0.5f, 0.0f)), TransformNode2D(transform, Vector2(mapW, mapH * 0.5f)), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(mapW, mapH * 0.5f)), TransformNode2D(transform, Vector2(mapW * 0.5f, mapH)), color);
+        debug->AddLine(TransformNode2D(transform, Vector2(mapW * 0.5f, mapH)), TransformNode2D(transform, Vector2(0.0f, mapH * 0.5f)), color);
         break;
     }
 
@@ -193,7 +201,7 @@ void TileMap2D::SetTmxFile(TmxFile2D* tmxFile)
 
         layers_[i] = layer;
     }
-
+    
     // Create rigid bodies, collision shapes and constraints for objects belonging to "Physics" and "Constraints" layers
     CreatePhysicsFromObjects();
     CreateConstraintsFromObjects();
@@ -202,6 +210,11 @@ void TileMap2D::SetTmxFile(TmxFile2D* tmxFile)
     NavigationMesh* navMesh = GetNavMesh();
     if (navMesh)
         navMesh->Build();
+}
+
+TmxFile2D* TileMap2D::GetTmxFile() const
+{
+    return tmxFile_;
 }
 
 TileMapLayer2D* TileMap2D::GetLayer(unsigned index) const

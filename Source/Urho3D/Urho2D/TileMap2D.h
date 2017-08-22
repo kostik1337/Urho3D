@@ -25,7 +25,6 @@
 #include "../Scene/Component.h"
 #include "../Urho2D/TileMapDefs2D.h"
 
-
 namespace Urho3D
 {
 
@@ -56,7 +55,7 @@ public:
     void DrawDebugGeometry();
 
     /// Return tmx file.
-    TmxFile2D* GetTmxFile() const { return tmxFile_; }
+    TmxFile2D* GetTmxFile() const;
 
     /// Return information.
     const TileMapInfo2D& GetInfo() const { return info_; }

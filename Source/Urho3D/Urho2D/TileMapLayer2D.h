@@ -72,7 +72,7 @@ public:
     bool PositionToTileIndex(int& x, int& y, const Vector2& position) const { return tileMap_->GetInfo().PositionToTileIndex(x, y, position - offset_); }
 
     /// Return tile map.
-    TileMap2D* GetTileMap() const { return tileMap_; }
+    TileMap2D* GetTileMap() const;
 
     /// Return tmx layer.
     const TmxLayer2D* GetTmxLayer() const { return tmxLayer_; }

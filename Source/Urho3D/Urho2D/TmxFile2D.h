@@ -43,7 +43,7 @@ public:
     virtual ~TmxLayer2D();
 
     /// Return tmx file.
-    TmxFile2D* GetTmxFile() const { return tmxFile_; }
+    TmxFile2D* GetTmxFile() const;
 
     /// Return type.
     TileMapLayerType2D GetType() const { return type_; }
@@ -162,7 +162,7 @@ public:
     const String& GetSource() const { return source_; }
 
     /// Return sprite.
-    Sprite2D* GetSprite() const { return sprite_; }
+    Sprite2D* GetSprite() const;
 
 private:
     /// Position.
@@ -203,7 +203,7 @@ public:
     /// Return Tilemap information.
     const TileMapInfo2D& GetInfo() const { return info_; }
 
-    /// Return tile sprite by gid.
+    /// Return tile sprite by gid, if not exist return 0.
     Sprite2D* GetTileSprite(int gid) const;
 
     /// Return animation name set for a given gid.
@@ -255,3 +255,4 @@ private:
 };
 
 }
+
