@@ -35,10 +35,10 @@ struct spAnimationStateData;
 namespace Urho3D
 {
 
-//namespace Spriter
-//{
-//    struct SpriterData;
-//}
+namespace Spriter
+{
+    struct SpriterData;
+}
 
 class Sprite2D;
 class SpriteSheet2D;
@@ -53,16 +53,16 @@ public:
     /// Construct.
     AnimationSet2D(Context* context);
     /// Destruct.
-    virtual ~AnimationSet2D();
+    virtual ~AnimationSet2D() override;
     /// Register object factory.
     static void RegisterObject(Context* context);
 
     /// Load resource from stream. May be called from a worker thread. Return true if successful.
-    virtual bool BeginLoad(Deserializer& source);
+    virtual bool BeginLoad(Deserializer& source) override;
     /// Finish resource loading. Always called from the main thread. Return true if successful.
-    virtual bool EndLoad();
+    virtual bool EndLoad() override;
     /// Save resource. Return true if successful.
-    virtual bool Save(Serializer& dest) const;
+    virtual bool Save(Serializer& dest) const override;
     /// Save as XML data. Return true if successful.
     bool SaveXML(XMLElement& dest) const;
 
@@ -72,7 +72,7 @@ public:
     String GetAnimation(unsigned index) const;
     /// Check has animation.
     bool HasAnimation(const String& animation) const;
-
+    
     /// Return sprite.
     Sprite2D* GetSprite() const { return sprite_; }
 

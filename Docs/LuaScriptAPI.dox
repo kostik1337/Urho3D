@@ -209,6 +209,7 @@ namespace Urho3D
 <a href="#Class_ToolTip"><b>ToolTip</b></a>
 <a href="#Class_TouchState"><b>TouchState</b></a>
 <a href="#Class_UI"><b>UI</b></a>
+<a href="#Class_UIComponent"><b>UIComponent</b></a>
 <a href="#Class_UIElement"><b>UIElement</b></a>
 <a href="#Class_ValueAnimation"><b>ValueAnimation</b></a>
 <a href="#Class_Variant"><b>Variant</b></a>
@@ -2991,12 +2992,16 @@ Methods:
 - IntRect* new()
 - IntRect(int left, int top, int right, int bottom) (GC)
 - IntRect* new(int left, int top, int right, int bottom)
+- IntRect(const IntVector2& min, const IntVector2& max) (GC)
+- IntRect* new(const IntVector2& min, const IntVector2& max)
 - void delete()
 - bool operator==(const IntRect& rhs) const
 - IntVector2 Size() const
 - int Width() const
 - int Height() const
 - Intersection IsInside(const IntVector2& point) const
+- void Clip(const IntRect& rect)
+- void Merge(const IntRect& rect)
 
 Properties:
 
@@ -3027,7 +3032,9 @@ Methods:
 - IntVector2 operator-() const
 - IntVector2 operator-(const IntVector2& rhs) const
 - IntVector2 operator*(int rhs) const
+- IntVector2 operator*(const IntVector2& rhs) const
 - IntVector2 operator/(int rhs) const
+- IntVector2 operator/(const IntVector2& rhs) const
 - String ToString() const
 - unsigned ToHash() const
 - float Length() const
@@ -3037,6 +3044,11 @@ Properties:
 - int x
 - int y
 - const IntVector2 ZERO
+- const IntVector2 LEFT
+- const IntVector2 RIGHT
+- const IntVector2 UP
+- const IntVector2 DOWN
+- const IntVector2 ONE
 
 <a name="Class_IntVector3"></a>
 ### IntVector3
@@ -3056,7 +3068,9 @@ Methods:
 - IntVector3 operator-() const
 - IntVector3 operator-(const IntVector3& rhs) const
 - IntVector3 operator*(int rhs) const
+- IntVector3 operator*(const IntVector3& rhs) const
 - IntVector3 operator/(int rhs) const
+- IntVector3 operator/(const IntVector3& rhs) const
 - String ToString() const
 - unsigned ToHash() const
 - float Length() const
@@ -5308,6 +5322,7 @@ Methods:
 - void ReloadShaders()
 - unsigned GetNumViewports() const
 - Viewport* GetViewport(unsigned index) const
+- Viewport* GetViewportForScene(Scene* scene, unsigned index) const
 - RenderPath* GetDefaultRenderPath() const
 - Technique* GetDefaultTechnique() const
 - bool GetHDRRendering() const
@@ -7102,6 +7117,23 @@ Properties:
 - float scale
 - IntVector2& customSize
 
+<a name="Class_UIComponent"></a>
+### UIComponent : Component
+
+Methods:
+
+- UIComponent() (GC)
+- UIComponent* new()
+- UIElement* GetRoot() const
+- Material* GetMaterial() const
+- Texture2D* GetTexture() const
+
+Properties:
+
+- UIElement* root (readonly)
+- Material* material (readonly)
+- Texture2D* texture (readonly)
+
 <a name="Class_UIElement"></a>
 ### UIElement : Animatable
 
@@ -7463,7 +7495,6 @@ Methods:
 - Vector2 operator*(float rhs) const
 - Vector2 operator*(const Vector2& rhs) const
 - Vector2 operator/(float rhs) const
-- Vector2 operator/(const Vector2& rhs) const
 - Vector2 operator/(const Vector2& rhs) const
 - void Normalize()
 - float Length() const
