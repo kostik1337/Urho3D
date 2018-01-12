@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -126,6 +126,9 @@ struct PhysicsWorldConfig
 
 static const float DEFAULT_MAX_NETWORK_ANGULAR_VELOCITY = 100.0f;
 
+/// Cache of collision geometry data.
+using CollisionGeometryDataCache = HashMap<Pair<Model*, unsigned>, SharedPtr<CollisionGeometryData> >;
+
 /// Physics simulation world component. Should be added only to the root scene node.
 class URHO3D_API PhysicsWorld : public Component, public btIDebugDraw
 {
@@ -136,32 +139,32 @@ class URHO3D_API PhysicsWorld : public Component, public btIDebugDraw
 
 public:
     /// Construct.
-    PhysicsWorld(Context* scontext);
+    explicit PhysicsWorld(Context* scontext);
     /// Destruct.
-    virtual ~PhysicsWorld() override;
+    ~PhysicsWorld() override;
     /// Register object factory.
     static void RegisterObject(Context* context);
 
     /// Check if an AABB is visible for debug drawing.
-    virtual bool isVisible(const btVector3& aabbMin, const btVector3& aabbMax) override;
+    bool isVisible(const btVector3& aabbMin, const btVector3& aabbMax) override;
     /// Draw a physics debug line.
-    virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override;
+    void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override;
     /// Log warning from the physics engine.
-    virtual void reportErrorWarning(const char* warningString) override;
+    void reportErrorWarning(const char* warningString) override;
     /// Draw a physics debug contact point. Not implemented.
-    virtual void drawContactPoint
+    void drawContactPoint
         (const btVector3& pointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color) override;
     /// Draw physics debug 3D text. Not implemented.
-    virtual void draw3dText(const btVector3& location, const char* textString) override;
+    void draw3dText(const btVector3& location, const char* textString) override;
 
     /// Set debug draw flags.
-    virtual void setDebugMode(int debugMode) override { debugMode_ = debugMode; }
+    void setDebugMode(int debugMode) override { debugMode_ = debugMode; }
 
     /// Return debug draw flags.
-    virtual int getDebugMode() const override { return debugMode_; }
+    int getDebugMode() const override { return debugMode_; }
 
     /// Visualize the component as debug geometry.
-    virtual void DrawDebugGeometry(DebugRenderer* debug, bool depthTest) override;
+    void DrawDebugGeometry(DebugRenderer* debug, bool depthTest) override;
 
     /// Step the simulation forward.
     void Update(float timeStep);
@@ -267,10 +270,13 @@ public:
     void CleanupGeometryCache();
 
     /// Return trimesh collision geometry cache.
-    HashMap<Pair<Model*, unsigned>, SharedPtr<CollisionGeometryData> >& GetTriMeshCache() { return triMeshCache_; }
+    CollisionGeometryDataCache& GetTriMeshCache() { return triMeshCache_; }
 
     /// Return convex collision geometry cache.
-    HashMap<Pair<Model*, unsigned>, SharedPtr<CollisionGeometryData> >& GetConvexCache() { return convexCache_; }
+    CollisionGeometryDataCache& GetConvexCache() { return convexCache_; }
+
+    /// Return GImpact trimesh collision geometry cache.
+    CollisionGeometryDataCache& GetGImpactTrimeshCache() { return gimpactTrimeshCache_; }
 
     /// Set node dirtying to be disregarded.
     void SetApplyingTransforms(bool enable) { applyingTransforms_ = enable; }
@@ -286,7 +292,7 @@ public:
 
 protected:
     /// Handle scene being assigned.
-    virtual void OnSceneSet(Scene* scene) override;
+    void OnSceneSet(Scene* scene) override;
 
 private:
     /// Handle the scene subsystem update event, step simulation here.
@@ -323,9 +329,11 @@ private:
     /// Delayed (parented) world transform assignments.
     HashMap<RigidBody*, DelayedWorldTransform> delayedWorldTransforms_;
     /// Cache for trimesh geometry data by model and LOD level.
-    HashMap<Pair<Model*, unsigned>, SharedPtr<CollisionGeometryData> > triMeshCache_;
+    CollisionGeometryDataCache triMeshCache_;
     /// Cache for convex geometry data by model and LOD level.
-    HashMap<Pair<Model*, unsigned>, SharedPtr<CollisionGeometryData> > convexCache_;
+    CollisionGeometryDataCache convexCache_;
+    /// Cache for GImpact trimesh geometry data by model and LOD level.
+    CollisionGeometryDataCache gimpactTrimeshCache_;
     /// Preallocated event data map for physics collision events.
     VariantMap physicsCollisionData_;
     /// Preallocated event data map for node collision events.

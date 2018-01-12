@@ -22,29 +22,27 @@
 
 #include "../Precompiled.h"
 
-#include "../Urho2D/AnimationSet2D.h"
-#include "../Math/AreaAllocator.h"
 #include "../Container/ArrayPtr.h"
 #include "../Core/Context.h"
-#include "../IO/FileSystem.h"
 #include "../Graphics/Graphics.h"
-#include "../Resource/Image.h"
+#include "../Graphics/Texture2D.h"
+#include "../IO/FileSystem.h"
 #include "../IO/Log.h"
+#include "../Math/AreaAllocator.h"
 #include "../Resource/ResourceCache.h"
+#include "../Resource/XMLFile.h"
+#include "../Resource/Image.h"
+#include "../Urho2D/AnimationSet2D.h"
 #include "../Urho2D/Sprite2D.h"
 #include "../Urho2D/SpriterData2D.h"
 #include "../Urho2D/SpriteSheet2D.h"
-#include "../Graphics/Texture2D.h"
-#include "../Resource/XMLFile.h"
 
 #include "../DebugNew.h"
 
 #ifdef URHO3D_SPINE
 #include <spine/spine.h>
 #include <spine/extension.h>
-#endif
 
-#ifdef URHO3D_SPINE
 // Current animation set
 static Urho3D::AnimationSet2D* currentAnimationSet = 0;
 
@@ -207,6 +205,11 @@ bool AnimationSet2D::HasAnimation(const String& animationName) const
     return false;
 }
 
+Sprite2D* AnimationSet2D::GetSprite() const
+{
+    return sprite_;
+}
+
 Sprite2D* AnimationSet2D::GetSpriterFileSprite(int folderId, int fileId) const
 {
     int key = (folderId << 16) + fileId;
@@ -300,7 +303,7 @@ bool AnimationSet2D::BeginLoadSpriter(Deserializer& source)
 
     // Check has sprite sheet
     String parentPath = GetParentPath(GetName());
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
+    auto* cache = GetSubsystem<ResourceCache>();
 
     spriteSheetFilePath_ = parentPath + GetFileName(GetName()) + ".xml";
     hasSpriteSheet_ = cache->Exists(spriteSheetFilePath_);
@@ -348,7 +351,7 @@ bool AnimationSet2D::EndLoadSpriter()
     if (!spriterData_)
         return false;
 
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
+    auto* cache = GetSubsystem<ResourceCache>();
     if (hasSpriteSheet_)
     {
         spriteSheet_ = cache->GetResource<SpriteSheet2D>(spriteSheetFilePath_);

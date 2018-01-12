@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -54,9 +54,7 @@ TmxLayer2D::TmxLayer2D(TmxFile2D* tmxFile, TileMapLayerType2D type) :
 
 }
 
-TmxLayer2D::~TmxLayer2D()
-{
-}
+TmxLayer2D::~TmxLayer2D() = default;
 
 TmxFile2D* TmxLayer2D::GetTmxFile() const
 {
@@ -407,7 +405,7 @@ bool TmxImageLayer2D::Load(const XMLElement& element, const TileMapInfo2D& info)
     position_ = Vector2(0.0f, info.GetMapHeight());
     source_ = imageElem.GetAttribute("source");
     String textureFilePath = GetParentPath(tmxFile_->GetName()) + source_;
-    ResourceCache* cache = tmxFile_->GetSubsystem<ResourceCache>();
+    auto* cache = tmxFile_->GetSubsystem<ResourceCache>();
     SharedPtr<Texture2D> texture(cache->GetResource<Texture2D>(textureFilePath));
     if (!texture)
     {
@@ -594,14 +592,14 @@ bool TmxFile2D::EndLoad()
             ret = LoadTileSet(childElement);
         else if (name == "layer")
         {
-            TmxTileLayer2D* tileLayer = new TmxTileLayer2D(this);
+            auto* tileLayer = new TmxTileLayer2D(this);
             ret = tileLayer->Load(childElement, info_);
 
             layers_.Push(tileLayer);
         }
         else if (name == "objectgroup")
         {
-            TmxObjectGroup2D* objectGroup = new TmxObjectGroup2D(this);
+            auto* objectGroup = new TmxObjectGroup2D(this);
             ret = objectGroup->Load(childElement, info_);
 
             layers_.Push(objectGroup);
@@ -609,7 +607,7 @@ bool TmxFile2D::EndLoad()
         }
         else if (name == "imagelayer")
         {
-            TmxImageLayer2D* imageLayer = new TmxImageLayer2D(this);
+            auto* imageLayer = new TmxImageLayer2D(this);
             ret = imageLayer->Load(childElement, info_);
 
             layers_.Push(imageLayer);
@@ -754,7 +752,7 @@ bool TmxFile2D::LoadTileSet(const XMLElement& element)
     int imageHeight;
     bool isSingleTileSet = false;
 
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
+    auto* cache = GetSubsystem<ResourceCache>();
     {
         XMLElement imageElem = tileSetElem.GetChild("image");
         // Tileset based on single tileset image

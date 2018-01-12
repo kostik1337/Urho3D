@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -200,7 +200,7 @@ AnimationSet2D* AnimatedSprite2D::GetAnimationSet() const
 
 void AnimatedSprite2D::SetAnimationSetAttr(const ResourceRef& value)
 {
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
+    auto* cache = GetSubsystem<ResourceCache>();
     SetAnimationSet(cache->GetResource<AnimationSet2D>(value.name_));
 }
 
@@ -456,7 +456,7 @@ void AnimatedSprite2D::UpdateSourceBatchesSpriter()
         if (timelineKeys[i]->GetObjectType() != Spriter::SPRITE)
             continue;
 
-        Spriter::SpriteTimelineKey* timelineKey = (Spriter::SpriteTimelineKey*)timelineKeys[i];
+        auto* timelineKey = (Spriter::SpriteTimelineKey*)timelineKeys[i];
 
         Spriter::SpatialInfo& info = timelineKey->info_;
         Vector3 position(info.x_, info.y_, 0.0f);

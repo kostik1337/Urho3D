@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,8 @@ SpriterInstance::SpriterInstance(Component* owner, SpriterData* spriteData) :
     owner_(owner),
     spriterData_(spriteData),
     entity_(nullptr),
-    animation_(nullptr)
+    animation_(nullptr),
+    spatialInfo_(0.f, 0.f, 0.f, 1.f, 1.f)
 {
 }
 
@@ -204,23 +205,31 @@ void SpriterInstance::UpdateTimelineKeys()
     for (size_t i = 0; i < mainlineKey_->boneRefs_.Size(); ++i)
     {
         Ref* ref = mainlineKey_->boneRefs_[i];
-        BoneTimelineKey* timelineKey = (BoneTimelineKey*)GetTimelineKey(ref);
+        auto* timelineKey = (BoneTimelineKey*)GetTimelineKey(ref);
         if (ref->parent_ >= 0)
+        {
             timelineKey->info_ = timelineKey->info_.UnmapFromParent(timelineKeys_[ref->parent_]->info_);
+        }
         else
+        {
             timelineKey->info_ = timelineKey->info_.UnmapFromParent(spatialInfo_);
+        }
         timelineKeys_.Push(timelineKey);
     }
 
     for (size_t i = 0; i < mainlineKey_->objectRefs_.Size(); ++i)
     {
         Ref* ref = mainlineKey_->objectRefs_[i];
-        SpriteTimelineKey* timelineKey = (SpriteTimelineKey*)GetTimelineKey(ref);
+        auto* timelineKey = (SpriteTimelineKey*)GetTimelineKey(ref);
 
         if (ref->parent_ >= 0)
+        {
             timelineKey->info_ = timelineKey->info_.UnmapFromParent(timelineKeys_[ref->parent_]->info_);
+        }
         else
+        {
             timelineKey->info_ = timelineKey->info_.UnmapFromParent(spatialInfo_);
+        }
 
         timelineKey->zIndex_ = ref->zIndex_;
 
@@ -234,14 +243,20 @@ void SpriterInstance::UpdateMainlineKey()
     for (size_t i = 0; i < mainlineKeys.Size(); ++i)
     {
         if (mainlineKeys[i]->time_ <= currentTime_)
+        {
             mainlineKey_ = mainlineKeys[i];
+        }
 
         if (mainlineKeys[i]->time_ >= currentTime_)
+        {
             break;
+        }
     }
 
     if (!mainlineKey_)
+    {
         mainlineKey_ = mainlineKeys[0];
+    }
 }
 
 TimelineKey* SpriterInstance::GetTimelineKey(Ref* ref) const
@@ -249,22 +264,30 @@ TimelineKey* SpriterInstance::GetTimelineKey(Ref* ref) const
     Timeline* timeline = animation_->timelines_[ref->timeline_];
     TimelineKey* timelineKey = timeline->keys_[ref->key_]->Clone();
     if (timeline->keys_.Size() == 1 || timelineKey->curveType_ == INSTANT)
+    {
         return timelineKey;
+    }
 
     size_t nextTimelineKeyIndex = ref->key_ + 1;
     if (nextTimelineKeyIndex >= timeline->keys_.Size())
     {
         if (animation_->looping_)
+        {
             nextTimelineKeyIndex = 0;
+        }
         else
+        {
             return timelineKey;
+        }
     }
 
     TimelineKey* nextTimelineKey = timeline->keys_[nextTimelineKeyIndex];
-        
+
     float nextTimelineKeyTime = nextTimelineKey->time_;
     if (nextTimelineKey->time_ < timelineKey->time_)
+    {
         nextTimelineKeyTime += animation_->length_;
+    }
 
     float t = timelineKey->GetTByCurveType(currentTime_, nextTimelineKeyTime);
     timelineKey->Interpolate(*nextTimelineKey, t);
@@ -280,6 +303,7 @@ void SpriterInstance::Clear()
     {
         for (size_t i = 0; i < timelineKeys_.Size(); ++i)
             delete timelineKeys_[i];
+        }
         timelineKeys_.Clear();
     }
 }
