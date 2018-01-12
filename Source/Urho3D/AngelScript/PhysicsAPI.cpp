@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ static PhysicsWorld* SceneGetPhysicsWorld(Scene* ptr)
 static PhysicsWorld* GetPhysicsWorld()
 {
     Scene* scene = GetScriptContextScene();
-    return scene ? scene->GetComponent<PhysicsWorld>() : 0;
+    return scene ? scene->GetComponent<PhysicsWorld>() : nullptr;
 }
 
 static void ConstructPhysicsRaycastResult(PhysicsRaycastResult* ptr)

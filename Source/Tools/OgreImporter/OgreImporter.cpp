@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -959,7 +959,7 @@ void WriteOutput(const String& outputFileName, bool exportAnimations, bool rotat
                 while (track)
                 {
                     String trackName = track.GetAttribute("bone");
-                    ModelBone* bone = 0;
+                    ModelBone* bone = nullptr;
                     for (unsigned i = 0; i < bones_.Size(); ++i)
                     {
                         if (bones_[i].name_ == trackName)

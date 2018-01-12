@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,21 +48,19 @@ const char* autoRemoveModeNames[] = {
     "Disabled",
     "Component",
     "Node",
-    0
+    nullptr
 };
 
 Component::Component(Context* context) :
     Animatable(context),
-    node_(0),
+    node_(nullptr),
     id_(0),
     networkUpdate_(false),
     enabled_(true)
 {
 }
 
-Component::~Component()
-{
-}
+Component::~Component() = default;
 
 bool Component::Save(Serializer& dest) const
 {
@@ -151,7 +149,7 @@ void Component::Remove()
 
 Scene* Component::GetScene() const
 {
-    return node_ ? node_->GetScene() : 0;
+    return node_ ? node_->GetScene() : nullptr;
 }
 
 void Component::AddReplicationState(ComponentReplicationState* state)
@@ -191,7 +189,7 @@ void Component::PrepareNetworkUpdate()
             for (PODVector<ReplicationState*>::Iterator j = networkState_->replicationStates_.Begin();
                  j != networkState_->replicationStates_.End(); ++j)
             {
-                ComponentReplicationState* compState = static_cast<ComponentReplicationState*>(*j);
+                auto* compState = static_cast<ComponentReplicationState*>(*j);
                 compState->dirtyAttributes_.Set(i);
 
                 // Add component's parent node to the dirty set if not added yet
@@ -261,7 +259,7 @@ void Component::SetNode(Node* node)
 
 Component* Component::GetComponent(StringHash type) const
 {
-    return node_ ? node_->GetComponent(type) : 0;
+    return node_ ? node_->GetComponent(type) : nullptr;
 }
 
 bool Component::IsEnabledEffective() const
@@ -286,7 +284,7 @@ void Component::HandleAttributeAnimationUpdate(StringHash eventType, VariantMap&
 
 Component* Component::GetFixedUpdateSource()
 {
-    Component* ret = 0;
+    Component* ret = nullptr;
     Scene* scene = GetScene();
 
     if (scene)

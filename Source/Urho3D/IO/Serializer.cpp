@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,7 @@ namespace Urho3D
 
 static const float q = 32767.0f;
 
-Serializer::~Serializer()
-{
-}
+Serializer::~Serializer() = default;
 
 bool Serializer::WriteInt64(long long value)
 {
@@ -286,9 +284,11 @@ bool Serializer::WriteVariantData(const Variant& value)
     case VAR_BUFFER:
         return WriteBuffer(value.GetBuffer());
 
-        // Serializing pointers is not supported. Write null
+        // Serializing pointers and custom values is not supported. Write null
     case VAR_VOIDPTR:
     case VAR_PTR:
+    case VAR_CUSTOM_HEAP:
+    case VAR_CUSTOM_STACK:
         return WriteUInt(0);
 
     case VAR_RESOURCEREF:

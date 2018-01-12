@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
 #pragma once
 
 #include "../Container/RefCounted.h"
+#include "../Container/Swap.h"
 
 #include <cassert>
 #include <cstddef>
@@ -36,40 +37,40 @@ template <class T> class SharedPtr
 {
 public:
     /// Construct a null shared pointer.
-    SharedPtr() :
+    SharedPtr() noexcept :
         ptr_(0)
     {
     }
 
     /// Construct a null shared pointer.
-    SharedPtr(std::nullptr_t) :
+    SharedPtr(std::nullptr_t) noexcept :     // NOLINT
         ptr_(0)
     {
     }
 
     /// Copy-construct from another shared pointer.
-    SharedPtr(const SharedPtr<T>& rhs) :
+    SharedPtr(const SharedPtr<T>& rhs) noexcept :
         ptr_(rhs.ptr_)
     {
         AddRef();
     }
 
     /// Copy-construct from another shared pointer allowing implicit upcasting.
-    template <class U> SharedPtr(const SharedPtr<U>& rhs) :
+    template <class U> SharedPtr(const SharedPtr<U>& rhs) noexcept :    // NOLINT
         ptr_(rhs.ptr_)
     {
         AddRef();
     }
 
     /// Construct from a raw pointer.
-    explicit SharedPtr(T* ptr) :
+    explicit SharedPtr(T* ptr) noexcept :
         ptr_(ptr)
     {
         AddRef();
     }
 
     /// Destruct. Release the object reference.
-    ~SharedPtr()
+    ~SharedPtr() noexcept
     {
         ReleaseRef();
     }
@@ -80,9 +81,8 @@ public:
         if (ptr_ == rhs.ptr_)
             return *this;
 
-        ReleaseRef();
-        ptr_ = rhs.ptr_;
-        AddRef();
+        SharedPtr<T> copy(rhs);
+        Swap(copy);
 
         return *this;
     }
@@ -93,9 +93,8 @@ public:
         if (ptr_ == rhs.ptr_)
             return *this;
 
-        ReleaseRef();
-        ptr_ = rhs.ptr_;
-        AddRef();
+        SharedPtr<T> copy(rhs);
+        Swap(copy);
 
         return *this;
     }
@@ -106,9 +105,8 @@ public:
         if (ptr_ == ptr)
             return *this;
 
-        ReleaseRef();
-        ptr_ = ptr;
-        AddRef();
+        SharedPtr<T> copy(ptr);
+        Swap(copy);
 
         return *this;
     }
@@ -144,7 +142,10 @@ public:
     template <class U> bool operator !=(const SharedPtr<U>& rhs) const { return ptr_ != rhs.ptr_; }
 
     /// Convert to a raw pointer.
-    operator T*() const { return ptr_; }
+    operator T*() const { return ptr_; }    // NOLINT
+
+    /// Swap with another SharedPtr.
+    void Swap(SharedPtr& rhs) { Urho3D::Swap(ptr_, rhs.ptr_); }
 
     /// Reset to null and release the object reference.
     void Reset() { ReleaseRef(); }
@@ -166,17 +167,15 @@ public:
     /// Perform a static cast from a shared pointer of another type.
     template <class U> void StaticCast(const SharedPtr<U>& rhs)
     {
-        ReleaseRef();
-        ptr_ = static_cast<T*>(rhs.Get());
-        AddRef();
+        SharedPtr<T> copy(static_cast<T*>(rhs.Get()));
+        Swap(copy);
     }
 
     /// Perform a dynamic cast from a shared pointer of another type.
     template <class U> void DynamicCast(const SharedPtr<U>& rhs)
     {
-        ReleaseRef();
-        ptr_ = dynamic_cast<T*>(rhs.Get());
-        AddRef();
+        SharedPtr<T> copy(dynamic_cast<T*>(rhs.Get()));
+        Swap(copy);
     }
 
     /// Check if the pointer is null.
@@ -245,21 +244,21 @@ template <class T> class WeakPtr
 {
 public:
     /// Construct a null weak pointer.
-    WeakPtr() :
+    WeakPtr() noexcept :
         ptr_(0),
-        refCount_(0)
+        refCount_(nullptr)
     {
     }
 
     /// Construct a null weak pointer.
-    WeakPtr(std::nullptr_t) :
+    WeakPtr(std::nullptr_t) noexcept :   // NOLINT
         ptr_(0),
-        refCount_(0)
+        refCount_(nullptr)
     {
     }
 
     /// Copy-construct from another weak pointer.
-    WeakPtr(const WeakPtr<T>& rhs) :
+    WeakPtr(const WeakPtr<T>& rhs) noexcept :
         ptr_(rhs.ptr_),
         refCount_(rhs.refCount_)
     {
@@ -267,7 +266,7 @@ public:
     }
 
     /// Copy-construct from another weak pointer allowing implicit upcasting.
-    template <class U> WeakPtr(const WeakPtr<U>& rhs) :
+    template <class U> WeakPtr(const WeakPtr<U>& rhs) noexcept :   // NOLINT
         ptr_(rhs.ptr_),
         refCount_(rhs.refCount_)
     {
@@ -275,7 +274,7 @@ public:
     }
 
     /// Construct from a shared pointer.
-    WeakPtr(const SharedPtr<T>& rhs) :
+    WeakPtr(const SharedPtr<T>& rhs) noexcept : // NOLINT
         ptr_(rhs.Get()),
         refCount_(rhs.RefCountPtr())
     {
@@ -283,7 +282,7 @@ public:
     }
 
     /// Construct from a raw pointer.
-    explicit WeakPtr(T* ptr) :
+    explicit WeakPtr(T* ptr) noexcept :
         ptr_(ptr),
         refCount_(ptr ? ptr->RefCountPtr() : 0)
     {
@@ -291,7 +290,7 @@ public:
     }
 
     /// Destruct. Release the weak reference to the object.
-    ~WeakPtr()
+    ~WeakPtr() noexcept
     {
         ReleaseRef();
     }
@@ -406,7 +405,7 @@ public:
     template <class U> bool operator <(const WeakPtr<U>& rhs) const { return ptr_ < rhs.ptr_; }
 
     /// Convert to a raw pointer, null if the object is expired.
-    operator T*() const { return Get(); }
+    operator T*() const { return Get(); }   // NOLINT
 
     /// Reset to null and release the weak reference.
     void Reset() { ReleaseRef(); }
@@ -517,7 +516,7 @@ template <class T, class U> WeakPtr<T> DynamicCast(const WeakPtr<U>& ptr)
 template<class T> inline void CheckedDelete(T* x)
 {
     // intentionally complex - simplification causes regressions
-    typedef char type_must_be_complete[sizeof(T) ? 1 : -1];
+    using type_must_be_complete = char[sizeof(T) ? 1 : -1];
     (void) sizeof(type_must_be_complete);
     delete x;
 }
@@ -525,16 +524,17 @@ template<class T> inline void CheckedDelete(T* x)
 /// Unique pointer template class.
 template <class T> class UniquePtr
 {
-    // Make non-copyable
-    UniquePtr(const UniquePtr&);
-    UniquePtr& operator=(const UniquePtr&);
-
 public:
     /// Construct empty.
     UniquePtr() : ptr_(0) { }
 
     /// Construct from pointer.
     explicit UniquePtr(T* ptr) : ptr_(ptr) { }
+
+    /// Prevent copy construction.
+    UniquePtr(const UniquePtr&) = delete;
+    /// Prevent assignment.
+    UniquePtr& operator=(const UniquePtr&) = delete;
 
     /// Assign from pointer.
     UniquePtr& operator = (T* ptr)
@@ -544,7 +544,7 @@ public:
     }
 
     /// Construct empty.
-    UniquePtr(std::nullptr_t) { }
+    UniquePtr(std::nullptr_t) { }   // NOLINT
 
     /// Move-construct from UniquePtr.
     UniquePtr(UniquePtr && up) : ptr_(up.Detach()) { }
@@ -583,10 +583,10 @@ public:
     bool operator !=(const UniquePtr<U>& rhs) const { return ptr_ != rhs.ptr_; }
 
     /// Cast pointer to bool.
-    operator bool() const { return !!ptr_; }
+    operator bool() const { return !!ptr_; }    // NOLINT
 
     /// Swap with another UniquePtr.
-    void Swap(UniquePtr& up) { Swap(ptr_, up.ptr_); }
+    void Swap(UniquePtr& up) { Urho3D::Swap(ptr_, up.ptr_); }
 
     /// Detach pointer from UniquePtr without destroying.
     T* Detach()

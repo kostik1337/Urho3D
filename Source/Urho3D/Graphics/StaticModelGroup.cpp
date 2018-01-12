@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,13 +40,6 @@ namespace Urho3D
 
 extern const char* GEOMETRY_CATEGORY;
 
-const char* instanceNodesStructureElementNames[] =
-{
-    "Instance Count",
-    "   NodeID",
-    0
-};
-
 StaticModelGroup::StaticModelGroup(Context* context) :
     StaticModel(context),
     nodesDirty_(false),
@@ -56,18 +49,22 @@ StaticModelGroup::StaticModelGroup(Context* context) :
     UpdateNodeIDs();
 }
 
-StaticModelGroup::~StaticModelGroup()
-{
-}
+StaticModelGroup::~StaticModelGroup() = default;
 
 void StaticModelGroup::RegisterObject(Context* context)
 {
+    static const StringVector instanceNodesStructureElementNames =
+        {
+            "Instance Count",
+            "   NodeID"
+        };
+
     context->RegisterFactory<StaticModelGroup>(GEOMETRY_CATEGORY);
 
     URHO3D_COPY_BASE_ATTRIBUTES(StaticModel);
-    URHO3D_ACCESSOR_VARIANT_VECTOR_STRUCTURE_ATTRIBUTE("Instance Nodes", GetNodeIDsAttr, SetNodeIDsAttr,
-                                                       VariantVector, Variant::emptyVariantVector, instanceNodesStructureElementNames,
-                                                       AM_DEFAULT | AM_NODEIDVECTOR);
+    URHO3D_ACCESSOR_ATTRIBUTE("Instance Nodes", GetNodeIDsAttr, SetNodeIDsAttr,
+        VariantVector, Variant::emptyVariantVector, AM_DEFAULT | AM_NODEIDVECTOR)
+        .SetMetadata(AttributeMetadata::P_VECTOR_STRUCT_ELEMENTS, instanceNodesStructureElementNames);
 }
 
 void StaticModelGroup::ApplyAttributes()
@@ -320,7 +317,7 @@ void StaticModelGroup::RemoveAllInstanceNodes()
 
 Node* StaticModelGroup::GetInstanceNode(unsigned index) const
 {
-    return index < instanceNodes_.Size() ? instanceNodes_[index] : (Node*)0;
+    return index < instanceNodes_.Size() ? instanceNodes_[index] : nullptr;
 }
 
 void StaticModelGroup::SetNodeIDsAttr(const VariantVector& value)
@@ -390,7 +387,7 @@ void StaticModelGroup::OnWorldBoundingBoxUpdate()
 
     worldBoundingBox_ = worldBox;
 
-    // Store the amount of valid instances we found instead of resizing worldTransforms_. This is because this function may be 
+    // Store the amount of valid instances we found instead of resizing worldTransforms_. This is because this function may be
     // called from multiple worker threads simultaneously
     numWorldTransforms_ = index;
 }

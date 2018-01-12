@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ const char* textEffects[] =
     "None",
     "Shadow",
     "Stroke",
-    0
+    nullptr
 };
 
 static const float MIN_ROW_SPACING = 0.5f;
@@ -75,9 +75,7 @@ Text::Text(Context* context) :
     useDerivedOpacity_ = false;
 }
 
-Text::~Text()
-{
-}
+Text::~Text() = default;
 
 void Text::RegisterObject(Context* context)
 {
@@ -111,7 +109,7 @@ void Text::ApplyAttributes()
     // Localize now if attributes were loaded out-of-order
     if (autoLocalizable_ && stringId_.Length())
     {
-        Localization* l10n = GetSubsystem<Localization>();
+        auto* l10n = GetSubsystem<Localization>();
         text_ = l10n->Get(stringId_);
     }
 
@@ -125,7 +123,7 @@ void Text::ApplyAttributes()
 
 void Text::GetBatches(PODVector<UIBatch>& batches, PODVector<float>& vertexData, const IntRect& currentScissor)
 {
-    FontFace* face = font_ ? font_->GetFace(fontSize_) : (FontFace*)0;
+    FontFace* face = font_ ? font_->GetFace(fontSize_) : nullptr;
     if (!face)
     {
         hovering_ = false;
@@ -146,7 +144,7 @@ void Text::GetBatches(PODVector<UIBatch>& batches, PODVector<float>& vertexData,
     if ((hovering_ && hoverColor_.a_ > 0.0) || (selected_ && selectionColor_.a_ > 0.0f))
     {
         bool both = hovering_ && selected_ && hoverColor_.a_ > 0.0 && selectionColor_.a_ > 0.0f;
-        UIBatch batch(this, BLEND_ALPHA, currentScissor, 0, &vertexData);
+        UIBatch batch(this, BLEND_ALPHA, currentScissor, nullptr, &vertexData);
         batch.SetColor(both ? selectionColor_.Lerp(hoverColor_, 0.5f) :
             (selected_ && selectionColor_.a_ > 0.0f ? selectionColor_ : hoverColor_));
         batch.AddQuad(0, 0, GetWidth(), GetHeight(), 0, 0);
@@ -156,7 +154,7 @@ void Text::GetBatches(PODVector<UIBatch>& batches, PODVector<float>& vertexData,
     // Partial selection batch
     if (!selected_ && selectionLength_ && charLocations_.Size() >= selectionStart_ + selectionLength_ && selectionColor_.a_ > 0.0f)
     {
-        UIBatch batch(this, BLEND_ALPHA, currentScissor, 0, &vertexData);
+        UIBatch batch(this, BLEND_ALPHA, currentScissor, nullptr, &vertexData);
         batch.SetColor(selectionColor_);
 
         Vector2 currentStart = charLocations_[selectionStart_].position_;
@@ -218,7 +216,7 @@ void Text::GetBatches(PODVector<UIBatch>& batches, PODVector<float>& vertexData,
                 int thickness = Min(strokeThickness_, fontSize_);
                 int samples = thickness * thickness + (thickness % 2 == 0 ? 4 : 3);
                 float angle = 360.f / samples;
-                float floatThickness = (float)thickness;
+                auto floatThickness = (float)thickness;
                 for (int i = 0; i < samples; ++i)
                 {
                     float x = Cos(angle * i) * floatThickness;
@@ -238,7 +236,7 @@ void Text::GetBatches(PODVector<UIBatch>& batches, PODVector<float>& vertexData,
                         if (x > -thickness && x < thickness &&
                             y > -thickness && y < thickness)
                             continue;
-    
+
                         ConstructBatch(pageBatch, pageGlyphLocation, x, y, &effectColor_, effectDepthBias_);
                     }
                 }
@@ -267,9 +265,9 @@ void Text::OnIndentSet()
     charLocationsDirty_ = true;
 }
 
-bool Text::SetFont(const String& fontName, int size)
+bool Text::SetFont(const String& fontName, float size)
 {
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
+    auto* cache = GetSubsystem<ResourceCache>();
     return SetFont(cache->GetResource<Font>(fontName), size);
 }
 
@@ -312,7 +310,7 @@ void Text::SetText(const String& text)
     if (autoLocalizable_)
     {
         stringId_ = text;
-        Localization* l10n = GetSubsystem<Localization>();
+        auto* l10n = GetSubsystem<Localization>();
         text_ = l10n->Get(stringId_);
     }
     else
@@ -360,7 +358,7 @@ void Text::SetAutoLocalizable(bool enable)
         if (enable)
         {
             stringId_ = text_;
-            Localization* l10n = GetSubsystem<Localization>();
+            auto* l10n = GetSubsystem<Localization>();
             text_ = l10n->Get(stringId_);
             SubscribeToEvent(E_CHANGELANGUAGE, URHO3D_HANDLER(Text, HandleChangeLanguage));
         }
@@ -378,7 +376,7 @@ void Text::SetAutoLocalizable(bool enable)
 
 void Text::HandleChangeLanguage(StringHash eventType, VariantMap& eventData)
 {
-    Localization* l10n = GetSubsystem<Localization>();
+    auto* l10n = GetSubsystem<Localization>();
     text_ = l10n->Get(stringId_);
     DecodeToUnicode();
     ValidateSelection();
@@ -469,7 +467,7 @@ Vector2 Text::GetCharSize(unsigned index)
 
 void Text::SetFontAttr(const ResourceRef& value)
 {
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
+    auto* cache = GetSubsystem<ResourceCache>();
     font_ = cache->GetResource<Font>(value.name_);
 }
 
@@ -527,7 +525,7 @@ void Text::UpdateText(bool onResize)
         int width = 0;
         int height = 0;
         int rowWidth = 0;
-        int rowHeight = (int)(rowSpacing_ * rowHeight_ + 0.5f);
+        auto rowHeight = (int)(rowSpacing_ * rowHeight_ + 0.5f);
 
         // First see if the text must be split up
         if (!wordWrap_)
@@ -706,12 +704,12 @@ void Text::UpdateText(bool onResize)
 void Text::UpdateCharLocations()
 {
     // Remember the font face to see if it's still valid when it's time to render
-    FontFace* face = font_ ? font_->GetFace(fontSize_) : (FontFace*)0;
+    FontFace* face = font_ ? font_->GetFace(fontSize_) : nullptr;
     if (!face)
         return;
     fontFace_ = face;
 
-    int rowHeight = (int)(rowSpacing_ * rowHeight_ + 0.5f);
+    auto rowHeight = (int)(rowSpacing_ * rowHeight_ + 0.5f);
 
     // Store position & size of each character, and locations per texture page
     unsigned numChars = unicodeText_.Size();

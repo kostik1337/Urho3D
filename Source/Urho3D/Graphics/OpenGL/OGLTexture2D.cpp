@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,7 @@ void Texture2D::OnDeviceReset()
     if (!object_.name_ || dataPending_)
     {
         // If has a resource file, reload through the resource cache. Otherwise just recreate.
-        ResourceCache* cache = GetSubsystem<ResourceCache>();
+        auto* cache = GetSubsystem<ResourceCache>();
         if (cache->Exists(GetName()))
             dataLost_ = !cache->ReloadResource(this);
 
@@ -78,7 +78,7 @@ void Texture2D::Release()
             for (unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
             {
                 if (graphics_->GetTexture(i) == this)
-                    graphics_->SetTexture(i, 0);
+                    graphics_->SetTexture(i, nullptr);
             }
 
             glDeleteTextures(1, &object_.name_);
@@ -162,7 +162,7 @@ bool Texture2D::SetData(unsigned level, int x, int y, int width, int height, con
             glCompressedTexSubImage2D(target_, level, x, y, width, height, format, GetDataSize(width, height), data);
     }
 
-    graphics_->SetTexture(0, 0);
+    graphics_->SetTexture(0, nullptr);
     return true;
 }
 
@@ -178,7 +178,7 @@ bool Texture2D::SetData(Image* image, bool useAlpha)
     SharedPtr<Image> mipImage;
     unsigned memoryUse = sizeof(Texture2D);
     int quality = QUALITY_HIGH;
-    Renderer* renderer = GetSubsystem<Renderer>();
+    auto* renderer = GetSubsystem<Renderer>();
     if (renderer)
         quality = renderer->GetTextureQuality();
 
@@ -287,7 +287,7 @@ bool Texture2D::SetData(Image* image, bool useAlpha)
             }
             else
             {
-                unsigned char* rgbaData = new unsigned char[level.width_ * level.height_ * 4];
+                auto* rgbaData = new unsigned char[level.width_ * level.height_ * 4];
                 level.Decompress(rgbaData);
                 SetData(i, 0, 0, level.width_, level.height_, rgbaData);
                 memoryUse += level.width_ * level.height_ * 4;
@@ -332,7 +332,7 @@ bool Texture2D::GetData(unsigned level, void* dest) const
         URHO3D_LOGERROR("Can not get data from multisampled texture without autoresolve");
         return false;
     }
-    
+
     if (resolveDirty_)
         graphics_->ResolveToTexture(const_cast<Texture2D*>(this));
 
@@ -343,7 +343,7 @@ bool Texture2D::GetData(unsigned level, void* dest) const
     else
         glGetCompressedTexImage(target_, level, dest);
 
-    graphics_->SetTexture(0, 0);
+    graphics_->SetTexture(0, nullptr);
     return true;
 #else
     // Special case on GLES: if the texture is a rendertarget, can make it current and use glReadPixels()
@@ -447,7 +447,7 @@ bool Texture2D::Create()
             glTexImage2DMultisample(target_, multiSample_, format, width_, height_, GL_TRUE);
         else
 #endif
-        glTexImage2D(target_, 0, format, width_, height_, 0, externalFormat, dataType, 0);
+        glTexImage2D(target_, 0, format, width_, height_, 0, externalFormat, dataType, nullptr);
         if (glGetError())
         {
             URHO3D_LOGERROR("Failed to create texture");
@@ -482,7 +482,7 @@ bool Texture2D::Create()
 
     // Set initial parameters, then unbind the texture
     UpdateParameters();
-    graphics_->SetTexture(0, 0);
+    graphics_->SetTexture(0, nullptr);
 
     return success;
 }

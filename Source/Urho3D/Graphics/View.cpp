@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -77,7 +77,7 @@ public:
     }
 
     /// Intersection test for drawables.
-    virtual void TestDrawables(Drawable** start, Drawable** end, bool inside)
+    void TestDrawables(Drawable** start, Drawable** end, bool inside) override
     {
         while (start != end)
         {
@@ -105,7 +105,7 @@ public:
     }
 
     /// Intersection test for drawables.
-    virtual void TestDrawables(Drawable** start, Drawable** end, bool inside)
+    void TestDrawables(Drawable** start, Drawable** end, bool inside) override
     {
         while (start != end)
         {
@@ -135,7 +135,7 @@ public:
     }
 
     /// Intersection test for an octant.
-    virtual Intersection TestOctant(const BoundingBox& box, bool inside)
+    Intersection TestOctant(const BoundingBox& box, bool inside) override
     {
         if (inside)
             return buffer_->IsVisible(box) ? INSIDE : OUTSIDE;
@@ -149,7 +149,7 @@ public:
     }
 
     /// Intersection test for drawables. Note: drawable occlusion is performed later in worker threads.
-    virtual void TestDrawables(Drawable** start, Drawable** end, bool inside)
+    void TestDrawables(Drawable** start, Drawable** end, bool inside) override
     {
         while (start != end)
         {
@@ -169,9 +169,9 @@ public:
 
 void CheckVisibilityWork(const WorkItem* item, unsigned threadIndex)
 {
-    View* view = reinterpret_cast<View*>(item->aux_);
-    Drawable** start = reinterpret_cast<Drawable**>(item->start_);
-    Drawable** end = reinterpret_cast<Drawable**>(item->end_);
+    auto* view = reinterpret_cast<View*>(item->aux_);
+    auto** start = reinterpret_cast<Drawable**>(item->start_);
+    auto** end = reinterpret_cast<Drawable**>(item->end_);
     OcclusionBuffer* buffer = view->occlusionBuffer_;
     const Matrix3x4& viewMatrix = view->cullCamera_->GetView();
     Vector3 viewZ = Vector3(viewMatrix.m20_, viewMatrix.m21_, viewMatrix.m22_);
@@ -227,7 +227,7 @@ void CheckVisibilityWork(const WorkItem* item, unsigned threadIndex)
             }
             else if (drawable->GetDrawableFlags() & DRAWABLE_LIGHT)
             {
-                Light* light = static_cast<Light*>(drawable);
+                auto* light = static_cast<Light*>(drawable);
                 // Skip lights with zero brightness or black color
                 if (!light->GetEffectiveColor().Equals(Color::BLACK))
                     result.lights_.Push(light);
@@ -238,8 +238,8 @@ void CheckVisibilityWork(const WorkItem* item, unsigned threadIndex)
 
 void ProcessLightWork(const WorkItem* item, unsigned threadIndex)
 {
-    View* view = reinterpret_cast<View*>(item->aux_);
-    LightQueryResult* query = reinterpret_cast<LightQueryResult*>(item->start_);
+    auto* view = reinterpret_cast<View*>(item->aux_);
+    auto* query = reinterpret_cast<LightQueryResult*>(item->start_);
 
     view->ProcessLight(*query, threadIndex);
 }
@@ -247,8 +247,8 @@ void ProcessLightWork(const WorkItem* item, unsigned threadIndex)
 void UpdateDrawableGeometriesWork(const WorkItem* item, unsigned threadIndex)
 {
     const FrameInfo& frame = *(reinterpret_cast<FrameInfo*>(item->aux_));
-    Drawable** start = reinterpret_cast<Drawable**>(item->start_);
-    Drawable** end = reinterpret_cast<Drawable**>(item->end_);
+    auto** start = reinterpret_cast<Drawable**>(item->start_);
+    auto** end = reinterpret_cast<Drawable**>(item->end_);
 
     while (start != end)
     {
@@ -261,28 +261,28 @@ void UpdateDrawableGeometriesWork(const WorkItem* item, unsigned threadIndex)
 
 void SortBatchQueueFrontToBackWork(const WorkItem* item, unsigned threadIndex)
 {
-    BatchQueue* queue = reinterpret_cast<BatchQueue*>(item->start_);
+    auto* queue = reinterpret_cast<BatchQueue*>(item->start_);
 
     queue->SortFrontToBack();
 }
 
 void SortBatchQueueBackToFrontWork(const WorkItem* item, unsigned threadIndex)
 {
-    BatchQueue* queue = reinterpret_cast<BatchQueue*>(item->start_);
+    auto* queue = reinterpret_cast<BatchQueue*>(item->start_);
 
     queue->SortBackToFront();
 }
 
 void SortLightQueueWork(const WorkItem* item, unsigned threadIndex)
 {
-    LightBatchQueue* start = reinterpret_cast<LightBatchQueue*>(item->start_);
+    auto* start = reinterpret_cast<LightBatchQueue*>(item->start_);
     start->litBaseBatches_.SortFrontToBack();
     start->litBatches_.SortFrontToBack();
 }
 
 void SortShadowQueueWork(const WorkItem* item, unsigned threadIndex)
 {
-    LightBatchQueue* start = reinterpret_cast<LightBatchQueue*>(item->start_);
+    auto* start = reinterpret_cast<LightBatchQueue*>(item->start_);
     for (unsigned i = 0; i < start->shadowSplits_.Size(); ++i)
         start->shadowSplits_[i].shadowBatches_.SortFrontToBack();
 }
@@ -293,31 +293,29 @@ View::View(Context* context) :
     Object(context),
     graphics_(GetSubsystem<Graphics>()),
     renderer_(GetSubsystem<Renderer>()),
-    scene_(0),
-    octree_(0),
-    cullCamera_(0),
-    camera_(0),
-    cameraZone_(0),
-    farClipZone_(0),
-    occlusionBuffer_(0),
-    renderTarget_(0),
-    substituteRenderTarget_(0),
-    passCommand_(0)
+    scene_(nullptr),
+    octree_(nullptr),
+    cullCamera_(nullptr),
+    camera_(nullptr),
+    cameraZone_(nullptr),
+    farClipZone_(nullptr),
+    occlusionBuffer_(nullptr),
+    renderTarget_(nullptr),
+    substituteRenderTarget_(nullptr),
+    passCommand_(nullptr)
 {
     // Create octree query and scene results vector for each thread
     unsigned numThreads = GetSubsystem<WorkQueue>()->GetNumThreads() + 1; // Worker threads + main thread
     tempDrawables_.Resize(numThreads);
     sceneResults_.Resize(numThreads);
-    frame_.camera_ = 0;
+    frame_.camera_ = nullptr;
 }
 
-View::~View()
-{
-}
+View::~View() = default;
 
 bool View::Define(RenderSurface* renderTarget, Viewport* viewport)
 {
-    sourceView_ = 0;
+    sourceView_ = nullptr;
     renderPath_ = viewport->GetRenderPath();
     if (!renderPath_)
         return false;
@@ -377,7 +375,7 @@ bool View::Define(RenderSurface* renderTarget, Viewport* viewport)
         else
         {
             // Mismatch in scene or renderpath, fall back to unique view preparation
-            sourceView_ = 0;
+            sourceView_ = nullptr;
         }
     }
 
@@ -394,8 +392,8 @@ bool View::Define(RenderSurface* renderTarget, Viewport* viewport)
     useLitBase_ = false;
     hasScenePasses_ = false;
     noStencil_ = false;
-    lightVolumeCommand_ = 0;
-    forwardLightsCommand_ = 0;
+    lightVolumeCommand_ = nullptr;
+    forwardLightsCommand_ = nullptr;
 
     scenePasses_.Clear();
     geometriesUpdated_ = false;
@@ -469,7 +467,7 @@ bool View::Define(RenderSurface* renderTarget, Viewport* viewport)
             lightPassIndex_ = command.passIndex_ = Technique::GetPassIndex(command.pass_);
     }
 
-    octree_ = 0;
+    octree_ = nullptr;
     // Get default zone first in case we do not have zones defined
     cameraZone_ = farClipZone_ = renderer_->GetDefaultZone();
 
@@ -646,7 +644,7 @@ void View::Render()
     // Draw the associated debug geometry now if enabled
     if (drawDebug_ && octree_ && camera_)
     {
-        DebugRenderer* debug = octree_->GetComponent<DebugRenderer>();
+        auto* debug = octree_->GetComponent<DebugRenderer>();
         if (debug && debug->IsEnabledEffective() && debug->HasContent())
         {
             // If used resolve from backbuffer, blit first to the backbuffer to ensure correct depth buffer on OpenGL
@@ -655,12 +653,12 @@ void View::Render()
             {
                 BlitFramebuffer(currentRenderTarget_->GetParentTexture(), renderTarget_, false);
                 currentRenderTarget_ = renderTarget_;
-                lastCustomDepthSurface_ = 0;
+                lastCustomDepthSurface_ = nullptr;
             }
 
             graphics_->SetRenderTarget(0, currentRenderTarget_);
             for (unsigned i = 1; i < MAX_RENDERTARGETS; ++i)
-                graphics_->SetRenderTarget(i, (RenderSurface*)0);
+                graphics_->SetRenderTarget(i, (RenderSurface*)nullptr);
 
             // If a custom depth surface was used, use it also for debug rendering
             graphics_->SetDepthStencil(lastCustomDepthSurface_ ? lastCustomDepthSurface_ : GetDepthStencil(currentRenderTarget_));
@@ -786,8 +784,8 @@ void View::SetCommandShaderParameters(const RenderPathCommand& command)
 
 void View::SetGBufferShaderParameters(const IntVector2& texSize, const IntRect& viewRect)
 {
-    float texWidth = (float)texSize.x_;
-    float texHeight = (float)texSize.y_;
+    auto texWidth = (float)texSize.x_;
+    auto texHeight = (float)texSize.y_;
     float widthRange = 0.5f * viewRect.Width() / texWidth;
     float heightRange = 0.5f * viewRect.Height() / texHeight;
 
@@ -813,7 +811,7 @@ void View::GetDrawables()
 
     URHO3D_PROFILE(GetDrawables);
 
-    WorkQueue* queue = GetSubsystem<WorkQueue>();
+    auto* queue = GetSubsystem<WorkQueue>();
     PODVector<Drawable*>& tempDrawables = tempDrawables_[0];
 
     // Get zones and occluders first
@@ -835,7 +833,7 @@ void View::GetDrawables()
 
         if (flags & DRAWABLE_ZONE)
         {
-            Zone* zone = static_cast<Zone*>(drawable);
+            auto* zone = static_cast<Zone*>(drawable);
             zones_.Push(zone);
             int priority = zone->GetPriority();
             if (priority > highestZonePriority_)
@@ -871,7 +869,7 @@ void View::GetDrawables()
         farClipZone_ = cameraZone_;
 
     // If occlusion in use, get & render the occluders
-    occlusionBuffer_ = 0;
+    occlusionBuffer_ = nullptr;
     if (maxOccluderTriangles_ > 0)
     {
         UpdateOccluders(occluders_, cullCamera_);
@@ -972,7 +970,7 @@ void View::GetDrawables()
     {
         Light* light = lights_[i];
         light->SetIntensitySortValue(cullCamera_->GetDistance(light->GetNode()->GetWorldPosition()));
-        light->SetLightQueue(0);
+        light->SetLightQueue(nullptr);
     }
 
     Sort(lights_.Begin(), lights_.End(), CompareLights);
@@ -996,7 +994,7 @@ void View::ProcessLights()
     // Process lit geometries and shadow casters for each light
     URHO3D_PROFILE(ProcessLights);
 
-    WorkQueue* queue = GetSubsystem<WorkQueue>();
+    auto* queue = GetSubsystem<WorkQueue>();
     lightQueryResults_.Resize(lights_.Size());
 
     for (unsigned i = 0; i < lightQueryResults_.Size(); ++i)
@@ -1019,7 +1017,7 @@ void View::ProcessLights()
 
 void View::GetLightBatches()
 {
-    BatchQueue* alphaQueue = batchQueues_.Contains(alphaPassIndex_) ? &batchQueues_[alphaPassIndex_] : (BatchQueue*)0;
+    BatchQueue* alphaQueue = batchQueues_.Contains(alphaPassIndex_) ? &batchQueues_[alphaPassIndex_] : nullptr;
 
     // Build light queues and lit batches
     {
@@ -1036,7 +1034,7 @@ void View::GetLightBatches()
 
         lightQueues_.Resize(numLightQueues);
         maxLightsDrawables_.Clear();
-        unsigned maxSortedInstances = (unsigned)renderer_->GetMaxSortedInstances();
+        auto maxSortedInstances = (unsigned)renderer_->GetMaxSortedInstances();
 
         for (Vector<LightQueryResult>::Iterator i = lightQueryResults_.Begin(); i != lightQueryResults_.End(); ++i)
         {
@@ -1058,7 +1056,7 @@ void View::GetLightBatches()
                 light->SetLightQueue(&lightQueue);
                 lightQueue.light_ = light;
                 lightQueue.negative_ = light->IsNegative();
-                lightQueue.shadowMap_ = 0;
+                lightQueue.shadowMap_ = nullptr;
                 lightQueue.litBaseBatches_.Clear(maxSortedInstances);
                 lightQueue.litBatches_.Clear(maxSortedInstances);
                 if (forwardLightsCommand_)
@@ -1130,7 +1128,7 @@ void View::GetLightBatches()
 
                             Batch destBatch(srcBatch);
                             destBatch.pass_ = pass;
-                            destBatch.zone_ = 0;
+                            destBatch.zone_ = nullptr;
 
                             AddBatchToQueue(shadowQueue.shadowBatches_, destBatch, tech);
                         }
@@ -1161,9 +1159,9 @@ void View::GetLightBatches()
                     volumeBatch.numWorldTransforms_ = 1;
                     volumeBatch.lightQueue_ = &lightQueue;
                     volumeBatch.distance_ = light->GetDistance();
-                    volumeBatch.material_ = 0;
-                    volumeBatch.pass_ = 0;
-                    volumeBatch.zone_ = 0;
+                    volumeBatch.material_ = nullptr;
+                    volumeBatch.pass_ = nullptr;
+                    volumeBatch.zone_ = nullptr;
                     renderer_->SetLightVolumeBatchShaders(volumeBatch, cullCamera_, lightVolumeCommand_->vertexShaderName_,
                         lightVolumeCommand_->pixelShaderName_, lightVolumeCommand_->vertexShaderDefines_,
                         lightVolumeCommand_->pixelShaderDefines_);
@@ -1273,8 +1271,8 @@ void View::GetBaseBatches()
                         if (i == vertexLightQueues_.End())
                         {
                             i = vertexLightQueues_.Insert(MakePair(hash, LightBatchQueue()));
-                            i->second_.light_ = 0;
-                            i->second_.shadowMap_ = 0;
+                            i->second_.light_ = nullptr;
+                            i->second_.shadowMap_ = nullptr;
                             i->second_.vertexLights_ = drawableVertexLights;
                         }
 
@@ -1282,7 +1280,7 @@ void View::GetBaseBatches()
                     }
                 }
                 else
-                    destBatch.lightQueue_ = 0;
+                    destBatch.lightQueue_ = nullptr;
 
                 bool allowInstancing = info.allowInstancing_;
                 if (allowInstancing && info.markToStencil_ && destBatch.lightMask_ != (destBatch.zone_->GetLightMask() & 0xff))
@@ -1305,7 +1303,7 @@ void View::UpdateGeometries()
 
     URHO3D_PROFILE(SortAndUpdateGeometry);
 
-    WorkQueue* queue = GetSubsystem<WorkQueue>();
+    auto* queue = GetSubsystem<WorkQueue>();
 
     // Sort batches
     {
@@ -1357,7 +1355,7 @@ void View::UpdateGeometries()
                 if ((*i)->GetUpdateGeometryType() == UPDATE_MAIN_THREAD)
                 {
                     nonThreadedGeometries_.Push(*i);
-                    *i = 0;
+                    *i = nullptr;
                 }
             }
 
@@ -1485,8 +1483,8 @@ void View::ExecuteRenderPathCommands()
 
         // Set for safety in case of empty renderpath
         currentRenderTarget_ = substituteRenderTarget_ ? substituteRenderTarget_ : renderTarget_;
-        currentViewportTexture_ = 0;
-        passCommand_ = 0;
+        currentViewportTexture_ = nullptr;
+        passCommand_ = nullptr;
 
         bool viewportModified = false;
         bool isPingponging = false;
@@ -1615,7 +1613,7 @@ void View::ExecuteRenderPathCommands()
 
                         queue.Draw(this, camera_, command.markToStencil_, false, allowDepthWrite);
 
-                        passCommand_ = 0;
+                        passCommand_ = nullptr;
                     }
                 }
                 break;
@@ -1669,7 +1667,7 @@ void View::ExecuteRenderPathCommands()
                             i->litBatches_.Draw(this, camera_, false, true, allowDepthWrite);
                         }
 
-                        passCommand_ = 0;
+                        passCommand_ = nullptr;
                     }
 
                     graphics_->SetScissorTest(false);
@@ -1707,7 +1705,7 @@ void View::ExecuteRenderPathCommands()
                             i->volumeBatches_[j].Draw(this, camera_, false);
                         }
 
-                        passCommand_ = 0;
+                        passCommand_ = nullptr;
                     }
 
                     graphics_->SetScissorTest(false);
@@ -1718,7 +1716,7 @@ void View::ExecuteRenderPathCommands()
             case CMD_RENDERUI:
                 {
                     SetRenderTargets(command);
-                    GetSubsystem<UI>()->Render(false);
+                    GetSubsystem<UI>()->Render(true);
                 }
                 break;
 
@@ -1787,7 +1785,7 @@ void View::SetRenderTargets(RenderPathCommand& command)
 
     while (index < MAX_RENDERTARGETS)
     {
-        graphics_->SetRenderTarget(index, (RenderSurface*)0);
+        graphics_->SetRenderTarget(index, (RenderSurface*)nullptr);
         ++index;
     }
 
@@ -1890,8 +1888,8 @@ void View::RenderQuad(RenderPathCommand& command)
 
         String invSizeName = rtInfo.name_ + "InvSize";
         String offsetsName = rtInfo.name_ + "Offsets";
-        float width = (float)renderTargets_[nameHash]->GetWidth();
-        float height = (float)renderTargets_[nameHash]->GetHeight();
+        auto width = (float)renderTargets_[nameHash]->GetWidth();
+        auto height = (float)renderTargets_[nameHash]->GetHeight();
 
         const Vector2& pixelUVOffset = Graphics::GetPixelUVOffset();
         graphics_->SetShaderParameter(invSizeName, Vector2(1.0f / width, 1.0f / height));
@@ -1921,9 +1919,9 @@ bool View::IsNecessary(const RenderPathCommand& command)
 
 bool View::CheckViewportRead(const RenderPathCommand& command)
 {
-    for (unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
+    for (const auto& textureName : command.textureNames_)
     {
-        if (!command.textureNames_[i].Empty() && !command.textureNames_[i].Compare("viewport", false))
+        if (!textureName.Empty() && !textureName.Compare("viewport", false))
             return true;
     }
 
@@ -1976,8 +1974,8 @@ void View::AllocateScreenBuffers()
     bool hasPingpong = false;
     bool needSubstitute = false;
     unsigned numViewportTextures = 0;
-    depthOnlyDummyTexture_ = 0;
-    lastCustomDepthSurface_ = 0;
+    depthOnlyDummyTexture_ = nullptr;
+    lastCustomDepthSurface_ = nullptr;
 
     // Check for commands with special meaning: has custom depth, renders a scene pass to other than the destination viewport,
     // read the viewport, or pingpong between viewport textures. These may trigger the need to substitute the destination RT
@@ -2074,11 +2072,11 @@ void View::AllocateScreenBuffers()
     int multiSample = renderTarget_ ? renderTarget_->GetMultiSample() : graphics_->GetMultiSample();
     bool autoResolve = renderTarget_ ? renderTarget_->GetAutoResolve() : true;
     substituteRenderTarget_ = needSubstitute ? GetRenderSurfaceFromTexture(renderer_->GetScreenBuffer(viewSize_.x_, viewSize_.y_,
-        format, multiSample, autoResolve, false, true, sRGB)) : (RenderSurface*)0;
+        format, multiSample, autoResolve, false, true, sRGB)) : nullptr;
     for (unsigned i = 0; i < MAX_VIEWPORT_TEXTURES; ++i)
     {
         viewportTextures_[i] = i < numViewportTextures ? renderer_->GetScreenBuffer(viewSize_.x_, viewSize_.y_, format, multiSample,
-            autoResolve, false, true, sRGB) : (Texture*)0;
+            autoResolve, false, true, sRGB) : nullptr;
     }
     // If using a substitute render target and pingponging, the substitute can act as the second viewport texture
     if (numViewportTextures == 1 && substituteRenderTarget_)
@@ -2105,8 +2103,8 @@ void View::AllocateScreenBuffers()
             height = (float)viewSize_.y_ * height;
         }
 
-        int intWidth = (int)(width + 0.5f);
-        int intHeight = (int)(height + 0.5f);
+        auto intWidth = (int)(width + 0.5f);
+        auto intHeight = (int)(height + 0.5f);
 
         // If the rendertarget is persistent, key it with a hash derived from the RT name and the view's pointer
         renderTargets_[rtInfo.name_] =
@@ -2142,7 +2140,7 @@ void View::BlitFramebuffer(Texture* source, RenderSurface* destination, bool dep
     graphics_->SetStencilTest(false);
     graphics_->SetRenderTarget(0, destination);
     for (unsigned i = 1; i < MAX_RENDERTARGETS; ++i)
-        graphics_->SetRenderTarget(i, (RenderSurface*)0);
+        graphics_->SetRenderTarget(i, (RenderSurface*)nullptr);
     graphics_->SetDepthStencil(GetDepthStencil(destination));
     graphics_->SetViewport(destRect);
 
@@ -2507,10 +2505,10 @@ bool View::IsShadowCasterVisible(Drawable* drawable, BoundingBox lightViewBox, C
     }
 }
 
-IntRect View::GetShadowMapViewport(Light* light, unsigned splitIndex, Texture2D* shadowMap)
+IntRect View::GetShadowMapViewport(Light* light, int splitIndex, Texture2D* shadowMap)
 {
-    unsigned width = (unsigned)shadowMap->GetWidth();
-    unsigned height = (unsigned)shadowMap->GetHeight();
+    int width = shadowMap->GetWidth();
+    int height = shadowMap->GetHeight();
 
     switch (light->GetLightType())
     {
@@ -2518,30 +2516,30 @@ IntRect View::GetShadowMapViewport(Light* light, unsigned splitIndex, Texture2D*
         {
             int numSplits = light->GetNumShadowSplits();
             if (numSplits == 1)
-                return IntRect(0, 0, width, height);
+                return {0, 0, width, height};
             else if (numSplits == 2)
-                return IntRect(splitIndex * width / 2, 0, (splitIndex + 1) * width / 2, height);
+                return {splitIndex * width / 2, 0, (splitIndex + 1) * width / 2, height};
             else
-                return IntRect((splitIndex & 1) * width / 2, (splitIndex / 2) * height / 2, ((splitIndex & 1) + 1) * width / 2,
-                    (splitIndex / 2 + 1) * height / 2);
+                return {(splitIndex & 1) * width / 2, (splitIndex / 2) * height / 2,
+                    ((splitIndex & 1) + 1) * width / 2, (splitIndex / 2 + 1) * height / 2};
         }
 
     case LIGHT_SPOT:
-        return IntRect(0, 0, width, height);
+        return {0, 0, width, height};
 
     case LIGHT_POINT:
-        return IntRect((splitIndex & 1) * width / 2, (splitIndex / 2) * height / 3, ((splitIndex & 1) + 1) * width / 2,
-            (splitIndex / 2 + 1) * height / 3);
+        return {(splitIndex & 1) * width / 2, (splitIndex / 2) * height / 3,
+            ((splitIndex & 1) + 1) * width / 2, (splitIndex / 2 + 1) * height / 3};
     }
 
-    return IntRect();
+    return {};
 }
 
 void View::SetupShadowCameras(LightQueryResult& query)
 {
     Light* light = query.light_;
 
-    int splits = 0;
+    unsigned splits = 0;
 
     switch (light->GetLightType())
     {
@@ -2615,7 +2613,7 @@ void View::SetupShadowCameras(LightQueryResult& query)
         break;
     }
 
-    query.numSplits_ = (unsigned)splits;
+    query.numSplits_ = splits;
 }
 
 void View::SetupDirLightShadowCamera(Camera* shadowCamera, Light* light, float nearSplit, float farSplit)
@@ -2688,7 +2686,7 @@ void View::FinalizeShadowCamera(Camera* shadowCamera, Light* light, const IntRec
     const BoundingBox& shadowCasterBox)
 {
     const FocusParameters& parameters = light->GetShadowFocus();
-    float shadowMapWidth = (float)(shadowViewport.Width());
+    auto shadowMapWidth = (float)(shadowViewport.Width());
     LightType type = light->GetLightType();
 
     if (type == LIGHT_DIRECTIONAL)
@@ -2740,7 +2738,7 @@ void View::QuantizeDirLightShadowCamera(Camera* shadowCamera, Light* light, cons
 {
     Node* shadowCameraNode = shadowCamera->GetNode();
     const FocusParameters& parameters = light->GetShadowFocus();
-    float shadowMapWidth = (float)(shadowViewport.Width());
+    auto shadowMapWidth = (float)(shadowViewport.Width());
 
     float minX = viewBox.min_.x_;
     float minY = viewBox.min_.y_;
@@ -2790,7 +2788,7 @@ void View::FindZone(Drawable* drawable)
 {
     Vector3 center = drawable->GetWorldBoundingBox().Center();
     int bestPriority = M_MIN_INT;
-    Zone* newZone = 0;
+    Zone* newZone = nullptr;
 
     // If bounding box center is in view, the zone assignment is conclusive also for next frames. Otherwise it is temporary
     // (possibly incorrect) and must be re-evaluated on the next frame
@@ -2849,7 +2847,7 @@ Technique* View::GetTechnique(Drawable* drawable, Material* material)
         }
 
         // If no suitable technique found, fallback to the last
-        return techniques.Size() ? techniques.Back().technique_ : (Technique*)0;
+        return techniques.Size() ? techniques.Back().technique_ : nullptr;
     }
 }
 
@@ -2865,14 +2863,14 @@ void View::CheckMaterialForAuxView(Material* material)
             // Have to check cube & 2D textures separately
             if (texture->GetType() == Texture2D::GetTypeStatic())
             {
-                Texture2D* tex2D = static_cast<Texture2D*>(texture);
+                auto* tex2D = static_cast<Texture2D*>(texture);
                 RenderSurface* target = tex2D->GetRenderSurface();
                 if (target && target->GetUpdateMode() == SURFACE_UPDATEVISIBLE)
                     target->QueueUpdate();
             }
             else if (texture->GetType() == TextureCube::GetTypeStatic())
             {
-                TextureCube* texCube = static_cast<TextureCube*>(texture);
+                auto* texCube = static_cast<TextureCube*>(texture);
                 for (unsigned j = 0; j < MAX_CUBEMAP_FACES; ++j)
                 {
                     RenderSurface* target = texCube->GetRenderSurface((CubeMapFace)j);
@@ -3070,7 +3068,7 @@ void View::RenderShadowMap(const LightBatchQueue& queue)
     URHO3D_PROFILE(RenderShadowMap);
 
     Texture2D* shadowMap = queue.shadowMap_;
-    graphics_->SetTexture(TU_SHADOWMAP, 0);
+    graphics_->SetTexture(TU_SHADOWMAP, nullptr);
 
     graphics_->SetFillMode(FILL_SOLID);
     graphics_->SetClipPlane(false);
@@ -3087,7 +3085,7 @@ void View::RenderShadowMap(const LightBatchQueue& queue)
         graphics_->SetRenderTarget(0, shadowMap->GetRenderSurface()->GetLinkedRenderTarget());
         // Disable other render targets
         for (unsigned i = 1; i < MAX_RENDERTARGETS; ++i)
-            graphics_->SetRenderTarget(i, (RenderSurface*) 0);
+            graphics_->SetRenderTarget(i, (RenderSurface*) nullptr);
         graphics_->SetViewport(IntRect(0, 0, shadowMap->GetWidth(), shadowMap->GetHeight()));
         graphics_->Clear(CLEAR_DEPTH);
     }
@@ -3097,7 +3095,7 @@ void View::RenderShadowMap(const LightBatchQueue& queue)
         graphics_->SetRenderTarget(0, shadowMap);
         // Disable other render targets
         for (unsigned i = 1; i < MAX_RENDERTARGETS; ++i)
-            graphics_->SetRenderTarget(i, (RenderSurface*) 0);
+            graphics_->SetRenderTarget(i, (RenderSurface*) nullptr);
         graphics_->SetDepthStencil(renderer_->GetDepthStencil(shadowMap->GetWidth(), shadowMap->GetHeight(),
             shadowMap->GetMultiSample(), shadowMap->GetAutoResolve()));
         graphics_->SetViewport(IntRect(0, 0, shadowMap->GetWidth(), shadowMap->GetHeight()));
@@ -3151,7 +3149,7 @@ RenderSurface* View::GetDepthStencil(RenderSurface* renderTarget)
 {
     // If using the backbuffer, return the backbuffer depth-stencil
     if (!renderTarget)
-        return 0;
+        return nullptr;
     // Then check for linked depth-stencil
     RenderSurface* depthStencil = renderTarget->GetLinkedDepthStencil();
     // Finally get one from Renderer
@@ -3164,25 +3162,25 @@ RenderSurface* View::GetDepthStencil(RenderSurface* renderTarget)
 RenderSurface* View::GetRenderSurfaceFromTexture(Texture* texture, CubeMapFace face)
 {
     if (!texture)
-        return 0;
+        return nullptr;
 
     if (texture->GetType() == Texture2D::GetTypeStatic())
         return static_cast<Texture2D*>(texture)->GetRenderSurface();
     else if (texture->GetType() == TextureCube::GetTypeStatic())
         return static_cast<TextureCube*>(texture)->GetRenderSurface(face);
     else
-        return 0;
+        return nullptr;
 }
 
 void View::SendViewEvent(StringHash eventType)
 {
     using namespace BeginViewRender;
-    
+
     VariantMap& eventData = GetEventDataMap();
-    
+
     eventData[P_VIEW] = this;
     eventData[P_SURFACE] = renderTarget_;
-    eventData[P_TEXTURE] = (renderTarget_ ? renderTarget_->GetParentTexture() : 0);
+    eventData[P_TEXTURE] = (renderTarget_ ? renderTarget_->GetParentTexture() : nullptr);
     eventData[P_SCENE] = scene_;
     eventData[P_CAMERA] = cullCamera_;
 
@@ -3197,7 +3195,7 @@ Texture* View::FindNamedTexture(const String& name, bool isRenderTarget, bool is
         return renderTargets_[nameHash];
 
     // Then the resource system
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
+    auto* cache = GetSubsystem<ResourceCache>();
 
     // Check existing resources first. This does not load resources, so we can afford to guess the resource type wrong
     // without having to rely on the file extension
@@ -3235,7 +3233,7 @@ Texture* View::FindNamedTexture(const String& name, bool isRenderTarget, bool is
             return cache->GetResource<Texture2D>(name);
     }
 
-    return 0;
+    return nullptr;
 }
 
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,11 +34,11 @@ namespace Urho3D
 Vector3 UIBatch::posAdjust(0.0f, 0.0f, 0.0f);
 
 UIBatch::UIBatch() :
-    element_(0),
+    element_(nullptr),
     blendMode_(BLEND_REPLACE),
-    texture_(0),
+    texture_(nullptr),
     invTextureSize_(Vector2::ONE),
-    vertexData_(0),
+    vertexData_(nullptr),
     vertexStart_(0),
     vertexEnd_(0)
 {

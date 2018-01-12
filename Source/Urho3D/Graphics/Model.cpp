@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -65,9 +65,7 @@ Model::Model(Context* context) :
 {
 }
 
-Model::~Model()
-{
-}
+Model::~Model() = default;
 
 void Model::RegisterObject(Context* context)
 {
@@ -119,9 +117,9 @@ bool Model::BeginLoad(Deserializer& source)
             for (unsigned j = 0; j < numElements; ++j)
             {
                 unsigned elementDesc = source.ReadUInt();
-                VertexElementType type = (VertexElementType)(elementDesc & 0xff);
-                VertexElementSemantic semantic = (VertexElementSemantic)((elementDesc >> 8) & 0xff);
-                unsigned char index = (unsigned char)((elementDesc >> 16) & 0xff);
+                auto type = (VertexElementType)(elementDesc & 0xff);
+                auto semantic = (VertexElementSemantic)((elementDesc >> 8) & 0xff);
+                auto index = (unsigned char)((elementDesc >> 16) & 0xff);
                 desc.vertexElements_.Push(VertexElement(type, semantic, index));
             }
         }
@@ -212,7 +210,7 @@ bool Model::BeginLoad(Deserializer& source)
         for (unsigned j = 0; j < numLodLevels; ++j)
         {
             float distance = source.ReadFloat();
-            PrimitiveType type = (PrimitiveType)source.ReadUInt();
+            auto type = (PrimitiveType)source.ReadUInt();
 
             unsigned vbRef = source.ReadUInt();
             unsigned ibRef = source.ReadUInt();
@@ -310,7 +308,7 @@ bool Model::BeginLoad(Deserializer& source)
     memoryUse += sizeof(Vector3) * geometries_.Size();
 
     // Read metadata
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
+    auto* cache = GetSubsystem<ResourceCache>();
     String xmlName = ReplaceExtension(GetName(), ".xml");
     SharedPtr<XMLFile> file(cache->GetTempResource<XMLFile>(xmlName, false));
     if (file)
@@ -466,7 +464,7 @@ bool Model::Save(Serializer& dest) const
     // Write metadata
     if (HasMetadata())
     {
-        File* destFile = dynamic_cast<File*>(&dest);
+        auto* destFile = dynamic_cast<File*>(&dest);
         if (destFile)
         {
             String xmlName = ReplaceExtension(destFile->GetName(), ".xml");
@@ -743,7 +741,7 @@ unsigned Model::GetNumGeometryLodLevels(unsigned index) const
 Geometry* Model::GetGeometry(unsigned index, unsigned lodLevel) const
 {
     if (index >= geometries_.Size() || geometries_[index].Empty())
-        return 0;
+        return nullptr;
 
     if (lodLevel >= geometries_[index].Size())
         lodLevel = geometries_[index].Size() - 1;
@@ -753,7 +751,7 @@ Geometry* Model::GetGeometry(unsigned index, unsigned lodLevel) const
 
 const ModelMorph* Model::GetMorph(unsigned index) const
 {
-    return index < morphs_.Size() ? &morphs_[index] : 0;
+    return index < morphs_.Size() ? &morphs_[index] : nullptr;
 }
 
 const ModelMorph* Model::GetMorph(const String& name) const
@@ -769,7 +767,7 @@ const ModelMorph* Model::GetMorph(StringHash nameHash) const
             return &(*i);
     }
 
-    return 0;
+    return nullptr;
 }
 
 unsigned Model::GetMorphRangeStart(unsigned bufferIndex) const

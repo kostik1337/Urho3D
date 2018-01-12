@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,9 @@
 #include "../IO/Log.h"
 #include "../Resource/ResourceCache.h"
 #include "../Resource/XMLFile.h"
+#ifndef STB_VORBIS_HEADER_ONLY
 #define STB_VORBIS_HEADER_ONLY
+#endif
 #include <STB/stb_vorbis.h>
 
 #include "../DebugNew.h"
@@ -60,8 +62,8 @@ static const unsigned IP_SAFETY = 4;
 
 Sound::Sound(Context* context) :
     ResourceWithMetadata(context),
-    repeat_(0),
-    end_(0),
+    repeat_(nullptr),
+    end_(nullptr),
     dataSize_(0),
     frequency_(44100),
     looped_(false),
@@ -72,9 +74,7 @@ Sound::Sound(Context* context) :
 {
 }
 
-Sound::~Sound()
-{
-}
+Sound::~Sound() = default;
 
 void Sound::RegisterObject(Context* context)
 {
@@ -108,7 +108,7 @@ bool Sound::LoadOggVorbis(Deserializer& source)
 
     // Check for validity of data
     int error;
-    stb_vorbis* vorbis = stb_vorbis_open_memory((unsigned char*)data.Get(), dataSize, &error, 0);
+    stb_vorbis* vorbis = stb_vorbis_open_memory((unsigned char*)data.Get(), dataSize, &error, nullptr);
     if (!vorbis)
     {
         URHO3D_LOGERROR("Could not read Ogg Vorbis data from " + source.GetName());
@@ -340,7 +340,7 @@ unsigned Sound::GetSampleSize() const
 
 void Sound::LoadParameters()
 {
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
+    auto* cache = GetSubsystem<ResourceCache>();
     String xmlName = ReplaceExtension(GetName(), ".xml");
 
     SharedPtr<XMLFile> file(cache->GetTempResource<XMLFile>(xmlName, false));

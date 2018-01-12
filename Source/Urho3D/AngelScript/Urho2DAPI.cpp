@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -406,7 +406,7 @@ static PhysicsWorld2D* SceneGetPhysicsWorld2D(Scene* ptr)
 static PhysicsWorld2D* GetPhysicsWorld2D()
 {
     Scene* scene = GetScriptContextScene();
-    return scene ? scene->GetComponent<PhysicsWorld2D>() : 0;
+    return scene ? scene->GetComponent<PhysicsWorld2D>() : nullptr;
 }
 
 static void RegisterPhysicsWorld2D(asIScriptEngine* engine)

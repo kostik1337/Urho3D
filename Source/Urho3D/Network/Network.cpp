@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -247,7 +247,7 @@ bool Network::StartServer(unsigned short port)
 
     URHO3D_PROFILE(StartServer);
 
-    if (network_->StartServer(port, kNet::SocketOverUDP, this, true) != 0)
+    if (network_->StartServer(port, kNet::SocketOverUDP, this, true) != nullptr)
     {
         URHO3D_LOGINFO("Started server on port " + String(port));
         return true;
@@ -418,7 +418,7 @@ Connection* Network::GetConnection(kNet::MessageConnection* connection) const
         if (i != clientConnections_.End())
             return i->second_;
         else
-            return 0;
+            return nullptr;
     }
 }
 

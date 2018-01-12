@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@ static const char* addressModeNames[] =
     "mirror",
     "clamp",
     "border",
-    0
+    nullptr
 };
 
 static const char* filterModeNames[] =
@@ -52,15 +52,15 @@ static const char* filterModeNames[] =
     "anisotropic",
     "nearestanisotropic",
     "default",
-    0
+    nullptr
 };
 
 Texture::Texture(Context* context) :
     ResourceWithMetadata(context),
     GPUObject(GetSubsystem<Graphics>()),
-    shaderResourceView_(0),
-    sampler_(0),
-    resolveTexture_(0),
+    shaderResourceView_(nullptr),
+    sampler_(nullptr),
+    resolveTexture_(nullptr),
     format_(0),
     usage_(TEXTURE_STATIC),
     levels_(0),
@@ -78,15 +78,13 @@ Texture::Texture(Context* context) :
     resolveDirty_(false),
     levelsDirty_(false)
 {
-    for (int i = 0; i < MAX_COORDS; ++i)
-        addressMode_[i] = ADDRESS_WRAP;
+    for (auto& addressMode : addressModes_)
+        addressMode = ADDRESS_WRAP;
     for (int i = 0; i < MAX_TEXTURE_QUALITY_LEVELS; ++i)
         mipsToSkip_[i] = (unsigned)(MAX_TEXTURE_QUALITY_LEVELS - 1 - i);
 }
 
-Texture::~Texture()
-{
-}
+Texture::~Texture() = default;
 
 void Texture::SetNumLevels(unsigned levels)
 {
@@ -104,7 +102,7 @@ void Texture::SetFilterMode(TextureFilterMode mode)
 
 void Texture::SetAddressMode(TextureCoordinate coord, TextureAddressMode mode)
 {
-    addressMode_[coord] = mode;
+    addressModes_[coord] = mode;
     parametersDirty_ = true;
 }
 
@@ -214,7 +212,7 @@ void Texture::SetParameters(const XMLElement& element)
             String coord = paramElem.GetAttributeLower("coord");
             if (coord.Length() >= 1)
             {
-                TextureCoordinate coordIndex = (TextureCoordinate)(coord[0] - 'u');
+                auto coordIndex = (TextureCoordinate)(coord[0] - 'u');
                 String mode = paramElem.GetAttributeLower("mode");
                 SetAddressMode(coordIndex, (TextureAddressMode)GetStringListIndex(mode.CString(), addressModeNames, ADDRESS_WRAP));
             }
@@ -297,7 +295,7 @@ unsigned Texture::CheckMaxLevels(int width, int height, int depth, unsigned requ
 
 void Texture::CheckTextureBudget(StringHash type)
 {
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
+    auto* cache = GetSubsystem<ResourceCache>();
     unsigned long long textureBudget = cache->GetMemoryBudget(type);
     unsigned long long textureUse = cache->GetMemoryUse(type);
     if (!textureBudget)

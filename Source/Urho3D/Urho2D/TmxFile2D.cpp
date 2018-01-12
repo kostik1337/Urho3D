@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,6 @@
 #include "../IO/Log.h"
 #include "../Resource/ResourceCache.h"
 #include "../Resource/XMLFile.h"
-#include "../Resource/Image.h"
 #include "../Urho2D/Sprite2D.h"
 #include "../Urho2D/TmxFile2D.h"
 #include "../Math/AreaAllocator.h"
@@ -49,9 +48,7 @@ TmxLayer2D::TmxLayer2D(TmxFile2D* tmxFile, TileMapLayerType2D type) :
 
 }
 
-TmxLayer2D::~TmxLayer2D()
-{
-}
+TmxLayer2D::~TmxLayer2D() = default;
 
 TmxFile2D* TmxLayer2D::GetTmxFile() const
 {
@@ -223,7 +220,7 @@ bool TmxTileLayer2D::Load(const XMLElement& element, const TileMapInfo2D& info)
 Tile2D* TmxTileLayer2D::GetTile(int x, int y) const
 {
     if (x < 0 || x >= width_ || y < 0 || y >= height_)
-        return 0;
+        return nullptr;
 
     return tiles_[y * width_ + x];
 }
@@ -331,7 +328,7 @@ void TmxObjectGroup2D::StoreObject(XMLElement objectElem, SharedPtr<TileMapObjec
 TileMapObject2D* TmxObjectGroup2D::GetObject(unsigned index) const
 {
     if (index >= objects_.Size())
-        return 0;
+        return nullptr;
     return objects_[index];
 }
 
@@ -352,7 +349,7 @@ bool TmxImageLayer2D::Load(const XMLElement& element, const TileMapInfo2D& info)
     position_ = Vector2(0.0f, info.GetMapHeight());
     source_ = imageElem.GetAttribute("source");
     String textureFilePath = GetParentPath(tmxFile_->GetName()) + source_;
-    ResourceCache* cache = tmxFile_->GetSubsystem<ResourceCache>();
+    auto* cache = tmxFile_->GetSubsystem<ResourceCache>();
     SharedPtr<Texture2D> texture(cache->GetResource<Texture2D>(textureFilePath));
     if (!texture)
     {
@@ -496,14 +493,14 @@ bool TmxFile2D::EndLoad()
             ret = LoadTileSet(childElement);
         else if (name == "layer")
         {
-            TmxTileLayer2D* tileLayer = new TmxTileLayer2D(this);
+            auto* tileLayer = new TmxTileLayer2D(this);
             ret = tileLayer->Load(childElement, info_);
 
             layers_.Push(tileLayer);
         }
         else if (name == "objectgroup")
         {
-            TmxObjectGroup2D* objectGroup = new TmxObjectGroup2D(this);
+            auto* objectGroup = new TmxObjectGroup2D(this);
             ret = objectGroup->Load(childElement, info_);
 
             layers_.Push(objectGroup);
@@ -511,7 +508,7 @@ bool TmxFile2D::EndLoad()
         }
         else if (name == "imagelayer")
         {
-            TmxImageLayer2D* imageLayer = new TmxImageLayer2D(this);
+            auto* imageLayer = new TmxImageLayer2D(this);
             ret = imageLayer->Load(childElement, info_);
 
             layers_.Push(imageLayer);
@@ -559,7 +556,7 @@ Sprite2D* TmxFile2D::GetTileSprite(int gid) const
 {
     HashMap<int, SharedPtr<Sprite2D> >::ConstIterator i = gidToSpriteMapping_.Find(gid);
     if (i == gidToSpriteMapping_.End())
-        return 0;
+        return nullptr;
 
     return i->second_;
 }
@@ -578,14 +575,14 @@ PropertySet2D* TmxFile2D::GetTilePropertySet(int gid) const
 {
     HashMap<int, SharedPtr<PropertySet2D> >::ConstIterator i = gidToPropertySetMapping_.Find(gid);
     if (i == gidToPropertySetMapping_.End())
-        return 0;
+        return nullptr;
     return i->second_;
 }
 
 const TmxLayer2D* TmxFile2D::GetLayer(unsigned index) const
 {
     if (index >= layers_.Size())
-        return 0;
+        return nullptr;
 
     return layers_[index];
 }
@@ -647,7 +644,7 @@ bool TmxFile2D::LoadTileSet(const XMLElement& element)
     int imageHeight;
     bool isSingleTileSet = false;
 
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
+    auto* cache = GetSubsystem<ResourceCache>();
     {
         XMLElement imageElem = tileSetElem.GetChild("image");
         // Tileset based on single tileset image

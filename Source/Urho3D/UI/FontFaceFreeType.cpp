@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@
 #include "../UI/FontFaceFreeType.h"
 #include "../UI/UI.h"
 
-#include <assert.h>
+#include <cassert>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -55,7 +55,7 @@ class FreeTypeLibrary : public Object
 
 public:
     /// Construct.
-    FreeTypeLibrary(Context* context) :
+    explicit FreeTypeLibrary(Context* context) :
         Object(context)
     {
         FT_Error error = FT_Init_FreeType(&library_);
@@ -64,7 +64,7 @@ public:
     }
 
     /// Destruct.
-    virtual ~FreeTypeLibrary()
+    ~FreeTypeLibrary() override
     {
         FT_Done_FreeType(library_);
     }
@@ -78,7 +78,7 @@ private:
 
 FontFaceFreeType::FontFaceFreeType(Font* font) :
     FontFace(font),
-    face_(0),
+    face_(nullptr),
     loadMode_(FT_LOAD_DEFAULT),
     hasMutableGlyph_(false)
 {
@@ -89,7 +89,7 @@ FontFaceFreeType::~FontFaceFreeType()
     if (face_)
     {
         FT_Done_Face((FT_Face)face_);
-        face_ = 0;
+        face_ = nullptr;
     }
 }
 
@@ -98,14 +98,14 @@ bool FontFaceFreeType::Load(const unsigned char* fontData, unsigned fontDataSize
     Context* context = font_->GetContext();
 
     // Create & initialize FreeType library if it does not exist yet
-    FreeTypeLibrary* freeType = font_->GetSubsystem<FreeTypeLibrary>();
+    auto* freeType = font_->GetSubsystem<FreeTypeLibrary>();
     if (!freeType)
         context->RegisterSubsystem(freeType = new FreeTypeLibrary(context));
 
     // Ensure the FreeType library is kept alive as long as TTF font resources exist
     freeType_ = freeType;
 
-    UI* ui = font_->GetSubsystem<UI>();
+    auto* ui = font_->GetSubsystem<UI>();
     const int maxTextureSize = ui->GetMaxFontTextureSize();
     const FontHintLevel hintLevel = ui->GetFontHintLevel();
     const float subpixelThreshold = ui->GetFontSubpixelThreshold();
@@ -145,7 +145,7 @@ bool FontFaceFreeType::Load(const unsigned char* fontData, unsigned fontDataSize
 
     face_ = face;
 
-    unsigned numGlyphs = (unsigned)face->num_glyphs;
+    auto numGlyphs = (unsigned)face->num_glyphs;
     URHO3D_LOGDEBUGF("Font face %s (%fpt) has %d glyphs", GetFileName(font_->GetName()).CString(), pointSize, numGlyphs);
 
     PODVector<unsigned> charCodes(numGlyphs + 1, 0);
@@ -184,7 +184,7 @@ bool FontFaceFreeType::Load(const unsigned char* fontData, unsigned fontDataSize
     pointSize_ = pointSize;
 
     // Check if the font's OS/2 info gives different (larger) values for ascender & descender
-    TT_OS2* os2Info = (TT_OS2*)FT_Get_Sfnt_Table(face, ft_sfnt_os2);
+    auto* os2Info = (TT_OS2*)FT_Get_Sfnt_Table(face, ft_sfnt_os2);
     if (os2Info)
     {
         float descender = FixedToFloat(face->size->metrics.descender);
@@ -233,7 +233,7 @@ bool FontFaceFreeType::Load(const unsigned char* fontData, unsigned fontDataSize
         // are 29354 glyphs in msyh.ttf
         FT_ULong tagKern = FT_MAKE_TAG('k', 'e', 'r', 'n');
         FT_ULong kerningTableSize = 0;
-        FT_Error error = FT_Load_Sfnt_Table(face, tagKern, 0, 0, &kerningTableSize);
+        FT_Error error = FT_Load_Sfnt_Table(face, tagKern, 0, nullptr, &kerningTableSize);
         if (error)
         {
             URHO3D_LOGERROR("Could not get kerning table length");
@@ -301,7 +301,7 @@ bool FontFaceFreeType::Load(const unsigned char* fontData, unsigned fontDataSize
     if (!hasMutableGlyph_)
     {
         FT_Done_Face(face);
-        face_ = 0;
+        face_ = nullptr;
     }
 
     return true;
@@ -328,7 +328,7 @@ const FontGlyph* FontFaceFreeType::GetGlyph(unsigned c)
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 bool FontFaceFreeType::SetupNextTexture(int textureWidth, int textureHeight)
@@ -414,7 +414,7 @@ bool FontFaceFreeType::LoadCharGlyph(unsigned charCode, Image* image)
     if (!face_)
         return false;
 
-    FT_Face face = (FT_Face)face_;
+    auto face = (FT_Face)face_;
     FT_GlyphSlot slot = face->glyph;
 
     FontGlyph fontGlyph;
@@ -487,7 +487,7 @@ bool FontFaceFreeType::LoadCharGlyph(unsigned charCode, Image* image)
         fontGlyph.x_ = (short)x;
         fontGlyph.y_ = (short)y;
 
-        unsigned char* dest = 0;
+        unsigned char* dest = nullptr;
         unsigned pitch = 0;
         if (image)
         {

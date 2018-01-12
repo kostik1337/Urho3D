@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@ const char* trailTypeNames[] =
 {
     "Face Camera",
     "Bone",
-    0
+    nullptr
 };
 
 inline bool CompareTails(TrailPoint* lhs, TrailPoint* rhs)
@@ -92,9 +92,7 @@ RibbonTrail::RibbonTrail(Context* context) :
     batches_[0].numWorldTransforms_ = 1;
 }
 
-RibbonTrail::~RibbonTrail()
-{
-}
+RibbonTrail::~RibbonTrail() = default;
 
 void RibbonTrail::RegisterObject(Context* context)
 {
@@ -270,7 +268,7 @@ void RibbonTrail::UpdateTail()
         nextPoint.lifetime_ = 0.0f;
         nextPoint.forward_ = forwardMotion;
 
-        if (node_->GetParent() != 0)
+        if (node_->GetParent() != nullptr)
         {
             startPoint.parentPos_ = node_->GetParent()->GetWorldPosition();
             nextPoint.parentPos_ = node_->GetParent()->GetWorldPosition();
@@ -296,7 +294,7 @@ void RibbonTrail::UpdateTail()
             newPoint.position_ = worldPosition;
             newPoint.lifetime_ = 0.0f;
             newPoint.forward_ = forwardMotion;
-            if (node_->GetParent() != 0)
+            if (node_->GetParent() != nullptr)
                 newPoint.parentPos_ = node_->GetParent()->GetWorldPosition();
 
             points_.Push(newPoint);
@@ -473,7 +471,7 @@ void RibbonTrail::UpdateBufferSize()
     }
 
     // Indices do not change for a given tail generator capacity
-    unsigned short* dest = (unsigned short*)indexBuffer_->Lock(0, ((numPoints_ - 1) * indexPerSegment), true);
+    auto* dest = (unsigned short*)indexBuffer_->Lock(0, ((numPoints_ - 1) * indexPerSegment), true);
     if (!dest)
         return;
 
@@ -570,7 +568,7 @@ void RibbonTrail::UpdateVertexBuffer(const FrameInfo& frame)
     bufferDirty_ = false;
     forceUpdate_ = false;
 
-    float* dest = (float*)vertexBuffer_->Lock(0, (numPoints_ - 1) * vertexPerSegment, true);
+    auto* dest = (float*)vertexBuffer_->Lock(0, (numPoints_ - 1) * vertexPerSegment, true);
     if (!dest)
         return;
 
@@ -839,7 +837,7 @@ void RibbonTrail::SetTrailType(TrailType type)
     if (trailType_ == type)
         return;
 
-    if (type == TT_BONE && (node_->GetParent() == 0 || node_->GetParent() == node_->GetScene()))
+    if (type == TT_BONE && (node_->GetParent() == nullptr || node_->GetParent() == node_->GetScene()))
     {
         URHO3D_LOGWARNING("No parent node found, revert back to Face Camera type");
         return;
@@ -853,7 +851,7 @@ void RibbonTrail::SetTrailType(TrailType type)
 
 void RibbonTrail::SetMaterialAttr(const ResourceRef& value)
 {
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
+    auto* cache = GetSubsystem<ResourceCache>();
     SetMaterial(cache->GetResource<Material>(value.name_));
     Commit();
 }

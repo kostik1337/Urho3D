@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -66,12 +66,12 @@ void ShaderVariation::Release()
             if (type_ == VS)
             {
                 if (graphics_->GetVertexShader() == this)
-                    graphics_->SetShaders(0, 0);
+                    graphics_->SetShaders(nullptr, nullptr);
             }
             else
             {
                 if (graphics_->GetPixelShader() == this)
-                    graphics_->SetShaders(0, 0);
+                    graphics_->SetShaders(nullptr, nullptr);
             }
 
             glDeleteShader(object_.name_);
@@ -167,7 +167,7 @@ bool ShaderVariation::Create()
         shaderCode += originalShaderCode;
 
     const char* shaderCStr = shaderCode.CString();
-    glShaderSource(object_.name_, 1, &shaderCStr, 0);
+    glShaderSource(object_.name_, 1, &shaderCStr, nullptr);
     glCompileShader(object_.name_);
 
     int compiled, length;

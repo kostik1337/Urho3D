@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,7 @@ void Texture3D::OnDeviceReset()
     if (!object_.name_ || dataPending_)
     {
         // If has a resource file, reload through the resource cache. Otherwise just recreate.
-        ResourceCache* cache = GetSubsystem<ResourceCache>();
+        auto* cache = GetSubsystem<ResourceCache>();
         if (cache->Exists(GetName()))
             dataLost_ = !cache->ReloadResource(this);
 
@@ -73,7 +73,7 @@ void Texture3D::Release()
         for (unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
         {
             if (graphics_->GetTexture(i) == this)
-                graphics_->SetTexture(i, 0);
+                graphics_->SetTexture(i, nullptr);
         }
 
         glDeleteTextures(1, &object_.name_);
@@ -149,7 +149,7 @@ bool Texture3D::SetData(unsigned level, int x, int y, int z, int width, int heig
     }
 #endif
 
-    graphics_->SetTexture(0, 0);
+    graphics_->SetTexture(0, nullptr);
     return true;
 }
 
@@ -165,7 +165,7 @@ bool Texture3D::SetData(Image* image, bool useAlpha)
     SharedPtr<Image> mipImage;
     unsigned memoryUse = sizeof(Texture3D);
     int quality = QUALITY_HIGH;
-    Renderer* renderer = GetSubsystem<Renderer>();
+    auto* renderer = GetSubsystem<Renderer>();
     if (renderer)
         quality = renderer->GetTextureQuality();
 
@@ -279,7 +279,7 @@ bool Texture3D::SetData(Image* image, bool useAlpha)
             }
             else
             {
-                unsigned char* rgbaData = new unsigned char[level.width_ * level.height_ * level.depth_ * 4];
+                auto* rgbaData = new unsigned char[level.width_ * level.height_ * level.depth_ * 4];
                 level.Decompress(rgbaData);
                 SetData(i, 0, 0, 0, level.width_, level.height_, level.depth_, rgbaData);
                 memoryUse += level.width_ * level.height_ * level.depth_ * 4;
@@ -326,7 +326,7 @@ bool Texture3D::GetData(unsigned level, void* dest) const
     else
         glGetCompressedTexImage(target_, level, dest);
 
-    graphics_->SetTexture(0, 0);
+    graphics_->SetTexture(0, nullptr);
     return true;
 #else
     URHO3D_LOGERROR("Getting texture data not supported");
@@ -366,7 +366,7 @@ bool Texture3D::Create()
     if (!IsCompressed())
     {
         glGetError();
-        glTexImage3D(target_, 0, format, width_, height_, depth_, 0, externalFormat, dataType, 0);
+        glTexImage3D(target_, 0, format, width_, height_, depth_, 0, externalFormat, dataType, nullptr);
         if (glGetError())
         {
             URHO3D_LOGERROR("Failed to create texture");
@@ -381,7 +381,7 @@ bool Texture3D::Create()
 
     // Set initial parameters, then unbind the texture
     UpdateParameters();
-    graphics_->SetTexture(0, 0);
+    graphics_->SetTexture(0, nullptr);
 
     return success;
 #endif

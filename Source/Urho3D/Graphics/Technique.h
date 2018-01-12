@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,9 +43,9 @@ class URHO3D_API Pass : public RefCounted
 {
 public:
     /// Construct.
-    Pass(const String& passName);
+    explicit Pass(const String& passName);
     /// Destruct.
-    ~Pass();
+    ~Pass() override;
 
     /// Set blend mode.
     void SetBlendMode(BlendMode mode);
@@ -119,7 +119,7 @@ public:
 
     /// Return pixel shader defines.
     const String& GetPixelShaderDefines() const { return pixelShaderDefines_; }
-    
+
     /// Return vertex shader define excludes.
     const String& GetVertexShaderDefineExcludes() const { return vertexShaderDefineExcludes_; }
 
@@ -193,14 +193,14 @@ class URHO3D_API Technique : public Resource
 
 public:
     /// Construct.
-    Technique(Context* context);
+    explicit Technique(Context* context);
     /// Destruct.
-    ~Technique();
+    ~Technique() override;
     /// Register object factory.
     static void RegisterObject(Context* context);
 
     /// Load resource from stream. May be called from a worker thread. Return true if successful.
-    virtual bool BeginLoad(Deserializer& source);
+    bool BeginLoad(Deserializer& source) override;
 
     /// Set whether requires desktop level hardware.
     void SetIsDesktop(bool enable);
@@ -220,13 +220,13 @@ public:
     bool IsSupported() const { return !isDesktop_ || desktopSupport_; }
 
     /// Return whether has a pass.
-    bool HasPass(unsigned passIndex) const { return passIndex < passes_.Size() && passes_[passIndex].Get() != 0; }
+    bool HasPass(unsigned passIndex) const { return passIndex < passes_.Size() && passes_[passIndex].Get() != nullptr; }
 
     /// Return whether has a pass by name. This overload should not be called in time-critical rendering loops; use a pre-acquired pass index instead.
     bool HasPass(const String& passName) const;
 
     /// Return a pass, or null if not found.
-    Pass* GetPass(unsigned passIndex) const { return passIndex < passes_.Size() ? passes_[passIndex].Get() : 0; }
+    Pass* GetPass(unsigned passIndex) const { return passIndex < passes_.Size() ? passes_[passIndex].Get() : nullptr; }
 
     /// Return a pass by name, or null if not found. This overload should not be called in time-critical rendering loops; use a pre-acquired pass index instead.
     Pass* GetPass(const String& passName) const;
@@ -234,8 +234,8 @@ public:
     /// Return a pass that is supported for rendering, or null if not found.
     Pass* GetSupportedPass(unsigned passIndex) const
     {
-        Pass* pass = passIndex < passes_.Size() ? passes_[passIndex].Get() : 0;
-        return pass && (!pass->IsDesktop() || desktopSupport_) ? pass : 0;
+        Pass* pass = passIndex < passes_.Size() ? passes_[passIndex].Get() : nullptr;
+        return pass && (!pass->IsDesktop() || desktopSupport_) ? pass : nullptr;
     }
 
     /// Return a supported pass by name. This overload should not be called in time-critical rendering loops; use a pre-acquired pass index instead.

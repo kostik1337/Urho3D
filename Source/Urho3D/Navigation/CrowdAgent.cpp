@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -59,14 +59,14 @@ static const char* crowdAgentRequestedTargetTypeNames[] = {
     "None",
     "Position",
     "Velocity",
-    0
+    nullptr
 };
 
 static const char* crowdAgentAvoidanceQualityNames[] = {
     "Low",
     "Medium",
     "High",
-    0
+    nullptr
 };
 
 static const char* crowdAgentPushinessNames[] = {
@@ -74,7 +74,7 @@ static const char* crowdAgentPushinessNames[] = {
     "Medium",
     "High",
     "None",
-    0
+    nullptr
 };
 
 CrowdAgent::CrowdAgent(Context* context) :
@@ -166,7 +166,7 @@ void CrowdAgent::DrawDebugGeometry(bool depthTest)
     Scene* scene = GetScene();
     if (scene)
     {
-        DebugRenderer* debug = scene->GetComponent<DebugRenderer>();
+        auto* debug = scene->GetComponent<DebugRenderer>();
         if (debug)
             DrawDebugGeometry(debug, depthTest);
     }
@@ -623,10 +623,10 @@ void CrowdAgent::OnMarkedDirty(Node* node)
 {
     if (!ignoreTransformChanges_ && IsEnabledEffective())
     {
-        dtCrowdAgent* agent = const_cast<dtCrowdAgent*>(GetDetourCrowdAgent());
+        auto* agent = const_cast<dtCrowdAgent*>(GetDetourCrowdAgent());
         if (agent)
         {
-            Vector3& agentPos = reinterpret_cast<Vector3&>(agent->npos);
+            auto& agentPos = reinterpret_cast<Vector3&>(agent->npos);
             Vector3 nodePos = node->GetWorldPosition();
 
             // Only reset position / state if actually changed
@@ -644,7 +644,7 @@ void CrowdAgent::OnMarkedDirty(Node* node)
 
 const dtCrowdAgent* CrowdAgent::GetDetourCrowdAgent() const
 {
-    return IsInCrowd() ? crowdManager_->GetDetourCrowdAgent(agentCrowdId_) : 0;
+    return IsInCrowd() ? crowdManager_->GetDetourCrowdAgent(agentCrowdId_) : nullptr;
 }
 
 void CrowdAgent::HandleNavigationTileAdded(StringHash eventType, VariantMap& eventData)
@@ -652,7 +652,7 @@ void CrowdAgent::HandleNavigationTileAdded(StringHash eventType, VariantMap& eve
     if (!crowdManager_)
         return;
 
-    NavigationMesh* mesh = static_cast<NavigationMesh*>(eventData[NavigationTileAdded::P_MESH].GetPtr());
+    auto* mesh = static_cast<NavigationMesh*>(eventData[NavigationTileAdded::P_MESH].GetPtr());
     if (crowdManager_->GetNavigationMesh() != mesh)
         return;
 

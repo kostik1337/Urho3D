@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -55,7 +55,7 @@
 #include <sys/utime.h>
 #else
 #include <dirent.h>
-#include <errno.h>
+#include <cerrno>
 #include <unistd.h>
 #include <utime.h>
 #include <sys/wait.h>
@@ -163,7 +163,7 @@ int DoSystemRun(const String& fileName, const Vector<String>& arguments)
     memset(&processInfo, 0, sizeof processInfo);
 
     WString commandLineW(commandLine);
-    if (!CreateProcessW(NULL, (wchar_t*)commandLineW.CString(), 0, 0, 0, CREATE_NO_WINDOW, 0, 0, &startupInfo, &processInfo))
+    if (!CreateProcessW(nullptr, (wchar_t*)commandLineW.CString(), nullptr, nullptr, 0, CREATE_NO_WINDOW, nullptr, nullptr, &startupInfo, &processInfo))
         return -1;
 
     WaitForSingleObject(processInfo.hProcess, INFINITE);
@@ -204,7 +204,7 @@ class AsyncExecRequest : public Thread
 {
 public:
     /// Construct.
-    AsyncExecRequest(unsigned& requestID) :
+    explicit AsyncExecRequest(unsigned& requestID) :
         requestID_(requestID),
         completed_(false)
     {
@@ -245,9 +245,9 @@ public:
     }
 
     /// The function to run in the thread.
-    virtual void ThreadFunction()
+    void ThreadFunction() override
     {
-        exitCode_ = DoSystemCommand(commandLine_, false, 0);
+        exitCode_ = DoSystemCommand(commandLine_, false, nullptr);
         completed_ = true;
     }
 
@@ -270,7 +270,7 @@ public:
     }
 
     /// The function to run in the thread.
-    virtual void ThreadFunction()
+    void ThreadFunction() override
     {
         exitCode_ = DoSystemRun(fileName_, arguments_);
         completed_ = true;
@@ -347,7 +347,7 @@ bool FileSystem::CreateDir(const String& pathName)
     }
 
 #ifdef _WIN32
-    bool success = (CreateDirectoryW(GetWideNativePath(RemoveTrailingSlash(pathName)).CString(), 0) == TRUE) ||
+    bool success = (CreateDirectoryW(GetWideNativePath(RemoveTrailingSlash(pathName)).CString(), nullptr) == TRUE) ||
         (GetLastError() == ERROR_ALREADY_EXISTS);
 #else
     bool success = mkdir(GetNativePath(RemoveTrailingSlash(pathName)).CString(), S_IRWXU) == 0 || errno == EEXIST;
@@ -401,7 +401,7 @@ unsigned FileSystem::SystemCommandAsync(const String& commandLine)
     if (allowedPaths_.Empty())
     {
         unsigned requestID = nextAsyncExecID_;
-        AsyncSystemCommand* cmd = new AsyncSystemCommand(nextAsyncExecID_, commandLine);
+        auto* cmd = new AsyncSystemCommand(nextAsyncExecID_, commandLine);
         asyncExecQueue_.Push(cmd);
         return requestID;
     }
@@ -422,7 +422,7 @@ unsigned FileSystem::SystemRunAsync(const String& fileName, const Vector<String>
     if (allowedPaths_.Empty())
     {
         unsigned requestID = nextAsyncExecID_;
-        AsyncSystemRun* cmd = new AsyncSystemRun(nextAsyncExecID_, fileName, arguments);
+        auto* cmd = new AsyncSystemRun(nextAsyncExecID_, fileName, arguments);
         asyncExecQueue_.Push(cmd);
         return requestID;
     }
@@ -448,8 +448,8 @@ bool FileSystem::SystemOpen(const String& fileName, const String& mode)
         }
 
 #ifdef _WIN32
-        bool success = (size_t)ShellExecuteW(0, !mode.Empty() ? WString(mode).CString() : 0,
-            GetWideNativePath(fileName).CString(), 0, 0, SW_SHOW) > 32;
+        bool success = (size_t)ShellExecuteW(nullptr, !mode.Empty() ? WString(mode).CString() : nullptr,
+            GetWideNativePath(fileName).CString(), nullptr, nullptr, SW_SHOW) > 32;
 #else
         Vector<String> arguments;
         arguments.Push(fileName);
@@ -703,7 +703,7 @@ String FileSystem::GetProgramDir() const
 #elif defined(_WIN32)
     wchar_t exeName[MAX_PATH];
     exeName[0] = 0;
-    GetModuleFileNameW(0, exeName, MAX_PATH);
+    GetModuleFileNameW(nullptr, exeName, MAX_PATH);
     return GetPath(String(exeName));
 #elif defined(__APPLE__)
     char exeName[MAX_PATH];
@@ -732,7 +732,7 @@ String FileSystem::GetUserDocumentsDir() const
 #elif defined(_WIN32)
     wchar_t pathName[MAX_PATH];
     pathName[0] = 0;
-    SHGetSpecialFolderPathW(0, pathName, CSIDL_PERSONAL, 0);
+    SHGetSpecialFolderPathW(nullptr, pathName, CSIDL_PERSONAL, 0);
     return AddTrailingSlash(String(pathName));
 #else
     char pathName[MAX_PATH];
@@ -799,7 +799,7 @@ void FileSystem::ScanDirInternal(Vector<String>& result, String path, const Stri
     if (path.Length() > startPath.Length())
         deltaPath = path.Substring(startPath.Length());
 
-    String filterExtension = filter.Substring(filter.Find('.'));
+    String filterExtension = filter.Substring(filter.FindLast('.'));
     if (filterExtension.Contains('*'))
         filterExtension.Clear();
 
@@ -1065,6 +1065,28 @@ bool IsAbsolutePath(const String& pathName)
 #endif
 
     return false;
+}
+
+String FileSystem::GetTemporaryDir() const
+{
+#if defined(_WIN32)
+#if defined(MINI_URHO)
+    return getenv("TMP");
+#else
+    wchar_t pathName[MAX_PATH];
+    pathName[0] = 0;
+    GetTempPathW(SDL_arraysize(pathName), pathName);
+    return AddTrailingSlash(String(pathName));
+#endif
+#else
+    if (char* pathName = getenv("TMPDIR"))
+        return AddTrailingSlash(pathName);
+#ifdef P_tmpdir
+    return AddTrailingSlash(P_tmpdir);
+#else
+    return "/tmp/";
+#endif
+#endif
 }
 
 }

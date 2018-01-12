@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,9 +36,9 @@ class URHO3D_API StaticSprite2D : public Drawable2D
 
 public:
     /// Construct.
-    StaticSprite2D(Context* context);
+    explicit StaticSprite2D(Context* context);
     /// Destruct.
-    ~StaticSprite2D();
+    ~StaticSprite2D() override;
     /// Register object factory. Drawable2D must be registered first.
     static void RegisterObject(Context* context);
 
@@ -123,13 +123,13 @@ public:
 protected:
 
     /// Handle scene being assigned.
-    virtual void OnSceneSet(Scene* scene);
+    void OnSceneSet(Scene* scene) override;
     /// Recalculate the world-space bounding box.
-    virtual void OnWorldBoundingBoxUpdate();
+    void OnWorldBoundingBoxUpdate() override;
     /// Handle draw order changed.
-    virtual void OnDrawOrderChanged();
+    void OnDrawOrderChanged() override;
     /// Update source batches.
-    virtual void UpdateSourceBatches();
+    void UpdateSourceBatches() override;
     /// Update material.
     void UpdateMaterial();
     /// Update drawRect.

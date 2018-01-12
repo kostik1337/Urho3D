@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@ static const char* valueTypeNames[] =
     "String",
     "Array",
     "Object",
-    0
+    nullptr
 };
 
 static const char* numberTypeNames[] =
@@ -49,11 +49,11 @@ static const char* numberTypeNames[] =
     "Int",
     "Unsigned",
     "Real",
-    0
+    nullptr
 };
 
 const JSONValue JSONValue::EMPTY;
-const JSONArray JSONValue::emptyArray;
+const JSONArray JSONValue::emptyArray { };
 const JSONObject JSONValue::emptyObject;
 
 JSONValue& JSONValue::operator =(bool rhs)

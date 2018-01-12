@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -38,8 +38,8 @@ struct RaycastVehicleData
 {
     RaycastVehicleData()
     {
-        vehicleRayCaster_ = 0;
-        vehicle_ = 0;
+        vehicleRayCaster_ = nullptr;
+        vehicle_ = nullptr;
         added_ = false;
     }
 
@@ -49,7 +49,7 @@ struct RaycastVehicleData
         {
             delete vehicleRayCaster_;
         }
-        vehicleRayCaster_ = 0;
+        vehicleRayCaster_ = nullptr;
         if (vehicle_)
         {
             if (physWorld_ && added_)
@@ -61,7 +61,7 @@ struct RaycastVehicleData
             }
             delete vehicle_;
         }
-        vehicle_ = 0;
+        vehicle_ = nullptr;
     }
 
     btRaycastVehicle* Get()
@@ -74,7 +74,7 @@ struct RaycastVehicleData
         int rightIndex = 0;
         int upIndex = 1;
         int forwardIndex = 2;
-        PhysicsWorld* pPhysWorld = scene->GetComponent<PhysicsWorld>();
+        auto* pPhysWorld = scene->GetComponent<PhysicsWorld>();
         btDynamicsWorld* pbtDynWorld = pPhysWorld->GetWorld();
         if (!pbtDynWorld)
             return;
@@ -129,7 +129,7 @@ struct RaycastVehicleData
     bool added_;
 };
 
-RaycastVehicle::RaycastVehicle(Context* context) : 
+RaycastVehicle::RaycastVehicle(Context* context) :
     LogicComponent(context)
 {
     // fixed update() for inputs and post update() to sync wheels for rendering
@@ -147,39 +147,37 @@ RaycastVehicle::~RaycastVehicle()
     wheelNodes_.Clear();
 }
 
-const char* wheelElementNames[] =
-{
-    "Number of wheels",
-    "   Wheel node id",
-    "   Wheel direction",
-    "   Wheel axle",
-    "   Wheel rest length",
-    "   Wheel radius",
-    "   Wheel is front wheel",
-    "   Steering",
-    "   Connection point vector",
-    "   Original rotation",
-    "   Cumulative skid info",
-    "   Side skip speed",
-    "   Grounded",
-    "   Contact position",
-    "   Contact normal",
-    "   Suspension stiffness",
-    "   Damping relaxation",
-    "   Damping compression",
-    "   Friction slip",
-    "   Roll influence",
-    "   Engine force",
-    "   Brake",
-    0
-};
-
 void RaycastVehicle::RegisterObject(Context* context)
 {
+    static const StringVector wheelElementNames =
+        {
+            "Number of wheels",
+            "   Wheel node id",
+            "   Wheel direction",
+            "   Wheel axle",
+            "   Wheel rest length",
+            "   Wheel radius",
+            "   Wheel is front wheel",
+            "   Steering",
+            "   Connection point vector",
+            "   Original rotation",
+            "   Cumulative skid info",
+            "   Side skip speed",
+            "   Grounded",
+            "   Contact position",
+            "   Contact normal",
+            "   Suspension stiffness",
+            "   Damping relaxation",
+            "   Damping compression",
+            "   Friction slip",
+            "   Roll influence",
+            "   Engine force",
+            "   Brake"
+        };
+
     context->RegisterFactory<RaycastVehicle>();
-    URHO3D_MIXED_ACCESSOR_VARIANT_VECTOR_STRUCTURE_ATTRIBUTE("Wheel data", GetWheelDataAttr, SetWheelDataAttr,
-            VariantVector, Variant::emptyVariantVector,
-            wheelElementNames, AM_DEFAULT);
+    URHO3D_MIXED_ACCESSOR_ATTRIBUTE("Wheel data", GetWheelDataAttr, SetWheelDataAttr, VariantVector, Variant::emptyVariantVector, AM_DEFAULT)
+        .SetMetadata(AttributeMetadata::P_VECTOR_STRUCT_ELEMENTS, wheelElementNames);
     URHO3D_ATTRIBUTE("Maximum side slip threshold", float, maxSideSlipSpeed_, 4.0f, AM_DEFAULT);
     URHO3D_ATTRIBUTE("RPM for wheel motors in air (0=calculate)", float, inAirRPM_, 0.0f, AM_DEFAULT);
 }

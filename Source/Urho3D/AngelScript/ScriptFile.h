@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -49,35 +49,35 @@ class URHO3D_API ScriptFile : public Resource, public ScriptEventListener
 
 public:
     /// Construct.
-    ScriptFile(Context* context);
+    explicit ScriptFile(Context* context);
     /// Destruct.
-    virtual ~ScriptFile();
+    ~ScriptFile() override;
     /// Register object factory.
     static void RegisterObject(Context* context);
 
     /// Load resource from stream. May be called from a worker thread. Return true if successful.
-    virtual bool BeginLoad(Deserializer& source);
+    bool BeginLoad(Deserializer& source) override;
     /// Finish resource loading. Always called from the main thread. Return true if successful.
-    virtual bool EndLoad();
+    bool EndLoad() override;
 
     /// Add a scripted event handler.
-    virtual void AddEventHandler(StringHash eventType, const String& handlerName);
+    void AddEventHandler(StringHash eventType, const String& handlerName) override;
     /// Add a scripted event handler for a specific sender.
-    virtual void AddEventHandler(Object* sender, StringHash eventType, const String& handlerName);
+    void AddEventHandler(Object* sender, StringHash eventType, const String& handlerName) override;
     /// Remove a scripted event handler.
-    virtual void RemoveEventHandler(StringHash eventType);
+    void RemoveEventHandler(StringHash eventType) override;
     /// Remove a scripted event handler for a specific sender.
-    virtual void RemoveEventHandler(Object* sender, StringHash eventType);
+    void RemoveEventHandler(Object* sender, StringHash eventType) override;
     /// Remove all scripted event handlers for a specific sender.
-    virtual void RemoveEventHandlers(Object* sender);
+    void RemoveEventHandlers(Object* sender) override;
     /// Remove all scripted event handlers.
-    virtual void RemoveEventHandlers();
+    void RemoveEventHandlers() override;
     /// Remove all scripted event handlers, except those listed.
-    virtual void RemoveEventHandlersExcept(const PODVector<StringHash>& exceptions);
+    void RemoveEventHandlersExcept(const PODVector<StringHash>& exceptions) override;
     /// Return whether has subscribed to an event.
-    virtual bool HasEventHandler(StringHash eventType) const;
+    bool HasEventHandler(StringHash eventType) const override;
     /// Return whether has subscribed to a specific sender's event.
-    virtual bool HasEventHandler(Object* sender, StringHash eventType) const;
+    bool HasEventHandler(Object* sender, StringHash eventType) const override;
 
     /// Query for a function by declaration and execute if found.
     bool Execute(const String& declaration, const VariantVector& parameters = Variant::emptyVariantVector, bool unprepare = true);
@@ -158,9 +158,9 @@ class URHO3D_API ScriptEventInvoker : public Object
 
 public:
     /// Constructor, will create the asILockableSharedBool if a ScriptObject is passed in.
-    ScriptEventInvoker(ScriptFile* file, asIScriptObject* object = 0);
+    explicit ScriptEventInvoker(ScriptFile* file, asIScriptObject* object = nullptr);
     /// Destructor, release the ref it we still hold it.
-    ~ScriptEventInvoker();
+    ~ScriptEventInvoker() override;
 
     /// Get the asIScriptObject to call the method on, can be null.
     asIScriptObject* GetObject() const { return object_; }

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2017 the Urho3D project.
+// Copyright (c) 2008-2018 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -52,12 +52,12 @@ struct Batch
     /// Construct with defaults.
     Batch() :
         isBase_(false),
-        lightQueue_(0)
+        lightQueue_(nullptr)
     {
     }
 
     /// Construct from a drawable's source batch.
-    Batch(const SourceBatch& rhs) :
+    explicit Batch(const SourceBatch& rhs) :
         distance_(rhs.distance_),
         renderOrder_(rhs.material_ ? rhs.material_->GetRenderOrder() : DEFAULT_RENDER_ORDER),
         isBase_(false),
@@ -66,7 +66,7 @@ struct Batch
         worldTransform_(rhs.worldTransform_),
         numWorldTransforms_(rhs.numWorldTransforms_),
         instancingData_(rhs.instancingData_),
-        lightQueue_(0),
+        lightQueue_(nullptr),
         geometryType_(rhs.geometryType_)
     {
     }
@@ -116,9 +116,7 @@ struct Batch
 struct InstanceData
 {
     /// Construct undefined.
-    InstanceData()
-    {
-    }
+    InstanceData() = default;
 
     /// Construct with transform, instancing data and distance.
     InstanceData(const Matrix3x4* worldTransform, const void* instancingData, float distance) :
@@ -146,16 +144,14 @@ struct BatchGroup : public Batch
     }
 
     /// Construct from a batch.
-    BatchGroup(const Batch& batch) :
+    explicit BatchGroup(const Batch& batch) :
         Batch(batch),
         startIndex_(M_MAX_UNSIGNED)
     {
     }
 
     /// Destruct.
-    ~BatchGroup()
-    {
-    }
+    ~BatchGroup() = default;
 
     /// Add world transform(s) from a batch.
     void AddTransforms(const Batch& batch)
@@ -186,12 +182,10 @@ struct BatchGroup : public Batch
 struct BatchGroupKey
 {
     /// Construct undefined.
-    BatchGroupKey()
-    {
-    }
+    BatchGroupKey() = default;
 
     /// Construct from a batch.
-    BatchGroupKey(const Batch& batch) :
+    explicit BatchGroupKey(const Batch& batch) :
         zone_(batch.zone_),
         lightQueue_(batch.lightQueue_),
         pass_(batch.pass_),
