@@ -399,7 +399,7 @@ void TileMapLayer2D::SetTileLayer(const TmxTileLayer2D* tileLayer)
                 continue;
 
             SharedPtr<Node> tileNode(GetNode()->CreateTemporaryChild("Tile"));
-            tileNode->SetPosition(info.TileIndexToPosition(x, y) + tileLayer->GetOffset());
+            tileNode->SetPosition2D(info.TileIndexToPosition(x, y) + tileLayer->GetOffset());
 
             // Create collision shape component
             Vector<SharedPtr<TileMapObject2D> > tileShapes = tile->GetCollisionShapes();
@@ -463,7 +463,7 @@ void TileMapLayer2D::SetObjectGroup(const TmxObjectGroup2D* objectGroup)
 
         // Create dummy node for all objects
         SharedPtr<Node> objectNode(GetNode()->CreateTemporaryChild(object->GetName()));
-        objectNode->SetPosition(object->GetPosition()); // Offset is already applied to objects' position
+        objectNode->SetPosition2D(object->GetPosition()); // Offset is already applied to objects' position
         objectNode->SetScale2D(object->GetSize());
 
         // If object is tile, create static sprite component

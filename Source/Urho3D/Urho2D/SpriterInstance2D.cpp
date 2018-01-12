@@ -309,5 +309,3 @@ void SpriterInstance::Clear()
 }
 
 }
-
-}

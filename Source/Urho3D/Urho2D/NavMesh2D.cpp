@@ -68,15 +68,15 @@ void NavMesh2D::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
             continue;
 
         for (vertice = (*shape).begin(); vertice != (*shape).end() - 1; ++vertice)
-            debug->AddLine(Vector2(vertice->x, vertice->y), Vector2((vertice + 1)->x, (vertice + 1)->y), Color(1.0f, 1.0f, 1.0f));
-        debug->AddCircle(Vector2((*shape).begin()->x, (*shape).begin()->y), Vector3::FORWARD, 0.05f, Color(1.0f, 1.0f, 1.0f), 64, depthTest); // Also draw a circle at origin to indicate direction
+            debug->AddLine(Vector3(vertice->x, vertice->y, 0.0), Vector3((vertice + 1)->x, (vertice + 1)->y, 0.0), Color(1.0f, 1.0f, 1.0f));
+        debug->AddCircle(Vector3((*shape).begin()->x, (*shape).begin()->y, 0.0), Vector3::FORWARD, 0.05f, Color(1.0f, 1.0f, 1.0f), 64, depthTest); // Also draw a circle at origin to indicate direction
     }
 
     // Draw path
     if (path_.Empty())
         return;
     for (unsigned i = 0; i < path_.Size() - 1; ++i)
-        debug->AddLine(path_[i], path_[i + 1], Color(1.0f, 1.0f, 1.0f));
+        debug->AddLine(Vector3(path_[i]), Vector3(path_[i + 1]), Color(1.0f, 1.0f, 1.0f));
 }
 
 int NavMesh2D::CreateShape(Vector<Vector2> vertices)

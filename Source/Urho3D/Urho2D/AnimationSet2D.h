@@ -64,7 +64,7 @@ public:
     /// Save resource. Return true if successful.
     virtual bool Save(Serializer& dest) const override;
     /// Save as XML data. Return true if successful.
-    bool SaveXML(XMLElement& dest) const override;
+    bool SaveXML(XMLElement& dest) const;
 
     /// Get number of animations.
     unsigned GetNumAnimations() const;

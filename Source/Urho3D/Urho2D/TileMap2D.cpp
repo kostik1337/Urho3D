@@ -538,7 +538,7 @@ void TileMap2D::CreateConstraintsFromObjects()
                     Vector2 size = Vector2(spriteSize.x_, spriteSize.y_) * PIXEL_SIZE * 0.5f;
                     Vector2 offset = tileMapObject->GetSize() * size; // Center
                     positionOffset -= size; // Move shape to center
-                    objectNode->SetWorldPosition(objectNode->GetWorldPosition2D() + offset); // Move node to center
+                    objectNode->SetWorldPosition(Vector3(objectNode->GetWorldPosition2D() + offset)); // Move node to center
                 }
             }
             CreatePhysicsFromObject(tileMapObject, positionOffset, tileMapObject->GetObjectType() == OT_TILE ? tileMapLayer->GetObjectNode(i) : 0);
@@ -941,7 +941,7 @@ void TileMap2D::CreatePhysicsFromObject(TileMapObject2D* tileMapObject, Vector2 
                     reinterpret_cast<CollisionBox2D*>(shape)->SetAngle(rotation);
 
                 // Apply rotated position
-                Vector3 pos = node == rootNode_ ? subObject->GetPosition() + positionOffset : positionOffset; // Position in map world or local position
+                Vector3 pos = node == rootNode_ ? Vector3(subObject->GetPosition() + positionOffset) : Vector3(positionOffset); // Position in map world or local position
 
                 Vector2 center;
                 if (type == OT_RECTANGLE)
@@ -1283,7 +1283,7 @@ void TileMap2D::AddObstacle(const Vector2& pos, Points points, Node* child)
     if (!node)
         return;
 
-    node->SetPosition(Quaternion(90.0f, 0.0f, 0.0f) * pos);
+    node->SetPosition(Quaternion(90.0f, 0.0f, 0.0f) * Vector3(pos));
 
     // Rebuild modified part of the navMesh
     navMesh->Build(node->GetComponent<StaticModel>()->GetWorldBoundingBox());
