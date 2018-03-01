@@ -34,12 +34,6 @@
 namespace Urho3D
 {
 
-FontGlyph::FontGlyph() :
-    page_(M_MAX_UNSIGNED),
-    used_(false)
-{
-}
-
 FontFace::FontFace(Font* font) :
     font_(font)
 {
@@ -112,7 +106,7 @@ SharedPtr<Texture2D> FontFace::CreateFaceTexture()
     return texture;
 }
 
-SharedPtr<Texture2D> FontFace::LoadFaceTexture(SharedPtr<Image> image)
+SharedPtr<Texture2D> FontFace::LoadFaceTexture(const SharedPtr<Image>& image)
 {
     SharedPtr<Texture2D> texture = CreateFaceTexture();
     if (!texture->SetData(image, true))

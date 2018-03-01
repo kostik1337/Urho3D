@@ -54,28 +54,18 @@ class PackerInfo : public RefCounted
 public:
     String path;
     String name;
-    int x;
-    int y;
-    int offsetX;
-    int offsetY;
-    int width;
-    int height;
-    int frameWidth;
-    int frameHeight;
-    int frameX;
-    int frameY;
+    int x{};
+    int y{};
+    int offsetX{};
+    int offsetY{};
+    int width{};
+    int height{};
+    int frameWidth{};
+    int frameHeight{};
 
-    PackerInfo(String path_, String name_) :
+    PackerInfo(const String& path_, const String& name_) :
         path(path_),
-        name(name_),
-        x(0),
-        y(0),
-        offsetX(0),
-        offsetY(0),
-        frameWidth(0),
-        frameHeight(0),
-        frameX(0),
-        frameY(0)
+        name(name_)
     {
     }
 
@@ -338,7 +328,7 @@ void Run(Vector<String>& arguments)
     spriteSheetImage.SetSize(packedWidth, packedHeight, 4);
 
     // zero out image
-    spriteSheetImage.SetData((unsigned char*)calloc(sizeof(unsigned char), packedWidth * packedHeight * 4));
+    spriteSheetImage.SetData((unsigned char*)calloc(sizeof(unsigned char), (size_t)packedWidth * packedHeight * 4));
 
     XMLFile xml(context);
     XMLElement root = xml.CreateRoot("TextureAtlas");

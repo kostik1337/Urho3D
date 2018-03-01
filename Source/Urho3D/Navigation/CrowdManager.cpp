@@ -46,6 +46,29 @@ extern const char* NAVIGATION_CATEGORY;
 static const unsigned DEFAULT_MAX_AGENTS = 512;
 static const float DEFAULT_MAX_AGENT_RADIUS = 0.f;
 
+static const StringVector filterTypesStructureElementNames =
+{
+    "Query Filter Type Count",
+    "   Include Flags",
+    "   Exclude Flags",
+    "   >AreaCost"
+};
+
+static const StringVector obstacleAvoidanceTypesStructureElementNames =
+{
+    "Obstacle Avoid. Type Count",
+    "   Velocity Bias",
+    "   Desired Velocity Weight",
+    "   Current Velocity Weight",
+    "   Side Bias Weight",
+    "   Time of Impact Weight",
+    "   Time Horizon",
+    "   Grid Size",
+    "   Adaptive Divs",
+    "   Adaptive Rings",
+    "   Adaptive Depth"
+};
+
 void CrowdAgentUpdateCallback(dtCrowdAgent* ag, float dt)
 {
     static_cast<CrowdAgent*>(ag->params.userData)->OnCrowdUpdate(ag, dt);
@@ -53,12 +76,8 @@ void CrowdAgentUpdateCallback(dtCrowdAgent* ag, float dt)
 
 CrowdManager::CrowdManager(Context* context) :
     Component(context),
-    crowd_(nullptr),
-    navigationMeshId_(0),
     maxAgents_(DEFAULT_MAX_AGENTS),
-    maxAgentRadius_(DEFAULT_MAX_AGENT_RADIUS),
-    numQueryFilterTypes_(0),
-    numObstacleAvoidanceTypes_(0)
+    maxAgentRadius_(DEFAULT_MAX_AGENT_RADIUS)
 {
     // The actual buffer is allocated inside dtCrowd, we only track the number of "slots" being configured explicitly
     numAreas_.Reserve(DT_CROWD_MAX_QUERY_FILTER_TYPE);
@@ -74,29 +93,6 @@ CrowdManager::~CrowdManager()
 
 void CrowdManager::RegisterObject(Context* context)
 {
-    static const StringVector filterTypesStructureElementNames =
-        {
-            "Query Filter Type Count",
-            "   Include Flags",
-            "   Exclude Flags",
-            "   >AreaCost"
-        };
-
-    static const StringVector obstacleAvoidanceTypesStructureElementNames =
-        {
-            "Obstacle Avoid. Type Count",
-            "   Velocity Bias",
-            "   Desired Velocity Weight",
-            "   Current Velocity Weight",
-            "   Side Bias Weight",
-            "   Time of Impact Weight",
-            "   Time Horizon",
-            "   Grid Size",
-            "   Adaptive Divs",
-            "   Adaptive Rings",
-            "   Adaptive Depth"
-        };
-
     context->RegisterFactory<CrowdManager>(NAVIGATION_CATEGORY);
 
     URHO3D_ATTRIBUTE("Max Agents", unsigned, maxAgents_, DEFAULT_MAX_AGENTS, AM_DEFAULT);
@@ -363,7 +359,7 @@ void CrowdManager::SetObstacleAvoidanceTypesAttr(const VariantVector& value)
     {
         if (index + 10 <= value.Size())
         {
-            dtObstacleAvoidanceParams params;
+            dtObstacleAvoidanceParams params;       // NOLINT(hicpp-member-init)
             params.velBias = value[index++].GetFloat();
             params.weightDesVel = value[index++].GetFloat();
             params.weightCurVel = value[index++].GetFloat();
@@ -620,7 +616,7 @@ int CrowdManager::AddAgent(CrowdAgent* agent, const Vector3& pos)
 {
     if (!crowd_ || !navigationMesh_ || !agent)
         return -1;
-    dtCrowdAgentParams params;
+    dtCrowdAgentParams params{};
     params.userData = agent;
     if (agent->radius_ == 0.f)
         agent->radius_ = navigationMesh_->GetAgentRadius();

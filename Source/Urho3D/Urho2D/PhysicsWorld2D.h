@@ -162,7 +162,7 @@ public:
     /// Return rigid body at screen point.
     RigidBody2D* GetRigidBody(int screenX, int screenY, unsigned collisionMask = M_MAX_UNSIGNED);
     /// Return rigid bodies by a box query.
-    void GetRigidBodies(PODVector<RigidBody2D*>& result, const Rect& aabb, unsigned collisionMask = M_MAX_UNSIGNED);
+    void GetRigidBodies(PODVector<RigidBody2D*>& results, const Rect& aabb, unsigned collisionMask = M_MAX_UNSIGNED);
 
     /// Return whether physics world will automatically simulate during scene update.
     bool IsUpdateEnabled() const { return updateEnabled_; }
@@ -227,23 +227,23 @@ protected:
     /// Gravity.
     Vector2 gravity_;
     /// Velocity iterations.
-    int velocityIterations_;
+    int velocityIterations_{};
     /// Position iterations.
-    int positionIterations_;
+    int positionIterations_{};
 
     /// Extra weak pointer to scene to allow for cleanup in case the world is destroyed before other components.
     WeakPtr<Scene> scene_;
     /// Debug renderer.
-    DebugRenderer* debugRenderer_;
+    DebugRenderer* debugRenderer_{};
     /// Debug draw depth test mode.
-    bool debugDepthTest_;
+    bool debugDepthTest_{};
 
     /// Automatic simulation update enabled flag.
-    bool updateEnabled_;
+    bool updateEnabled_{true};
     /// Whether is currently stepping the world. Used internally.
-    bool physicsStepping_;
+    bool physicsStepping_{};
     /// Applying transforms.
-    bool applyingTransforms_;
+    bool applyingTransforms_{};
     /// Rigid bodies.
     Vector<WeakPtr<RigidBody2D> > rigidBodies_;
     /// Delayed (parented) world transform assignments.
@@ -255,7 +255,7 @@ protected:
         /// Construct.
         ContactInfo();
         /// Construct.
-        explicit ContactInfo(b2Contact* contract);
+        explicit ContactInfo(b2Contact* contact);
         /// Write contact info to buffer.
         const PODVector<unsigned char>& Serialize(VectorBuffer& buffer) const;
 
@@ -272,13 +272,13 @@ protected:
         /// Shape B.
         SharedPtr<CollisionShape2D> shapeB_;
         /// Number of contact points.
-        int numPoints_;
+        int numPoints_{};
         /// Contact normal in world space.
         Vector2 worldNormal_;
         /// Contact positions in world space.
         Vector2 worldPositions_[b2_maxManifoldPoints];
         /// Contact overlap values.
-        float separations_[b2_maxManifoldPoints];
+        float separations_[b2_maxManifoldPoints]{};
     };
     /// Begin contact infos.
     Vector<ContactInfo> beginContactInfos_;

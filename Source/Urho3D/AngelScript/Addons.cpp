@@ -2043,13 +2043,13 @@ void ScriptDictionaryListFactory_Generic(asIScriptGeneric *gen)
     *(CScriptDictionary**)gen->GetAddressOfReturnLocation() = CScriptDictionary::Create(buffer);
 }
 
-CScriptDictValue::CScriptDictValue()
+CScriptDictValue::CScriptDictValue()    // NOLINT(hicpp-member-init)
 {
     m_valueObj = nullptr;
     m_typeId   = 0;
 }
 
-CScriptDictValue::CScriptDictValue(asIScriptEngine *engine, void *value, int typeId)
+CScriptDictValue::CScriptDictValue(asIScriptEngine *engine, void *value, int typeId)    // NOLINT(hicpp-member-init)
 {
     m_valueObj = nullptr;
     m_typeId   = 0;
@@ -2480,10 +2480,10 @@ static void StringSetUTF8FromLatin1(const String& src, String& str)
     str.SetUTF8FromLatin1(src.CString());
 }
 
-static const unsigned NPOS = String::NPOS; // workaround for GCC
-
 void RegisterString(asIScriptEngine *engine)
 {
+    static const unsigned NPOS = String::NPOS; // workaround for GCC
+
     engine->RegisterGlobalProperty("const uint NPOS", (void*)&NPOS);
     engine->RegisterObjectType("String", sizeof(String), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK);
     engine->RegisterStringFactory("String", asFUNCTION(StringFactory), asCALL_CDECL);

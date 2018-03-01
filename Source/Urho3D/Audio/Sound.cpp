@@ -133,7 +133,7 @@ bool Sound::LoadOggVorbis(Deserializer& source)
 
 bool Sound::LoadWav(Deserializer& source)
 {
-    WavHeader header;
+    WavHeader header{};
 
     // Try to open
     memset(&header, 0, sizeof header);
@@ -141,7 +141,7 @@ bool Sound::LoadWav(Deserializer& source)
     header.totalLength_ = source.ReadUInt();
     source.Read(&header.waveText_, 4);
 
-    if (memcmp("RIFF", header.riffText_, 4) || memcmp("WAVE", header.waveText_, 4))
+    if (memcmp("RIFF", header.riffText_, 4) != 0 || memcmp("WAVE", header.waveText_, 4) != 0)
     {
         URHO3D_LOGERROR("Could not read WAV data from " + source.GetName());
         return false;

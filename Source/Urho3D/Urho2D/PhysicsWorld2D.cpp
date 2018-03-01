@@ -50,11 +50,7 @@ PhysicsWorld2D::PhysicsWorld2D(Context* context) :
     Component(context),
     gravity_(DEFAULT_GRAVITY),
     velocityIterations_(DEFAULT_VELOCITY_ITERATIONS),
-    positionIterations_(DEFAULT_POSITION_ITERATIONS),
-    debugRenderer_(nullptr),
-    physicsStepping_(false),
-    applyingTransforms_(false),
-    updateEnabled_(true)
+    positionIterations_(DEFAULT_POSITION_ITERATIONS)
 {
     // Set default debug draw flags
     m_drawFlags = e_shapeBit;
@@ -569,7 +565,7 @@ class PointQueryCallback : public b2QueryCallback
 {
 public:
     // Construct.
-    PointQueryCallback(const b2Vec2& point, unsigned collisionMask) :
+    PointQueryCallback(const b2Vec2& point, unsigned collisionMask) :   // NOLINT(modernize-pass-by-value)
         point_(point),
         collisionMask_(collisionMask),
         rigidBody_(nullptr)

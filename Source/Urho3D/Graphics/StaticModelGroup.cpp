@@ -40,10 +40,14 @@ namespace Urho3D
 
 extern const char* GEOMETRY_CATEGORY;
 
+static const StringVector instanceNodesStructureElementNames =
+{
+    "Instance Count",
+    "   NodeID"
+};
+
 StaticModelGroup::StaticModelGroup(Context* context) :
-    StaticModel(context),
-    nodesDirty_(false),
-    nodeIDsDirty_(false)
+    StaticModel(context)
 {
     // Initialize the default node IDs attribute
     UpdateNodeIDs();
@@ -53,12 +57,6 @@ StaticModelGroup::~StaticModelGroup() = default;
 
 void StaticModelGroup::RegisterObject(Context* context)
 {
-    static const StringVector instanceNodesStructureElementNames =
-        {
-            "Instance Count",
-            "   NodeID"
-        };
-
     context->RegisterFactory<StaticModelGroup>(GEOMETRY_CATEGORY);
 
     URHO3D_COPY_BASE_ATTRIBUTES(StaticModel);

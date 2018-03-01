@@ -267,40 +267,7 @@ inline PODVector<VertexElement> CreateInstancingBufferElements(unsigned numExtra
 
 Renderer::Renderer(Context* context) :
     Object(context),
-    defaultZone_(new Zone(context)),
-    shadowMapFilterInstance_(nullptr),
-    shadowMapFilter_(nullptr),
-    textureAnisotropy_(4),
-    textureFilterMode_(FILTER_TRILINEAR),
-    textureQuality_(QUALITY_HIGH),
-    materialQuality_(QUALITY_HIGH),
-    shadowMapSize_(1024),
-    shadowQuality_(SHADOWQUALITY_PCF_16BIT),
-    shadowSoftness_(1.0f),
-    vsmShadowParams_(0.0000001f, 0.9f),
-    vsmMultiSample_(1),
-    maxShadowMaps_(1),
-    minInstances_(2),
-    maxSortedInstances_(1000),
-    maxOccluderTriangles_(5000),
-    occlusionBufferSize_(256),
-    occluderSizeThreshold_(0.025f),
-    mobileShadowBiasMul_(1.0f),
-    mobileShadowBiasAdd_(0.0f),
-    mobileNormalOffsetMul_(1.0f),
-    numOcclusionBuffers_(0),
-    numShadowCameras_(0),
-    shadersChangedFrameNumber_(M_MAX_UNSIGNED),
-    hdrRendering_(false),
-    specularLighting_(true),
-    drawShadows_(true),
-    reuseShadowMaps_(true),
-    dynamicInstancing_(true),
-    numExtraInstancingBufferElements_(0),
-    threadedOcclusion_(false),
-    shadersDirty_(true),
-    initialized_(false),
-    resetViews_(false)
+    defaultZone_(new Zone(context))
 {
     SubscribeToEvent(E_SCREENMODE, URHO3D_HANDLER(Renderer, HandleScreenMode));
 
@@ -1143,7 +1110,7 @@ OcclusionBuffer* Renderer::GetOcclusionBuffer(Camera* camera)
     }
 
     int width = occlusionBufferSize_;
-    auto height = (int)((float)occlusionBufferSize_ / camera->GetAspectRatio() + 0.5f);
+    auto height = RoundToInt(occlusionBufferSize_ / camera->GetAspectRatio());
 
     OcclusionBuffer* buffer = occlusionBuffers_[numOcclusionBuffers_++];
     buffer->SetSize(width, height, threadedOcclusion_);
@@ -1639,7 +1606,6 @@ void Renderer::Initialize()
     ResetShadowMaps();
     ResetBuffers();
 
-    shadersDirty_ = true;
     initialized_ = true;
 
     SubscribeToEvent(E_RENDERUPDATE, URHO3D_HANDLER(Renderer, HandleRenderUpdate));
@@ -2009,7 +1975,7 @@ void Renderer::BlurShadowMap(View* view, Texture2D* shadowMap, float blurScale)
     graphics_->SetViewport(IntRect(0, 0, shadowMap->GetWidth(), shadowMap->GetHeight()));
 
     // Get shaders
-    static const String shaderName("ShadowBlur");
+    static const char* shaderName = "ShadowBlur";
     ShaderVariation* vs = graphics_->GetShader(VS, shaderName);
     ShaderVariation* ps = graphics_->GetShader(PS, shaderName);
     graphics_->SetShaders(vs, ps);

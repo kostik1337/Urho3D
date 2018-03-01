@@ -60,15 +60,8 @@ using namespace Urho3D;
 
 struct OutModel
 {
-    OutModel() :
-        rootBone_(nullptr),
-        totalVertices_(0),
-        totalIndices_(0)
-    {
-    }
-
     String outName_;
-    aiNode* rootNode_;
+    aiNode* rootNode_{};
     HashSet<unsigned> meshIndices_;
     PODVector<aiMesh*> meshes_;
     PODVector<aiNode*> meshNodes_;
@@ -77,15 +70,15 @@ struct OutModel
     PODVector<aiAnimation*> animations_;
     PODVector<float> boneRadii_;
     PODVector<BoundingBox> boneHitboxes_;
-    aiNode* rootBone_;
-    unsigned totalVertices_;
-    unsigned totalIndices_;
+    aiNode* rootBone_{};
+    unsigned totalVertices_{};
+    unsigned totalIndices_{};
 };
 
 struct OutScene
 {
     String outName_;
-    aiNode* rootNode_;
+    aiNode* rootNode_{};
     Vector<OutModel> models_;
     PODVector<aiNode*> nodes_;
     PODVector<unsigned> nodeModelIndices_;
@@ -210,7 +203,7 @@ void CopyTextures(const HashSet<String>& usedTextures, const String& sourcePath)
 
 void CombineLods(const PODVector<float>& lodDistances, const Vector<String>& modelNames, const String& outName);
 
-void GetMeshesUnderNode(Vector<Pair<aiNode*, aiMesh*> >& meshes, aiNode* node);
+void GetMeshesUnderNode(Vector<Pair<aiNode*, aiMesh*> >& dest, aiNode* node);
 unsigned GetMeshIndex(aiMesh* mesh);
 unsigned GetBoneIndex(OutModel& model, const String& boneName);
 aiBone* GetMeshBone(OutModel& model, const String& boneName);
@@ -1695,7 +1688,9 @@ void BuildAndSaveScene(OutScene& scene, bool asPrefab)
     {
         const OutModel& model = scene.models_[scene.nodeModelIndices_[i]];
         Node* modelNode = CreateSceneNode(outScene, scene.nodes_[i], nodeMapping);
-        StaticModel* staticModel = model.bones_.Empty() ? modelNode->CreateComponent<StaticModel>() : modelNode->CreateComponent<AnimatedModel>();
+        auto* staticModel =
+            static_cast<StaticModel*>(
+                model.bones_.Empty() ? modelNode->CreateComponent<StaticModel>() : modelNode->CreateComponent<AnimatedModel>());
 
         // Create a dummy model so that the reference can be stored
         String modelName = (useSubdirs_ ? "Models/" : "") + GetFileNameAndExtension(model.outName_);
@@ -2010,7 +2005,7 @@ void CopyTextures(const HashSet<String>& usedTextures, const String& sourcePath)
                     PrintLine("Saving embedded RGBA texture " + GetFileNameAndExtension(fullDestName));
                     Image image(context_);
                     image.SetSize(tex->mWidth, tex->mHeight, 4);
-                    memcpy(image.GetData(), (const void*)tex->pcData, tex->mWidth * tex->mHeight * 4);
+                    memcpy(image.GetData(), (const void*)tex->pcData, (size_t)tex->mWidth * tex->mHeight * 4);
                     image.SavePNG(fullDestName);
                 }
             }
@@ -2659,7 +2654,7 @@ void FillChainTransforms(OutModel &model, aiMatrix4x4 *chain, const String& main
     }
 }
 
-void ExpandAnimatedChannelKeys(aiAnimation* anim, unsigned mainChannel, int *channelIndices)
+void ExpandAnimatedChannelKeys(aiAnimation* anim, unsigned mainChannel, const int *channelIndices)
 {
     aiNodeAnim* channel = anim->mChannels[mainChannel];
     unsigned int poskeyFrames = channel->mNumPositionKeys;

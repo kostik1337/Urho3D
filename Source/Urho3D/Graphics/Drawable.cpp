@@ -47,20 +47,9 @@ namespace Urho3D
 
 const char* GEOMETRY_CATEGORY = "Geometry";
 
-SourceBatch::SourceBatch() :
-    distance_(0.0f),
-    geometry_(nullptr),
-    worldTransform_(&Matrix3x4::IDENTITY),
-    numWorldTransforms_(1),
-    instancingData_(nullptr),
-    geometryType_(GEOM_STATIC)
-{
-}
+SourceBatch::SourceBatch() = default;
 
-SourceBatch::SourceBatch(const SourceBatch& batch)
-{
-    *this = batch;
-}
+SourceBatch::SourceBatch(const SourceBatch& batch) = default;
 
 SourceBatch::~SourceBatch() = default;
 
@@ -576,7 +565,7 @@ bool WriteDrawablesToOBJ(PODVector<Drawable*> drawables, File* outputFile, bool 
                     {
                         //16 bit indices
                         unsigned short indices[3];
-                        memcpy(indices, indexData + (indexIdx * indexSize), indexSize * 3);
+                        memcpy(indices, indexData + (indexIdx * indexSize), (size_t)indexSize * 3);
                         longIndices[0] = indices[0] - indexOffset;
                         longIndices[1] = indices[1] - indexOffset;
                         longIndices[2] = indices[2] - indexOffset;
@@ -585,7 +574,7 @@ bool WriteDrawablesToOBJ(PODVector<Drawable*> drawables, File* outputFile, bool 
                     {
                         //32 bit indices
                         unsigned indices[3];
-                        memcpy(indices, indexData + (indexIdx * indexSize), indexSize * 3);
+                        memcpy(indices, indexData + (indexIdx * indexSize), (size_t)indexSize * 3);
                         longIndices[0] = indices[0] - indexOffset;
                         longIndices[1] = indices[1] - indexOffset;
                         longIndices[2] = indices[2] - indexOffset;

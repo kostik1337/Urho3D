@@ -63,12 +63,8 @@ static const char* methodDeclarations[] = {
 };
 
 ScriptInstance::ScriptInstance(Context* context) :
-    Component(context),
-    scriptObject_(nullptr),
-    subscribed_(false),
-    subscribedPostFixed_(false)
+    Component(context)
 {
-    ClearScriptMethods();
     ClearScriptAttributes();
 }
 
@@ -123,7 +119,7 @@ void ScriptInstance::OnSetAttribute(const AttributeInfo& attr, const Variant& sr
     }
     else if (attr.type_ == VAR_VARIANTVECTOR && attr.ptr_)
     {
-        CScriptArray* arr = reinterpret_cast<CScriptArray*>(attr.ptr_);
+        auto* arr = reinterpret_cast<CScriptArray*>(attr.ptr_);
         if (arr)
         {
             const Vector<Variant>& vector = src.GetVariantVector();
@@ -135,7 +131,7 @@ void ScriptInstance::OnSetAttribute(const AttributeInfo& attr, const Variant& sr
     }
     else if (attr.type_ == VAR_STRINGVECTOR && attr.ptr_)
     {
-        CScriptArray* arr = reinterpret_cast<CScriptArray*>(attr.ptr_);
+        auto* arr = reinterpret_cast<CScriptArray*>(attr.ptr_);
         if (arr)
         {
             const Vector<String>& vector = src.GetStringVector();
@@ -182,13 +178,13 @@ void ScriptInstance::OnGetAttribute(const AttributeInfo& attr, Variant& dest) co
     }
     else if (attr.type_ == VAR_VARIANTVECTOR && attr.ptr_)
     {
-        CScriptArray* arr = reinterpret_cast<CScriptArray*>(attr.ptr_);
+        auto* arr = reinterpret_cast<CScriptArray*>(attr.ptr_);
         if (arr)
             dest = ArrayToVector<Variant>(arr);
     }
     else if (attr.type_ == VAR_STRINGVECTOR && attr.ptr_)
     {
-        CScriptArray* arr = reinterpret_cast<CScriptArray*>(attr.ptr_);
+        auto* arr = reinterpret_cast<CScriptArray*>(attr.ptr_);
         if (arr)
             dest = ArrayToVector<String>(arr);
     } else

@@ -336,6 +336,8 @@ public:
 
     /// Return ID.
     unsigned GetID() const { return id_; }
+    /// Return whether the node is replicated or local to a scene.
+    bool IsReplicated() const;
 
     /// Return name.
     const String& GetName() const { return impl_->name_; }
@@ -750,7 +752,7 @@ template <class T> T* Node::GetDerivedComponent(bool recursive) const
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 template <class T> T* Node::GetParentDerivedComponent(bool fullTraversal) const

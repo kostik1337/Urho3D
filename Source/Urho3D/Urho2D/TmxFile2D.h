@@ -39,7 +39,7 @@ class TmxLayer2D : public RefCounted
 {
 public:
     TmxLayer2D(TmxFile2D* tmxFile, TileMapLayerType2D type);
-    ~TmxLayer2D() override;
+    ~TmxLayer2D() override = default;
 
     /// Return tmx file.
     TmxFile2D* GetTmxFile() const;
@@ -78,11 +78,11 @@ protected:
     /// Name.
     String name_;
     /// Width.
-    int width_;
+    int width_{};
     /// Height.
-    int height_;
+    int height_{};
     /// Visible.
-    bool visible_;
+    bool visible_{};
     /// Property set.
     SharedPtr<PropertySet2D> propertySet_;
 };
@@ -113,7 +113,7 @@ public:
     bool Load(const XMLElement& element, const TileMapInfo2D& info);
 
     /// Store object.
-    void StoreObject(XMLElement objectElem, SharedPtr<TileMapObject2D> object, const TileMapInfo2D& info, bool isTile = false);
+    void StoreObject(const XMLElement& objectElem, const SharedPtr<TileMapObject2D>& object, const TileMapInfo2D& info, bool isTile = false);
 
     /// Return number of objects.
     unsigned GetNumObjects() const { return objects_.Size(); }
@@ -184,13 +184,13 @@ public:
     const TileMapInfo2D& GetInfo() const { return info_; }
 
     /// Return tile sprite by gid, if not exist return 0.
-    Sprite2D* GetTileSprite(int gid) const;
+    Sprite2D* GetTileSprite(unsigned gid) const;
 
     /// Return tile collision shapes for a given gid.
-    Vector<SharedPtr<TileMapObject2D> > GetTileCollisionShapes(int gid) const;
+    Vector<SharedPtr<TileMapObject2D> > GetTileCollisionShapes(unsigned gid) const;
 
     /// Return tile property set by gid, if not exist return 0.
-    PropertySet2D* GetTilePropertySet(int gid) const;
+    PropertySet2D* GetTilePropertySet(unsigned gid) const;
 
     /// Return number of layers.
     unsigned GetNumLayers() const { return layers_.Size(); }
@@ -200,6 +200,9 @@ public:
 
     /// Set texture edge offset for all sprites, in pixels.
     void SetSpriteTextureEdgeOffset(float offset);
+
+    /// Return texture edge offset, in pixels.
+    float GetSpriteTextureEdgeOffset() const { return edgeOffset_; }
 
 private:
     /// Load TSX file.
@@ -212,15 +215,17 @@ private:
     /// TSX name to XML file mapping.
     HashMap<String, SharedPtr<XMLFile> > tsxXMLFiles_;
     /// Tile map information.
-    TileMapInfo2D info_;
+    TileMapInfo2D info_{};
     /// Gid to tile sprite mapping.
-    HashMap<int, SharedPtr<Sprite2D> > gidToSpriteMapping_;
+    HashMap<unsigned, SharedPtr<Sprite2D> > gidToSpriteMapping_;
     /// Gid to tile property set mapping.
-    HashMap<int, SharedPtr<PropertySet2D> > gidToPropertySetMapping_;
+    HashMap<unsigned, SharedPtr<PropertySet2D> > gidToPropertySetMapping_;
     /// Gid to tile collision shape mapping.
-    HashMap<int, Vector<SharedPtr<TileMapObject2D> > > gidToCollisionShapeMapping_;
+    HashMap<unsigned, Vector<SharedPtr<TileMapObject2D> > > gidToCollisionShapeMapping_;
     /// Layers.
     Vector<TmxLayer2D*> layers_;
+    /// Texture edge offset.
+    float edgeOffset_;
 };
 
 }

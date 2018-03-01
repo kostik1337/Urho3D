@@ -38,8 +38,6 @@ namespace Spriter
 SpriterInstance::SpriterInstance(Component* owner, SpriterData* spriteData) :
     owner_(owner),
     spriterData_(spriteData),
-    entity_(nullptr),
-    animation_(nullptr),
     spatialInfo_(0.f, 0.f, 0.f, 1.f, 1.f)
 {
 }
@@ -139,7 +137,7 @@ void SpriterInstance::Update(float deltaTime)
 
         if (looping_)
         {
-            currentTime_ = fmod(currentTime_, animation_->length_);
+            currentTime_ = Mod(currentTime_, animation_->length_);
             sendFinishEvent = true;
         }
         else

@@ -259,7 +259,7 @@ void Script::ExceptionCallback(asIScriptContext* context)
     message.AppendWithFormat("- Exception '%s' in '%s'\n%s", context->GetExceptionString(),
         context->GetExceptionFunction()->GetDeclaration(), GetCallStack(context).CString());
 
-    asSMessageInfo msg;
+    asSMessageInfo msg{};
     msg.row = context->GetExceptionLineNumber(&msg.col, &msg.section);
     msg.type = asMSGTYPE_ERROR;
     msg.message = message.CString();
@@ -345,7 +345,7 @@ const char **Script::GetEnumValues(int asTypeID)
             enumValues_[asTypeID][i] = name;
         }
     }
-    enumValues_[asTypeID][count] = 0;
+    enumValues_[asTypeID][count] = nullptr;
     return enumValues_[asTypeID].Buffer();
 }
 

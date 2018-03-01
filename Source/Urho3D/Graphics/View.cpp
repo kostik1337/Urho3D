@@ -55,16 +55,6 @@
 namespace Urho3D
 {
 
-static const Vector3* directions[] =
-{
-    &Vector3::RIGHT,
-    &Vector3::LEFT,
-    &Vector3::UP,
-    &Vector3::DOWN,
-    &Vector3::FORWARD,
-    &Vector3::BACK
-};
-
 /// %Frustum octree query for shadowcasters.
 class ShadowCasterOctreeQuery : public FrustumOctreeQuery
 {
@@ -287,31 +277,18 @@ void SortShadowQueueWork(const WorkItem* item, unsigned threadIndex)
         start->shadowSplits_[i].shadowBatches_.SortFrontToBack();
 }
 
-StringHash ParseTextureTypeXml(ResourceCache* cache, String filename);
+StringHash ParseTextureTypeXml(ResourceCache* cache, const String& filename);
 
 View::View(Context* context) :
     Object(context),
     graphics_(GetSubsystem<Graphics>()),
-    renderer_(GetSubsystem<Renderer>()),
-    scene_(nullptr),
-    octree_(nullptr),
-    cullCamera_(nullptr),
-    camera_(nullptr),
-    cameraZone_(nullptr),
-    farClipZone_(nullptr),
-    occlusionBuffer_(nullptr),
-    renderTarget_(nullptr),
-    substituteRenderTarget_(nullptr),
-    passCommand_(nullptr)
+    renderer_(GetSubsystem<Renderer>())
 {
     // Create octree query and scene results vector for each thread
     unsigned numThreads = GetSubsystem<WorkQueue>()->GetNumThreads() + 1; // Worker threads + main thread
     tempDrawables_.Resize(numThreads);
     sceneResults_.Resize(numThreads);
-    frame_.camera_ = nullptr;
 }
-
-View::~View() = default;
 
 bool View::Define(RenderSurface* renderTarget, Viewport* viewport)
 {
@@ -431,7 +408,7 @@ bool View::Define(RenderSurface* renderTarget, Viewport* viewport)
         {
             hasScenePasses_ = true;
 
-            ScenePassInfo info;
+            ScenePassInfo info{};
             info.passIndex_ = command.passIndex_ = Technique::GetPassIndex(command.pass_);
             info.allowInstancing_ = command.sortMode_ != SORT_BACKTOFRONT;
             info.markToStencil_ = !noStencil_ && command.markToStencil_;
@@ -2069,14 +2046,12 @@ void View::AllocateScreenBuffers()
     // Allocate screen buffers. Enable filtering in case the quad commands need that
     // Follow the sRGB mode of the destination render target
     bool sRGB = renderTarget_ ? renderTarget_->GetParentTexture()->GetSRGB() : graphics_->GetSRGB();
-    int multiSample = renderTarget_ ? renderTarget_->GetMultiSample() : graphics_->GetMultiSample();
-    bool autoResolve = renderTarget_ ? renderTarget_->GetAutoResolve() : true;
     substituteRenderTarget_ = needSubstitute ? GetRenderSurfaceFromTexture(renderer_->GetScreenBuffer(viewSize_.x_, viewSize_.y_,
-        format, multiSample, autoResolve, false, true, sRGB)) : nullptr;
+        format, 1, false, false, true, sRGB)) : nullptr;
     for (unsigned i = 0; i < MAX_VIEWPORT_TEXTURES; ++i)
     {
-        viewportTextures_[i] = i < numViewportTextures ? renderer_->GetScreenBuffer(viewSize_.x_, viewSize_.y_, format, multiSample,
-            autoResolve, false, true, sRGB) : nullptr;
+        viewportTextures_[i] = i < numViewportTextures ? renderer_->GetScreenBuffer(viewSize_.x_, viewSize_.y_, format, 1, false,
+            false, true, sRGB) : nullptr;
     }
     // If using a substitute render target and pingponging, the substitute can act as the second viewport texture
     if (numViewportTextures == 1 && substituteRenderTarget_)
@@ -2103,8 +2078,8 @@ void View::AllocateScreenBuffers()
             height = (float)viewSize_.y_ * height;
         }
 
-        auto intWidth = (int)(width + 0.5f);
-        auto intHeight = (int)(height + 0.5f);
+        auto intWidth = RoundToInt(width);
+        auto intHeight = RoundToInt(height);
 
         // If the rendertarget is persistent, key it with a hash derived from the RT name and the view's pointer
         renderTargets_[rtInfo.name_] =
@@ -2144,7 +2119,7 @@ void View::BlitFramebuffer(Texture* source, RenderSurface* destination, bool dep
     graphics_->SetDepthStencil(GetDepthStencil(destination));
     graphics_->SetViewport(destRect);
 
-    static const String shaderName("CopyFramebuffer");
+    static const char* shaderName = "CopyFramebuffer";
     graphics_->SetShaders(graphics_->GetShader(VS, shaderName), graphics_->GetShader(PS, shaderName));
 
     SetGBufferShaderParameters(srcSize, srcRect);
@@ -2593,6 +2568,16 @@ void View::SetupShadowCameras(LightQueryResult& query)
 
     case LIGHT_POINT:
         {
+            static const Vector3* directions[] =
+            {
+                &Vector3::RIGHT,
+                &Vector3::LEFT,
+                &Vector3::UP,
+                &Vector3::DOWN,
+                &Vector3::FORWARD,
+                &Vector3::BACK
+            };
+
             for (unsigned i = 0; i < MAX_CUBEMAP_FACES; ++i)
             {
                 Camera* shadowCamera = renderer_->GetShadowCamera();

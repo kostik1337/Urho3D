@@ -124,6 +124,7 @@ struct PhysicsWorldConfig
     btCollisionConfiguration* collisionConfig_;
 };
 
+static const int DEFAULT_FPS = 60;
 static const float DEFAULT_MAX_NETWORK_ANGULAR_VELOCITY = 100.0f;
 
 /// Cache of collision geometry data.
@@ -139,7 +140,7 @@ class URHO3D_API PhysicsWorld : public Component, public btIDebugDraw
 
 public:
     /// Construct.
-    explicit PhysicsWorld(Context* scontext);
+    explicit PhysicsWorld(Context* context);
     /// Destruct.
     ~PhysicsWorld() override;
     /// Register object factory.
@@ -251,9 +252,9 @@ public:
     /// Remove a collision shape. Called by CollisionShape.
     void RemoveCollisionShape(CollisionShape* shape);
     /// Add a constraint to keep track of. Called by Constraint.
-    void AddConstraint(Constraint* joint);
+    void AddConstraint(Constraint* constraint);
     /// Remove a constraint. Called by Constraint.
-    void RemoveConstraint(Constraint* joint);
+    void RemoveConstraint(Constraint* constraint);
     /// Add a delayed world transform assignment. Called by RigidBody.
     void AddDelayedWorldTransform(const DelayedWorldTransform& transform);
     /// Add debug geometry to the debug renderer.
@@ -305,7 +306,7 @@ private:
     void SendCollisionEvents();
 
     /// Bullet collision configuration.
-    btCollisionConfiguration* collisionConfiguration_;
+    btCollisionConfiguration* collisionConfiguration_{};
     /// Bullet collision dispatcher.
     UniquePtr<btDispatcher> collisionDispatcher_;
     /// Bullet collision broadphase.
@@ -341,29 +342,29 @@ private:
     /// Preallocated buffer for physics collision contact data.
     VectorBuffer contacts_;
     /// Simulation substeps per second.
-    unsigned fps_;
+    unsigned fps_{DEFAULT_FPS};
     /// Maximum number of simulation substeps per frame. 0 (default) unlimited, or negative values for adaptive timestep.
-    int maxSubSteps_;
+    int maxSubSteps_{};
     /// Time accumulator for non-interpolated mode.
-    float timeAcc_;
+    float timeAcc_{};
     /// Maximum angular velocity for network replication.
-    float maxNetworkAngularVelocity_;
+    float maxNetworkAngularVelocity_{DEFAULT_MAX_NETWORK_ANGULAR_VELOCITY};
     /// Automatic simulation update enabled flag.
-    bool updateEnabled_;
+    bool updateEnabled_{true};
     /// Interpolation flag.
-    bool interpolation_;
+    bool interpolation_{true};
     /// Use internal edge utility flag.
-    bool internalEdge_;
+    bool internalEdge_{true};
     /// Applying transforms flag.
-    bool applyingTransforms_;
+    bool applyingTransforms_{};
     /// Simulating flag.
-    bool simulating_;
+    bool simulating_{};
     /// Debug draw depth test mode.
-    bool debugDepthTest_;
+    bool debugDepthTest_{};
     /// Debug renderer.
-    DebugRenderer* debugRenderer_;
+    DebugRenderer* debugRenderer_{};
     /// Debug draw flags.
-    int debugMode_;
+    int debugMode_{};
 };
 
 /// Register Physics library objects.

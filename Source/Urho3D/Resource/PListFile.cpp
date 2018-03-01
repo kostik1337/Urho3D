@@ -39,48 +39,48 @@ static PListValue EMPTY_VALUE;
 static PListValueMap EMPTY_VALUEMAP;
 static PListValueVector EMPTY_VALUEVECTOR;
 
-PListValue::PListValue() :
+PListValue::PListValue() :                                  // NOLINT(hicpp-member-init)
     type_(PLVT_NONE)
 {
 }
 
-PListValue::PListValue(int value) :
+PListValue::PListValue(int value) :                         // NOLINT(hicpp-member-init)
     type_(PLVT_NONE)
 {
     SetInt(value);
 }
 
-PListValue::PListValue(bool value) :
+PListValue::PListValue(bool value) :                        // NOLINT(hicpp-member-init)
     type_(PLVT_NONE)
 {
     SetBool(value);
 }
 
-PListValue::PListValue(float value) :
+PListValue::PListValue(float value) :                       // NOLINT(hicpp-member-init)
     type_(PLVT_NONE)
 {
     SetFloat(value);
 }
 
-PListValue::PListValue(const String& value) :
+PListValue::PListValue(const String& value) :               // NOLINT(hicpp-member-init)
     type_(PLVT_NONE)
 {
     SetString(value);
 }
 
-PListValue::PListValue(PListValueMap& valueMap) :
+PListValue::PListValue(PListValueMap& valueMap) :           // NOLINT(hicpp-member-init)
     type_(PLVT_NONE)
 {
     SetValueMap(valueMap);
 }
 
-PListValue::PListValue(PListValueVector& valueVector) :
+PListValue::PListValue(PListValueVector& valueVector) :     // NOLINT(hicpp-member-init)
     type_(PLVT_NONE)
 {
     SetValueVector(valueVector);
 }
 
-PListValue::PListValue(const PListValue& value) :
+PListValue::PListValue(const PListValue& value) :           // NOLINT(hicpp-member-init)
     type_(PLVT_NONE)
 {
     *this = value;
@@ -215,7 +215,7 @@ IntRect PListValue::GetIntRect() const
         return IntRect::ZERO;
 
     int x, y, w, h;
-    sscanf(string_->CString(), "{{%d,%d},{%d,%d}}", &x, &y, &w, &h);
+    sscanf(string_->CString(), "{{%d,%d},{%d,%d}}", &x, &y, &w, &h);    // NOLINT(cert-err34-c)
     return {x, y, x + w, y + h};
 }
 
@@ -225,7 +225,7 @@ IntVector2 PListValue::GetIntVector2() const
         return IntVector2::ZERO;
 
     int x, y;
-    sscanf(string_->CString(), "{%d,%d}", &x, &y);
+    sscanf(string_->CString(), "{%d,%d}", &x, &y);                      // NOLINT(cert-err34-c)
     return IntVector2(x, y);
 }
 
@@ -235,7 +235,7 @@ IntVector3 PListValue::GetIntVector3() const
         return IntVector3::ZERO;
 
     int x, y, z;
-    sscanf(string_->CString(), "{%d,%d,%d}", &x, &y, &z);
+    sscanf(string_->CString(), "{%d,%d,%d}", &x, &y, &z);               // NOLINT(cert-err34-c)
     return IntVector3(x, y, z);
 }
 

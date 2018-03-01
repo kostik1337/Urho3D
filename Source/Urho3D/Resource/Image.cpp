@@ -29,7 +29,6 @@
 #include "../IO/Log.h"
 #include "../Resource/Decompress.h"
 
-#include <JO/jo_jpeg.h>
 #include <SDL/SDL_surface.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <STB/stb_image.h>
@@ -244,16 +243,7 @@ bool CompressedLevel::Decompress(unsigned char* dest)
 }
 
 Image::Image(Context* context) :
-    Resource(context),
-    width_(0),
-    height_(0),
-    depth_(0),
-    components_(0),
-    numCompressedLevels_(0),
-    cubemap_(false),
-    array_(false),
-    sRGB_(false),
-    compressedFormat_(CF_NONE)
+    Resource(context)
 {
 }
 
@@ -272,12 +262,12 @@ bool Image::BeginLoad(Deserializer& source)
     if (fileID == "DDS ")
     {
         // DDS compressed format
-        DDSurfaceDesc2 ddsd;
+        DDSurfaceDesc2 ddsd;        // NOLINT(hicpp-member-init)
         source.Read(&ddsd, sizeof(ddsd));
 
         // DDS DX10+
         const bool hasDXGI = ddsd.ddpfPixelFormat_.dwFourCC_ == FOURCC_DX10;
-        DDSHeader10 dxgiHeader;
+        DDSHeader10 dxgiHeader;     // NOLINT(hicpp-member-init)
         if (hasDXGI)
             source.Read(&dxgiHeader, sizeof(dxgiHeader));
 
@@ -441,15 +431,15 @@ bool Image::BeginLoad(Deserializer& source)
                 unsigned numPixels = dataSize / sourcePixelByteSize;
 
 #define ADJUSTSHIFT(mask, l, r) \
-                if (mask && mask >= 0x100) \
+                if ((mask) >= 0x100) \
                 { \
-                    while ((mask >> r) >= 0x100) \
-                    ++r; \
+                    while (((mask) >> (r)) >= 0x100) \
+                    ++(r); \
                 } \
-                else if (mask && mask < 0x80) \
+                else if ((mask) && (mask) < 0x80) \
                 { \
-                    while ((mask << l) < 0x80) \
-                    ++l; \
+                    while (((mask) << (l)) < 0x80) \
+                    ++(l); \
                 }
 
                 unsigned rShiftL = 0, gShiftL = 0, bShiftL = 0, aShiftL = 0;
@@ -760,7 +750,7 @@ bool Image::BeginLoad(Deserializer& source)
             return false;
         }
         const uint8_t WEBP[TAG_SIZE] = {'W', 'E', 'B', 'P'};
-        if (memcmp(fourCC, WEBP, TAG_SIZE))
+        if (memcmp(fourCC, WEBP, TAG_SIZE) != 0)
         {
             // VP8_STATUS_BITSTREAM_ERROR
             URHO3D_LOGERROR("Invalid header");
@@ -783,7 +773,7 @@ bool Image::BeginLoad(Deserializer& source)
             return false;
         }
 
-        size_t imgSize(features.width * features.height * (features.has_alpha ? 4 : 3));
+        size_t imgSize = (size_t)features.width * features.height * (features.has_alpha ? 4 : 3);
         SharedArrayPtr<uint8_t> pixelData(new uint8_t[imgSize]);
 
         bool decodeError(false);
@@ -949,7 +939,7 @@ void Image::SetData(const unsigned char* pixelData)
         return;
     }
 
-    memcpy(data_.Get(), pixelData, width_ * height_ * depth_ * components_);
+    memcpy(data_.Get(), pixelData, (size_t)width_ * height_ * depth_ * components_);
     nextLevel_.Reset();
 }
 
@@ -1297,7 +1287,7 @@ bool Image::SaveJPG(const String& fileName, int quality) const
     }
 
     if (data_)
-        return jo_write_jpg(GetNativePath(fileName).CString(), data_.Get(), width_, height_, components_, quality) != 0;
+        return stbi_write_jpg(GetNativePath(fileName).CString(), width_, height_, components_, data_.Get(), quality) != 0;
     else
         return false;
 }
@@ -1331,7 +1321,7 @@ bool Image::SaveDDS(const String& fileName) const
 
     outFile.WriteFileID("DDS ");
 
-    DDSurfaceDesc2 ddsd;
+    DDSurfaceDesc2 ddsd;        // NOLINT(hicpp-member-init)
     memset(&ddsd, 0, sizeof(ddsd));
     ddsd.dwSize_ = sizeof(ddsd);
     ddsd.dwFlags_ = 0x00000001l /*DDSD_CAPS*/
@@ -2101,7 +2091,7 @@ Image* Image::GetSubimage(const IntRect& rect) const
         unsigned char* src = data_.Get() + (y * width_ + x) * components_;
         for (int i = 0; i < height; ++i)
         {
-            memcpy(dest, src, width * components_);
+            memcpy(dest, src, (size_t)width * components_);
             dest += width * components_;
             src += width_ * components_;
         }
@@ -2231,7 +2221,7 @@ SDL_Surface* Image::GetSDLSurface(const IntRect& rect) const
         unsigned char* source = data_ + components_ * (imageWidth * imageRect.top_ + imageRect.left_);
         for (int i = 0; i < height; ++i)
         {
-            memcpy(destination, source, components_ * width);
+            memcpy(destination, source, (size_t)components_ * width);
             destination += surface->pitch;
             source += components_ * imageWidth;
         }
@@ -2348,7 +2338,7 @@ bool Image::SetSubimage(const Image* image, const IntRect& rect)
         unsigned char* dest = data_.Get() + (rect.top_ * width_ + rect.left_) * components_;
         for (int i = 0; i < destHeight; ++i)
         {
-            memcpy(dest, src, destWidth * components_);
+            memcpy(dest, src, (size_t)destWidth * components_);
 
             src += destWidth * image->components_;
             dest += width_ * components_;

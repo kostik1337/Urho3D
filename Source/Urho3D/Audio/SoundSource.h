@@ -141,7 +141,7 @@ protected:
     /// Stereo panning.
     float panning_;
     /// Effective master gain.
-    float masterGain_;
+    float masterGain_{};
     /// Whether finished event should be sent on playback stop.
     bool sendFinishedEvent_;
     /// Automatic removal mode.
@@ -151,11 +151,11 @@ private:
     /// Play a sound without locking the audio mutex. Called internally.
     void PlayLockless(Sound* sound);
     /// Play a sound stream without locking the audio mutex. Called internally.
-    void PlayLockless(SharedPtr<SoundStream> stream);
+    void PlayLockless(const SharedPtr<SoundStream>& stream);
     /// Stop sound without locking the audio mutex. Called internally.
     void StopLockless();
     /// Set new playback position without locking the audio mutex. Called internally.
-    void SetPlayPositionLockless(signed char* position);
+    void SetPlayPositionLockless(signed char* pos);
     /// Mix mono sample to mono buffer.
     void MixMonoToMono(Sound* sound, int* dest, unsigned samples, int mixRate);
     /// Mix mono sample to stereo buffer.

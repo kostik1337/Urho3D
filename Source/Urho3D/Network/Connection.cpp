@@ -60,7 +60,7 @@ PackageUpload::PackageUpload() :
 {
 }
 
-Connection::Connection(Context* context, bool isClient, kNet::SharedPtr<kNet::MessageConnection> connection) :
+Connection::Connection(Context* context, bool isClient, const kNet::SharedPtr<kNet::MessageConnection>& connection) :
     Object(context),
     timeStamp_(0),
     connection_(connection),
@@ -146,7 +146,7 @@ void Connection::SendRemoteEvent(Node* node, StringHash eventType, bool inOrder,
         URHO3D_LOGERROR("Sender node is not in the connection's scene, can not send remote node event");
         return;
     }
-    if (node->GetID() >= FIRST_LOCAL_ID)
+    if (!node->IsReplicated())
     {
         URHO3D_LOGERROR("Sender node has a local ID, can not send remote node event");
         return;
@@ -739,7 +739,7 @@ void Connection::ProcessPackageDownload(int msgID, MemoryBuffer& msg)
             for (unsigned i = 0; i < packages.Size(); ++i)
             {
                 PackageFile* package = packages[i];
-                String packageFullName = package->GetName();
+                const String& packageFullName = package->GetName();
                 if (!GetFileNameAndExtension(packageFullName).Compare(name, false))
                 {
                     StringHash nameHash(name);
@@ -1180,7 +1180,7 @@ void Connection::ProcessNewNode(Node* node)
     {
         Component* component = components[i];
         // Check if component is not to be replicated
-        if (component->GetID() >= FIRST_LOCAL_ID)
+        if (!component->IsReplicated())
             continue;
 
         ComponentReplicationState& componentState = nodeState.componentStates_[component->GetID()];
@@ -1348,7 +1348,7 @@ void Connection::ProcessExistingNode(Node* node, NodeReplicationState& nodeState
         {
             Component* component = components[i];
             // Check if component is not to be replicated
-            if (component->GetID() >= FIRST_LOCAL_ID)
+            if (!component->IsReplicated())
                 continue;
 
             HashMap<unsigned, ComponentReplicationState>::Iterator j = nodeState.componentStates_.Find(component->GetID());

@@ -57,7 +57,6 @@ const char* PHYSICS_CATEGORY = "Physics";
 extern const char* SUBSYSTEM_CATEGORY;
 
 static const int MAX_SOLVER_ITERATIONS = 256;
-static const int DEFAULT_FPS = 60;
 static const Vector3 DEFAULT_GRAVITY = Vector3(0.0f, -9.81f, 0.0f);
 
 PhysicsWorldConfig PhysicsWorld::config;
@@ -147,17 +146,7 @@ struct PhysicsQueryCallback : public btCollisionWorld::ContactResultCallback
 
 PhysicsWorld::PhysicsWorld(Context* context) :
     Component(context),
-    collisionConfiguration_(nullptr),
     fps_(DEFAULT_FPS),
-    maxSubSteps_(0),
-    timeAcc_(0.0f),
-    maxNetworkAngularVelocity_(DEFAULT_MAX_NETWORK_ANGULAR_VELOCITY),
-    updateEnabled_(true),
-    interpolation_(true),
-    internalEdge_(true),
-    applyingTransforms_(false),
-    simulating_(false),
-    debugRenderer_(nullptr),
     debugMode_(btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawConstraints | btIDebugDraw::DBG_DrawConstraintLimits)
 {
     gContactAddedCallback = CustomMaterialCombinerCallback;
@@ -450,12 +439,12 @@ void PhysicsWorld::RaycastSingleSegmented(PhysicsRaycastResult& result, const Ra
     btVector3 start = ToBtVector3(ray.origin_);
     btVector3 end;
     btVector3 direction = ToBtVector3(ray.direction_);
-    float distance;
+    float remainingDistance = maxDistance;
+    auto count = RoundToInt(maxDistance / segmentDistance);
 
-    for (float remainingDistance = maxDistance; remainingDistance > 0; remainingDistance -= segmentDistance)
+    for (auto i = 0; i < count; ++i)
     {
-        distance = Min(remainingDistance, segmentDistance);
-
+        float distance = Min(remainingDistance, segmentDistance);     // The last segment may be shorter
         end = start + distance * direction;
 
         btCollisionWorld::ClosestRayResultCallback rayCallback(start, end);
@@ -477,6 +466,7 @@ void PhysicsWorld::RaycastSingleSegmented(PhysicsRaycastResult& result, const Ra
 
         // Use the end position as the new start position
         start = end;
+        remainingDistance -= segmentDistance;
     }
 
     // Didn't hit anything

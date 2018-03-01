@@ -38,7 +38,7 @@ template <class T> struct RandomAccessIterator
 {
     /// Construct.
     RandomAccessIterator() :
-        ptr_(0)
+        ptr_(nullptr)
     {
     }
 
@@ -139,13 +139,13 @@ template <class T> struct RandomAccessConstIterator
     }
 
     /// Construct with an object pointer.
-    explicit RandomAccessConstIterator(T* ptr) :
+    explicit RandomAccessConstIterator(const T* ptr) :
         ptr_(ptr)
     {
     }
 
     /// Construct from a non-const iterator.
-    RandomAccessConstIterator(const RandomAccessIterator<T>& rhs) :     // NOLINT
+    RandomAccessConstIterator(const RandomAccessIterator<T>& rhs) :     // NOLINT(google-explicit-constructor)
         ptr_(rhs.ptr_)
     {
     }
@@ -235,7 +235,7 @@ template <class T> struct RandomAccessConstIterator
     bool operator >=(const RandomAccessConstIterator& rhs) const { return ptr_ >= rhs.ptr_; }
 
     /// Pointer.
-    T* ptr_;
+    const T* ptr_;
 };
 
 /// Returns an iterator pointing to the first element in the range [first, last) that is not less than value.

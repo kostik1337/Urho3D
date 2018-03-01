@@ -73,14 +73,12 @@ public:
 
 private:
     /// FreeType library.
-    FT_Library library_;
+    FT_Library library_{};
 };
 
 FontFaceFreeType::FontFaceFreeType(Font* font) :
     FontFace(font),
-    face_(nullptr),
-    loadMode_(FT_LOAD_DEFAULT),
-    hasMutableGlyph_(false)
+    loadMode_(FT_LOAD_DEFAULT)
 {
 }
 
@@ -203,7 +201,7 @@ bool FontFaceFreeType::Load(const unsigned char* fontData, unsigned fontDataSize
     SharedPtr<Image> image(new Image(font_->GetContext()));
     image->SetSize(textureWidth, textureHeight, 1);
     unsigned char* imageData = image->GetData();
-    memset(imageData, 0, (size_t)(image->GetWidth() * image->GetHeight()));
+    memset(imageData, 0, (size_t)image->GetWidth() * image->GetHeight());
     allocator_.Reset(FONT_TEXTURE_MIN_SIZE, FONT_TEXTURE_MIN_SIZE, textureWidth, textureHeight);
 
     for (unsigned i = 0; i < charCodes.Size(); ++i)
@@ -336,7 +334,7 @@ bool FontFaceFreeType::SetupNextTexture(int textureWidth, int textureHeight)
     SharedPtr<Image> image(new Image(font_->GetContext()));
     image->SetSize(textureWidth, textureHeight, 1);
     unsigned char* imageData = image->GetData();
-    memset(imageData, 0, (size_t)(image->GetWidth() * image->GetHeight()));
+    memset(imageData, 0, (size_t)image->GetWidth() * image->GetHeight());
 
     SharedPtr<Texture2D> texture = LoadFaceTexture(image);
     if (!texture)
